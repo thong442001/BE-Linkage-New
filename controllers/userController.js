@@ -11,13 +11,8 @@ module.exports = {
     getUser,
     addUser,
     login,
-    checkUserId,//chung
     checkEmail,
-    addPostUser,//post
-    deletePostUser,
-    getNameAndAvatar,
-    addFriendNotificationInUser,
-    deleteFriendNotificationInUser,
+    checkPhone,
 }
 
 async function getAllUsers() {
@@ -60,36 +55,64 @@ async function getUser(ID_user) {
 //     }
 // }
 
-async function addUser(
-    first_name,
-    last_name,
-    dateOfBirth,
-    sex,
-    email,
-    phone,
-    password
-) {
+// async function addUser(
+//     first_name,
+//     last_name,
+//     dateOfBirth,
+//     sex,
+//     email,
+//     phone,
+//     password
+// ) {
+//     try {
+//         var hashPass = bcrypt.hashSync(password, 10);
+//         const newItem = {
+//             first_name: first_name,
+//             last_name: last_name,
+//             dateOfBirth: dateOfBirth,
+//             sex: sex,
+//             email: email,
+//             phone: phone,
+//             password: hashPass,
+//             role: 2,
+//         };
+//         if (newItem) {
+//             await users.create(newItem);
+//             return true;
+//         }
+//     } catch (error) {
+//         console.log(error);
+//         return false;
+//     }
+// }
+async function addUser(first_name, last_name, dateOfBirth, sex, email, phone, password) {
     try {
+        // Kiểm tra nếu cả email và phone đều trống hoặc null
+        if ((!email || email.trim() === '') && (!phone || phone.trim() === '')) {
+            return false;  // Trả về false nếu cả hai đều trống
+        }
+
+        // Mã hóa mật khẩu
         var hashPass = bcrypt.hashSync(password, 10);
+
+        // Tạo đối tượng người dùng mới
         const newItem = {
-            first_name: first_name,
-            last_name: last_name,
-            dateOfBirth: dateOfBirth,
-            sex: sex,
-            email: email,
-            phone: phone,
+            first_name,
+            last_name,
+            dateOfBirth,
+            sex,
+            email: email || null,  // Nếu email trống, set là null
+            phone: phone || null,  // Nếu phone trống, set là null
             password: hashPass,
             role: 2,
-            updatedAt: Date.now(),
-            createdAt: Date.now(),
         };
-        if (newItem) {
-            await users.create(newItem);
-            return true;
-        }
+
+        // Lưu người dùng vào cơ sở dữ liệu
+        await users.create(newItem);
+        return true;  // Đăng ký thành công
     } catch (error) {
         console.log(error);
-        return false;
+        return false;  // Xử lý lỗi
     }
 }
 
@@ -207,18 +230,18 @@ async function login(email, phone, password) {
 
 // *********** chung *****************
 
-async function checkUserId(userId) {
-    try {
-        const check_id = await users.findById(userId);
-        if (check_id) {
-            return true;
-        }
-        return false;
-    } catch (error) {
-        console.log(error);
-        return false;
-    }
-}
+// async function checkUserId(userId) {
+//     try {
+//         const check_id = await users.findById(userId);
+//         if (check_id) {
+//             return true;
+//         }
+//         return false;
+//     } catch (error) {
+//         console.log(error);
+//         return false;
+//     }
+// }
 
 async function checkEmail(email) {
     try {
@@ -234,85 +257,99 @@ async function checkEmail(email) {
     }
 }
 
-async function addPostUser(userId, postId) {
+async function checkPhone(phone) {
     try {
-        const itemEdit = await users.findById(userId);
-        if (itemEdit) {
-            //add post new vào posts của user
-            //const postsNew = await itemEdit.posts.push() 
-            itemEdit.posts.push(postId)
-            await itemEdit.save();
-        }
-        return itemEdit;
-    } catch (error) {
-        console.log(error);
-        throw error;
-    }
-}
-
-async function addFriendNotificationInUser(to, friendNotificationId) {
-    try {
-        const itemEdit = await users.findById(to);
-        if (itemEdit) {
-            //add friendNotification new vào friendNotifications của user
-            itemEdit.friendNotifications.push(friendNotificationId)
-            await itemEdit.save();
-        }
-        return itemEdit;
-    } catch (error) {
-        console.log(error);
-        throw error;
-    }
-}
-
-async function deletePostUser(userId, id) {
-    try {
-        const itemEdit = await users.findById(userId);
-        if (itemEdit) {
-            // xóa post trong user
-            const postsNew = await itemEdit.posts.filter(post => post.toString() != id);
-            itemEdit.posts = postsNew;
-            await itemEdit.save();
-            //console.log(postsNew);
+        const check_phone = await users.findOne({ "phone": phone });
+        if (check_phone) {
             return true;
-        }
-        return false;
-    } catch (error) {
-        console.log(error);
-        return false;
-    }
-}
-
-async function deleteFriendNotificationInUser(userId, friendNotificationId) {
-    try {
-        const itemEdit = await users.findById(userId);
-        if (itemEdit) {
-            // xóa friendNotification trong user
-            const friendNotificationsNew = await itemEdit.friendNotifications.filter(post => post.toString() != friendNotificationId);
-            itemEdit.friendNotifications = friendNotificationsNew;
-            await itemEdit.save();
-            return true;
-        }
-        return false;
-    } catch (error) {
-        console.log(error);
-        return false;
-    }
-}
-
-async function getNameAndAvatar(userId) {
-    try {
-        const check_id = await users.findById(userId);
-        if (check_id) {
-            return { "displayName": check_id.displayName, "avatar": check_id.avatar };
         } else {
-            return null;
+            return false;
         }
     } catch (error) {
         console.log(error);
         throw error;
     }
 }
+
+// async function addPostUser(userId, postId) {
+//     try {
+//         const itemEdit = await users.findById(userId);
+//         if (itemEdit) {
+//             //add post new vào posts của user
+//             //const postsNew = await itemEdit.posts.push() 
+//             itemEdit.posts.push(postId)
+//             await itemEdit.save();
+//         }
+//         return itemEdit;
+//     } catch (error) {
+//         console.log(error);
+//         throw error;
+//     }
+// }
+
+// async function addFriendNotificationInUser(to, friendNotificationId) {
+//     try {
+//         const itemEdit = await users.findById(to);
+//         if (itemEdit) {
+//             //add friendNotification new vào friendNotifications của user
+//             itemEdit.friendNotifications.push(friendNotificationId)
+//             await itemEdit.save();
+//         }
+//         return itemEdit;
+//     } catch (error) {
+//         console.log(error);
+//         throw error;
+//     }
+// }
+
+// async function deletePostUser(userId, id) {
+//     try {
+//         const itemEdit = await users.findById(userId);
+//         if (itemEdit) {
+//             // xóa post trong user
+//             const postsNew = await itemEdit.posts.filter(post => post.toString() != id);
+//             itemEdit.posts = postsNew;
+//             await itemEdit.save();
+//             //console.log(postsNew);
+//             return true;
+//         }
+//         return false;
+//     } catch (error) {
+//         console.log(error);
+//         return false;
+//     }
+// }
+
+// async function deleteFriendNotificationInUser(userId, friendNotificationId) {
+//     try {
+//         const itemEdit = await users.findById(userId);
+//         if (itemEdit) {
+//             // xóa friendNotification trong user
+//             const friendNotificationsNew = await itemEdit.friendNotifications.filter(post => post.toString() != friendNotificationId);
+//             itemEdit.friendNotifications = friendNotificationsNew;
+//             await itemEdit.save();
+//             return true;
+//         }
+//         return false;
+//     } catch (error) {
+//         console.log(error);
+//         return false;
+//     }
+// }
+
+// async function getNameAndAvatar(userId) {
+//     try {
+//         const check_id = await users.findById(userId);
+//         if (check_id) {
+//             return { "displayName": check_id.displayName, "avatar": check_id.avatar };
+//         } else {
+//             return null;
+//         }
+//     } catch (error) {
+//         console.log(error);
+//         throw error;
+//     }
+// }
 
 // async function getFriendsInUser(userId) {
 //     try {

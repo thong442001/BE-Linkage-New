@@ -181,6 +181,36 @@ router.post('/login', async function (req, res, next) {
   }
 });
 
+// http://localhost:3000/post/getMyPosts
+router.get('/checkEmail', async function (req, res, next) {
+  try {
+    const { email } = req.query;
+    const check = await userController.checkEmail(email);
+    if (check) {
+      res.status(200).json({ "status": false, "message": "Email đã tồn tại" });
+    } else {
+      res.status(200).json({ "status": true, "message": "Email chưa tồn tại" });
+    }
+  } catch (e) {
+    res.status(400).json({ "status": false, "message": "lỗi API" });
+  }
+});
+// http://localhost:3000/post/checkPhone
+router.get('/checkPhone', async function (req, res, next) {
+  try {
+    const { phone } = req.query;
+    const check = await userController.checkPhone(phone);
+    if (check) {
+      res.status(200).json({ "status": false, "message": "phone đã tồn tại" });
+    } else {
+      res.status(200).json({ "status": true, "message": "phone chưa tồn tại" });
+    }
+  } catch (e) {
+    res.status(400).json({ "status": false, "message": "lỗi API" });
+  }
+});
+
+
 //loginWeb  
 //http://localhost:3000/user/loginWeb
 // router.post('/loginWeb', async function (req, res, next) {

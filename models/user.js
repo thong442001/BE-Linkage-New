@@ -21,11 +21,11 @@ const user = new Schema({
     },
     email: {
         type: String, // kiểu dữ liệu
-        unique: true, // không được trùng
+        default: null,
     },
     phone: {
         type: String, // kiểu dữ liệu
-        unique: true, // không được trùng
+        default: null,
     },
     password: {
         type: String, // kiểu dữ liệu
@@ -61,13 +61,8 @@ const user = new Schema({
         // 1: admin 
         // 2: user
     },
-    updatedAt: {
-        type: Date, // kiểu dữ liệu
-        default: Date.now()
-    },
-    createdAt: {
-        type: Date, // kiểu dữ liệu
-        default: Date.now()
-    },
+}, {
+    timestamps: true
+
 });
 module.exports = mongoose.models.user || mongoose.model('user', user);
