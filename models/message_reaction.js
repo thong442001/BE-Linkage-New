@@ -19,17 +19,12 @@ const message_reaction = new Schema({
         required: true, // bắt buộc phải có
         default: 1,
     },
-    updatedAt: {
-        type: Date, // kiểu dữ liệu
-        default: Date.now()
-    },
-    createdAt: {
-        type: Date, // kiểu dữ liệu
-        default: Date.now()
-    },
     _destroy: {
         type: Boolean, // kiểu dữ liệu
         default: false
     },
+}, {
+    timestamps: true
+
 });
 module.exports = mongoose.models.message_reaction || mongoose.model('message_reaction', message_reaction);

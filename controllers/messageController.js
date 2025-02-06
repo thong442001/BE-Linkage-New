@@ -15,7 +15,6 @@ async function addMessage(ID_group, sender, content, type, ID_message_reply) {
             content,
             type,
             ID_message_reply,
-            createdAt: Date.now(),
         };
         const newMess = await message.create(newItem);
         //console.log(newMess);
@@ -30,7 +29,7 @@ async function getMessagesGroup(ID_group) {
     try {
         // lấy tất cả tin nhắn trong nhóm
         const messages = await message.find({ ID_group: ID_group })
-            .populate('sender', 'displayName avatar')
+            .populate('sender', 'first_name last_name avatar')
             .populate("ID_message_reply", "content") // Lấy đầy đủ thông tin của tin nhắn trả lời
             .sort({ createdAt: 1 })
             .lean() // Lấy kết quả dưới dạng object JavaScript để thêm thuộc tính cho group
@@ -39,7 +38,7 @@ async function getMessagesGroup(ID_group) {
         const updatedMessages = await Promise.all(messages.map(async (message) => {
             //console.log(message._id)
             const message_reactionList = await message_reaction.find({ ID_message: message._id })
-                .populate('ID_user', 'displayName avatar')
+                .populate('ID_user', 'first_name last_name avatar')
                 .populate('ID_reaction', 'name icon')
                 .sort({ createdAt: 1 })
                 .lean() // Lấy kết quả dưới dạng object JavaScript để thêm thuộc tính cho message

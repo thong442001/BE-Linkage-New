@@ -24,6 +24,7 @@ router.get('/getAllReaction', async function (req, res, next) {
   try {
     const reactions = await reactionController.getAllReaction();
     if (reactions) {
+      //console.log(reactions)
       res.status(200).json({ "status": true, "reactions": reactions });
     }
   } catch (e) {

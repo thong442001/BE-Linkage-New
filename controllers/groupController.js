@@ -28,7 +28,7 @@ async function getGroupID(ID_group) {
     try {
         const result = await group.findById(ID_group).populate({
             path: 'members',
-            select: 'displayName avatar' // Chỉ lấy trường name và email (_id auto lấy)
+            select: 'first_name last_name avatar' // Chỉ lấy trường name và email (_id auto lấy)
         });
         return result;
     } catch (error) {
@@ -63,13 +63,13 @@ async function getAllGroupOfUser(ID_user) {
     try {
         // Tìm các nhóm mà user tham gia
         const groups = await group.find({ members: ID_user })
-            .populate('members', 'displayName avatar')
+            .populate('members', 'first_name last_name avatar')
             .lean() // Lấy kết quả dưới dạng object JavaScript để thêm thuộc tính cho group
             .exec();
         // Lấy tin nhắn mới nhất của từng nhóm bằng Promise.all()
         const updatedGroups = await Promise.all(groups.map(async (group) => {
             const messageNew = await message.find({ ID_group: group._id })
-                .populate('sender', 'displayName avatar')
+                .populate('sender', 'first_name last_name avatar')
                 .sort({ createdAt: -1 })
                 .limit(1);
 
@@ -78,7 +78,9 @@ async function getAllGroupOfUser(ID_user) {
                     ID_message: messageNew[0]._id,
                     sender: {
                         ID_user: messageNew[0].sender._id,
-                        displayName: messageNew[0].sender.displayName,
+                        first_name: messageNew[0].sender.first_name,
+                        last_name: messageNew[0].sender.last_name,
+                        //displayName: messageNew[0].sender.displayName,
                         avatar: messageNew[0].sender.avatar,
                     },
                     content: messageNew[0].content,

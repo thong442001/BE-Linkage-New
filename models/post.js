@@ -30,13 +30,8 @@ const post = new Schema({
         type: ObjectId,
         ref: 'interation',
     }],
-    updatedAt: {
-        type: Date, // kiểu dữ liệu
-        default: Date.now()
-    },
-    createdAt: {
-        type: Date, // kiểu dữ liệu
-        default: Date.now()
-    },
+}, {
+    timestamps: true
+
 });
 module.exports = mongoose.models.post || mongoose.model('post', post);

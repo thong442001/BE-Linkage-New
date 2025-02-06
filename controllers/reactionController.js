@@ -10,7 +10,6 @@ async function addReaction(name, icon) {
         const newItem = {
             name,
             icon,
-            createdAt: Date.now(),
         };
         const newReaction = await reaction.create(newItem);
         //console.log(newReaction);
@@ -24,7 +23,7 @@ async function addReaction(name, icon) {
 async function getAllReaction() {
     try {
         const reactions = await reaction.find()
-            .sort({ createdAt: 1 });
+        //.sort({ createdAt: 1 });
         return reactions;
     } catch (error) {
         console.log(error);

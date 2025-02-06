@@ -260,27 +260,26 @@ router.get('/checkPhone', async function (req, res, next) {
 //   }
 // });
 
-//get role user
-// //http://localhost:3000/user/getRoleUser
-// router.get('/getRoleUser', checkToken, async function (req, res, next) {
-//   try {
-//     const list = await userController.getRoleUser();
-//     res.status(200).json({ "status": true, "users": list });
-//   } catch (e) {
-//     res.status(400).json({ "status": false, "message": "lỗi" });
-//   }
-// });
+//http://localhost:3000/user/getRoleUser
+router.get('/getAllUsers', checkToken, async function (req, res, next) {
+  try {
+    const list = await userController.getAllUsers();
+    res.status(200).json({ "status": true, "users": list });
+  } catch (e) {
+    res.status(400).json({ "status": false, "message": "lỗi" });
+  }
+});
 
 // //http://localhost:3000/user/getUser
-// router.get('/getUser', checkToken, async function (req, res, next) {
-//   try {
-//     const { userId } = req.query;
-//     const result = await userController.getUser(userId);
-//     res.status(200).json({ "status": true, "user": result });
-//   } catch (e) {
-//     res.status(400).json({ "status": false, "message": "lỗi" });
-//   }
-// });
+router.get('/getUser', checkToken, async function (req, res, next) {
+  try {
+    const { userId } = req.query;
+    const result = await userController.getUser(userId);
+    res.status(200).json({ "status": true, "user": result });
+  } catch (e) {
+    res.status(400).json({ "status": false, "message": "lỗi" });
+  }
+});
 
 
 //get Users DisplayName (search)

@@ -24,13 +24,11 @@ const message = new Schema({
         ref: 'message',
         default: null,
     },
-    createdAt: {
-        type: Date, // kiểu dữ liệu
-        default: Date.now()
-    },
     _destroy: {// thu hồi
         type: Boolean, // kiểu dữ liệu
         default: false
     },
+}, {
+    timestamps: true
 });
 module.exports = mongoose.models.message || mongoose.model('message', message);

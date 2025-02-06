@@ -44,7 +44,6 @@ function setupSocket(server) {
                 content,
                 type,
                 ID_message_reply,
-                createdAt: Date.now(),
                 _destroy: false,
             });
             await newMessage.save();
@@ -57,12 +56,14 @@ function setupSocket(server) {
                 content,
                 type,
                 ID_message_reply,
-                displayName: checkUser.displayName,  // Thêm tên hiển thị
-                avatar: checkUser.avatar,            // Thêm avatar
+                first_name: checkUser.first_name,
+                last_name: checkUser.last_name,
+                avatar: checkUser.avatar,
+                updatedAt: newMessage.updatedAt,      // Thêm avatar
                 createdAt: newMessage.createdAt,// tạo newMessage trc mới có createdAt
                 _destroy: newMessage._destroy,
             };
-            io.to(newMessageSocket.ID_group).emit('receive_message', newMessageSocket);
+            io.to(ID_group).emit('receive_message', newMessageSocket);
         });
 
         // Xử lý thu hồi tin nhắn
@@ -99,7 +100,7 @@ function setupSocket(server) {
                 await checkMessage_Reaction.save();
                 // Populate lại dữ liệu trước khi gửi
                 const populatedReaction = await message_reaction.findById(checkMessage_Reaction._id)
-                    .populate('ID_user', 'displayName avatar')
+                    .populate('ID_user', 'first_name last_name avatar')
                     .populate('ID_reaction', 'name icon')
                     .lean();
                 io.to(ID_group).emit('receive_message_reation', populatedReaction);
@@ -109,12 +110,11 @@ function setupSocket(server) {
                     ID_message,
                     ID_user,
                     ID_reaction,
-                    createdAt: Date.now(),
                 };
                 const newMessage_Reaction = await message_reaction.create(newItem);
                 // Populate lại dữ liệu trước khi gửi
                 const populatedMessage_Reaction = await message_reaction.findById(newMessage_Reaction._id)
-                    .populate('ID_user', 'displayName avatar')
+                    .populate('ID_user', 'first_name last_name avatar')
                     .populate('ID_reaction', 'name icon')
                     .lean();
 

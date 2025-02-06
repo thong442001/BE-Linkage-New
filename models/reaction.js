@@ -12,17 +12,11 @@ const reaction = new Schema({
         required: true, // bắt buộc phải có
         unique: true, // không được trùng
     },
-    updatedAt: {
-        type: Date, // kiểu dữ liệu
-        default: Date.now()
-    },
-    createdAt: {
-        type: Date, // kiểu dữ liệu
-        default: Date.now()
-    },
     _destroy: {
         type: Boolean, // kiểu dữ liệu
         default: false
     },
+}, {
+    timestamps: true
 });
 module.exports = mongoose.models.reaction || mongoose.model('reaction', reaction);

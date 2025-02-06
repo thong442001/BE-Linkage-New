@@ -18,17 +18,11 @@ const group = new Schema({
         type: Boolean,
         default: true
     },
-    updatedAt: {
-        type: Date, // kiểu dữ liệu
-        default: Date.now()
-    },
-    createdAt: {
-        type: Date, // kiểu dữ liệu
-        default: Date.now()
-    },
     _destroy: {
         type: Boolean, // kiểu dữ liệu
         default: false
     },
+}, {
+    timestamps: true
 });
 module.exports = mongoose.models.group || mongoose.model('group', group);
