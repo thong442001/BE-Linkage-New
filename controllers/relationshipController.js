@@ -38,18 +38,15 @@ async function getRelationshipAvsB(ID_user, me) {
         //     const newRelationship = await relationship.create(newItem);
         //     return newRelationship;
         // }
-        console.log("*****1");
         let relationshipData = await relationship.findOne({
             $or: [
                 { ID_userA: ID_user, ID_userB: me },
                 { ID_userA: me, ID_userB: ID_user }
             ]
         }).lean();
-        console.log("*****2");
 
         // Nếu có mối quan hệ, trả về luôn
         if (relationshipData) return relationshipData;
-        console.log("*****3");
 
         // Nếu chưa có, tạo mới với trạng thái "Người lạ"
         return await relationship.create({
@@ -74,11 +71,11 @@ async function guiLoiMoiKetBan(ID_relationship, me) {
             if (relation.ID_userA == me) {
                 relation.relation = 'A gửi lời kết bạn B';
                 await relation.save();
-                return true;
+                return relation;
             } else if (relation.ID_userB == me) {
                 relation.relation = 'B gửi lời kết bạn A';
                 await relation.save();
-                return true;
+                return relation;
             } else {
                 return false;
             }
@@ -99,7 +96,7 @@ async function chapNhanLoiMoiKetBan(ID_relationship) {
             // set lại
             relation.relation = 'Bạn bè';
             await relation.save();
-            return true;
+            return relation;
         } else {
             return false;
         }
@@ -117,7 +114,7 @@ async function huyLoiMoiKetBan(ID_relationship) {
             // set lại
             relation.relation = 'Người lạ';
             await relation.save();
-            return true;
+            return relation;
         } else {
             return false;
         }
@@ -130,33 +127,18 @@ async function huyLoiMoiKetBan(ID_relationship) {
 // get all lời mời kết bạn
 async function getAllLoiMoiKetBan(me) {
     try {
-        const find1 = await relationship.find({
-            $and: [
-                { ID_userA: me },
-                { relation: 'B gửi lời kết bạn A' }
+        // Tìm tất cả các lời mời kết bạn
+        const relationships = await relationship.find({
+            $or: [
+                { ID_userA: me, relation: 'B gửi lời kết bạn A' },
+                { ID_userB: me, relation: 'A gửi lời kết bạn B' }
             ]
-        });
-        const find2 = await relationship.find({
-            $and: [
-                { ID_userB: me },
-                { relation: 'A gửi lời kết bạn B' }
-            ]
-        });
-        // **** cách 1 ****
-        // Gộp mảng
-        const relationships = [...find1, ...find2];
+        })
+            .populate('ID_userA', 'first_name last_name avatar')
+            .populate('ID_userB', 'first_name last_name avatar')
+            .lean(); // Convert to plain JS objects
 
-        // Populate từng đối tượng trong mảng
-        const populatedRelationships = await Promise.all(
-            relationships.map(async (relationshipItem) => {
-                const populatedItem = await relationshipItem
-                    .populate('ID_userA', 'first_name last_name avatar')
-                    .populate('ID_userB', 'first_name last_name avatar');
-                return populatedItem;
-            })
-        );
-
-        return populatedRelationships;
+        return relationships;
 
         // **** cách 2 ****
         // const relationships = find1.concat(find2);

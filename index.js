@@ -78,8 +78,8 @@ app.use('/post', postRoute);
 app.use('/group', groupRoute);
 app.use('/message', messageRoute);
 app.use('/reaction', reactionRoute);
-app.use('/message_reactionRoute', message_reactionRoute);
-app.use('/relationshipRoute', relationshipRoute);
+app.use('/message_reaction', message_reactionRoute);
+app.use('/relationship', relationshipRoute);
 
 // // catch 404 and forward to error handler
 // app.use(function (req, res, next) {
