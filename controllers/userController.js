@@ -125,8 +125,8 @@ async function login(email, phone, password) {
             const ssPassword1 = bcrypt.compareSync(password, check_username.password);
             if (ssPassword1) {
                 //token
-                const token = JWT.sign({ email: email, data: "data ne" }, config.SECRETKEY, { expiresIn: '60s' });
-                const refreshToken = JWT.sign({ email: email }, config.SECRETKEY, { expiresIn: '1d' })
+                const token = JWT.sign({ id: check_username._id, data: "data ne" }, config.SECRETKEY, { expiresIn: '1d' });
+                const refreshToken = JWT.sign({ id: check_username._id }, config.SECRETKEY, { expiresIn: '1y' })
                 //res.status(200).json({ "status": true, "user": check_username, token: token, refreshToken: refreshToken });
                 return { "status": 200, "user": check_username, token: token, refreshToken: refreshToken };
             } else {
@@ -140,8 +140,8 @@ async function login(email, phone, password) {
                 const ssPassword2 = bcrypt.compareSync(password, check_phone.password);
                 if (ssPassword2) {
                     //token
-                    const token = JWT.sign({ phone: phone, data: "data ne" }, config.SECRETKEY, { expiresIn: '60s' });
-                    const refreshToken = JWT.sign({ phone: phone }, config.SECRETKEY, { expiresIn: '1d' })
+                    const token = JWT.sign({ id: check_phone._id, data: "data ne" }, config.SECRETKEY, { expiresIn: '1d' });
+                    const refreshToken = JWT.sign({ id: check_phone._id }, config.SECRETKEY, { expiresIn: '1y' })
                     //res.status(200).json({ "status": true, "user": check_username, token: token, refreshToken: refreshToken });
                     return { "status": 200, "user": check_phone, token: token, refreshToken: refreshToken };
                 } else {

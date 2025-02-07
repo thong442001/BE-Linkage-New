@@ -44,7 +44,7 @@ router.post("/refreshToken", async function (req, res, next) {
     if (err) {
       res.status(401).json({ err: err });
     } else {
-      var newToken = JWT.sign({ "data": "Thong dep trai wa" }, config.SECRETKEY, { expiresIn: '1d' });
+      var newToken = JWT.sign({ "data": "Thong dep trai wa" }, config.SECRETKEY, { expiresIn: '1y' });
       res.status(200).json({ token: newToken });
     }
   });

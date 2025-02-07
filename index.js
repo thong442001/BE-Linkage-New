@@ -15,6 +15,7 @@ require("./models/group");
 require("./models/message");
 require("./models/reaction");
 require("./models/message_reaction");
+require("./models/relationship");
 
 var indexRouter = require('./routes/index');
 //mogo
@@ -24,6 +25,7 @@ var groupRoute = require('./routes/groupRoute');
 var messageRoute = require('./routes/messageRoute');
 var reactionRoute = require('./routes/reactionRoute');
 var message_reactionRoute = require('./routes/message_reactionRoute');
+var relationshipRoute = require('./routes/relationshipRoute');
 
 var app = express();
 
@@ -43,7 +45,7 @@ app.use(cors({
 //app.use(logger('dev'));
 app.use(express.json());
 // Middleware để phân tích dữ liệu từ form
-app.use(express.urlencoded({ extended: true }));
+app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
@@ -77,6 +79,7 @@ app.use('/group', groupRoute);
 app.use('/message', messageRoute);
 app.use('/reaction', reactionRoute);
 app.use('/message_reactionRoute', message_reactionRoute);
+app.use('/relationshipRoute', relationshipRoute);
 
 // // catch 404 and forward to error handler
 // app.use(function (req, res, next) {
