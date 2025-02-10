@@ -101,4 +101,20 @@ router.post('/huyLoiMoiKetBan', checkToken, async function (req, res, next) {
   }
 });
 
+// http://localhost:3000/relationship/getAllFriendOfID_user
+router.get('/getAllFriendOfID_user', checkToken, async function (req, res, next) {
+  try {
+    const { me } = req.query;
+    const relationships = await relationshipController.getAllFriendOfID_user(me);
+    if (relationships) {
+      //console.log(reactions)
+      res.status(200).json({ "status": true, "relationships": relationships });
+    } else {
+      res.status(201).json({ "status": true, "relationships": [] });
+    }
+  } catch (e) {
+    res.status(400).json({ "status": false, "message": "lỗi API" });
+  }
+});
+
 module.exports = router;

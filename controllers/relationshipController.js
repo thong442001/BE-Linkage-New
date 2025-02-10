@@ -6,6 +6,7 @@ module.exports = {
     chapNhanLoiMoiKetBan,
     huyLoiMoiKetBan,
     getAllLoiMoiKetBan,
+    getAllFriendOfID_user,
 }
 
 async function getRelationshipAvsB(ID_user, me) {
@@ -145,6 +146,28 @@ async function getAllLoiMoiKetBan(me) {
         // await relationships.populate('ID_userA', 'first_name last_name avatar')
         //     .populate('ID_userB', 'first_name last_name avatar');
         // return relationships;
+    } catch (error) {
+        console.log(error);
+        throw error;
+    }
+}
+
+// get all bạn bè
+async function getAllFriendOfID_user(me) {
+    try {
+        // Tìm tất cả các bạn bè
+        const relationships = await relationship.find({
+            $or: [
+                { ID_userA: me, relation: 'Bạn bè' },
+                { ID_userB: me, relation: 'Bạn bè' }
+            ]
+        })
+            .populate('ID_userA', 'first_name last_name avatar')
+            .populate('ID_userB', 'first_name last_name avatar')
+            .lean(); // Convert to plain JS objects
+
+        return relationships;
+
     } catch (error) {
         console.log(error);
         throw error;

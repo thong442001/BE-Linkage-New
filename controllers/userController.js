@@ -24,6 +24,7 @@ async function getAllUsers() {
         throw error;
     }
 }
+
 async function getUser(ID_user) {
     try {
         const result = await users.findById(ID_user);
@@ -33,58 +34,7 @@ async function getUser(ID_user) {
         throw error;
     }
 }
-// search 
-// async function getRoleUser() {
-//     try {
-//         const list = await users.find({ "role": 3 }, " _id displayName avatar");
-//         return list;
-//     } catch (error) {
-//         console.log(error);
-//         throw error;
-//     }
-// }
 
-// async function getUsersDisplayName(displayName) {
-//     try {
-//         //search displayName của các users ( trừ admin)
-//         const list = await users.find({ "displayName": displayName, "role": 3 }, " _id displayName avatar");
-//         return list;
-//     } catch (error) {
-//         console.log(error);
-//         throw error;
-//     }
-// }
-
-// async function addUser(
-//     first_name,
-//     last_name,
-//     dateOfBirth,
-//     sex,
-//     email,
-//     phone,
-//     password
-// ) {
-//     try {
-//         var hashPass = bcrypt.hashSync(password, 10);
-//         const newItem = {
-//             first_name: first_name,
-//             last_name: last_name,
-//             dateOfBirth: dateOfBirth,
-//             sex: sex,
-//             email: email,
-//             phone: phone,
-//             password: hashPass,
-//             role: 2,
-//         };
-//         if (newItem) {
-//             await users.create(newItem);
-//             return true;
-//         }
-//     } catch (error) {
-//         console.log(error);
-//         return false;
-//     }
-// }
 async function addUser(first_name, last_name, dateOfBirth, sex, email, phone, password) {
     try {
         // Kiểm tra nếu cả email và phone đều trống hoặc null

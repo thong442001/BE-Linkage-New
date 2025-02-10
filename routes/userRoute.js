@@ -270,6 +270,17 @@ router.get('/getAllUsers', checkToken, async function (req, res, next) {
   }
 });
 
+
+//http://localhost:3000/user/getRoleUser
+router.get('/getAllUsers', checkToken, async function (req, res, next) {
+  try {
+    const list = await userController.getAllUsers();
+    res.status(200).json({ "status": true, "users": list });
+  } catch (e) {
+    res.status(400).json({ "status": false, "message": "lỗi" });
+  }
+});
+
 // //http://localhost:3000/user/getUser
 router.get('/getUser', checkToken, async function (req, res, next) {
   try {
