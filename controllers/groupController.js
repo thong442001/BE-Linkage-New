@@ -6,6 +6,7 @@ module.exports = {
     addGroupPrivate,
     getGroupID,
     getAllGroupOfUser,
+    addGroup,
 }
 //
 async function addGroupPrivate(user1, user2) {
@@ -13,7 +14,7 @@ async function addGroupPrivate(user1, user2) {
         const members = [user1, user2]
         const newItem = {
             members,
-            createdAt: Date.now(),
+            isPrivate: true,
         };
         const newGroupPrivate = await group.create(newItem);
         //console.log(newGroup);
@@ -23,6 +24,23 @@ async function addGroupPrivate(user1, user2) {
         return false;
     }
 }
+
+async function addGroup(name, members) {
+    try {
+        const newItem = {
+            name: name,
+            members: members,
+            isPrivate: false,
+        };
+        const newGroup = await group.create(newItem);
+        //console.log(newGroup);
+        return newGroup;
+    } catch (error) {
+        console.log(error);
+        return false;
+    }
+}
+
 //
 async function getGroupID(ID_group) {
     try {

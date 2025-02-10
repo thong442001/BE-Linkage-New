@@ -30,6 +30,19 @@ router.post('/joinGroupPrivate', checkToken, async function (req, res, next) {
     return res.status(400).json({ "status": false, "message": "lỗi" });
   }
 });
+//http://localhost:3000/group/joinGroupPrivate
+router.post('/addGroup', checkToken, async function (req, res, next) {
+  try {
+    const { name, members } = req.body;
+    const group = await groupController.addGroup(name, members);
+    if (group) {
+      //console.log("....2...");
+      return res.status(200).json({ "status": true, message: "tạo nhóm thành công", ID_group: group._id });
+    }
+  } catch (e) {
+    return res.status(400).json({ "status": false, "message": "lỗi" });
+  }
+});
 
 // http://localhost:3000/group/getGroupID
 router.get('/getGroupID', checkToken, async function (req, res, next) {
