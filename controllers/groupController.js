@@ -149,19 +149,20 @@ async function addtMembers(ID_group, new_members) {
 
 async function deleteMember(ID_group, ID_user) {
     try {
-        const editGroup = await group.findById(ID_group);
-        // null là ko tìm thấy
-        if (editGroup) {
-            editGroup.members = ID_user
-                ? editGroup.members.filter(ID_member => ID_member !== ID_user)// xóa member
-                : editGroup.members;
-            await editGroup.save();
-            return true;
-        } else {
+        const updatedGroup = await group.findByIdAndUpdate(
+            ID_group,
+            { $pull: { members: ID_user } }, // MongoDB $pull để xóa phần tử khỏi mảng
+            { new: true } // Trả về nhóm đã cập nhật
+        );
+
+        if (!updatedGroup) {
+            console.log(`Không tìm thấy nhóm với ID: ${ID_group}`);
             return false;
         }
+
+        return true;
     } catch (error) {
-        console.log(error);
+        console.error(`Lỗi khi xóa thành viên: ${error.message}`);
         throw error;
     }
 }
