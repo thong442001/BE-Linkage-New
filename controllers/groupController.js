@@ -111,7 +111,7 @@ async function getAllGroupOfUser(ID_user) {
             //console.log(group.messageLatest);
             return group; // ✅ Quan trọng: Return group để cập nhật giá trị
         }));
-        return updatedGroups.filter(group => group && group.messageLatest != null);
+        return updatedGroups.filter(group => group && (group.messageLatest != null || group.isPrivate == false));
     } catch (error) {
         console.error("Lỗi khi lấy nhóm:", error);
         throw error;
