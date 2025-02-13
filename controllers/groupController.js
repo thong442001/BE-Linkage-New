@@ -7,6 +7,10 @@ module.exports = {
     getGroupID,
     getAllGroupOfUser,
     addGroup,
+    addtMembers,
+    deleteMember,
+    passKey,
+    deleteGroup
 }
 //
 async function addGroupPrivate(user1, user2) {
@@ -80,7 +84,12 @@ async function findGroupPrivate(user1, user2) {
 async function getAllGroupOfUser(ID_user) {
     try {
         // Tìm các nhóm mà user tham gia
-        const groups = await group.find({ members: ID_user })
+        const groups = await group.find({
+            $and: [
+                { members: ID_user },
+                { _destroy: false }
+            ]
+        })
             .populate('members', 'first_name last_name avatar')
             .lean() // Lấy kết quả dưới dạng object JavaScript để thêm thuộc tính cho group
             .exec();
@@ -118,3 +127,91 @@ async function getAllGroupOfUser(ID_user) {
     }
 }
 
+// edit 
+async function addtMembers(ID_group, new_members) {
+    try {
+        const editGroup = await group.findById(ID_group);
+        // null là ko tìm thấy
+        if (editGroup) {
+            editGroup.members = new_members
+                ? [...new Set([...editGroup.members, ...new_members])]// set sẽ tự động loại bỏ các phần tử trùng.
+                : editGroup.members;
+            await editGroup.save();
+            return true;
+        } else {
+            return false;
+        }
+    } catch (error) {
+        console.log(error);
+        throw error;
+    }
+}
+
+async function deleteMember(ID_group, ID_user) {
+    try {
+        const editGroup = await group.findById(ID_group);
+        // null là ko tìm thấy
+        if (editGroup) {
+            editGroup.members = ID_user
+                ? editGroup.members.filter(ID_member => ID_member !== ID_user)// xóa member
+                : editGroup.members;
+            await editGroup.save();
+            return true;
+        } else {
+            return false;
+        }
+    } catch (error) {
+        console.log(error);
+        throw error;
+    }
+}
+
+async function passKey(ID_group, oldAdmin, newAdmin) {
+    try {
+        const editGroup = await group.findById(ID_group);
+        // null là ko tìm thấy
+        if (editGroup) {
+            const indexOld = editGroup.members.indexOf(oldAdmin);
+            const indexNew = editGroup.members.indexOf(newAdmin);
+            // ko tìm thấy ID_user trong members
+            if (indexOld == -1 || indexNew == -1) {
+                return false;
+            }
+            // swap
+            const newMembers = editGroup.members.map((val, i) =>
+                i === indexOld
+                    ? newAdmin
+                    : i === indexNew
+                        ? oldAdmin
+                        : val
+            );
+            editGroup.members = newMembers
+                ? newMembers
+                : editGroup.members;
+            await editGroup.save();
+            return true;
+        } else {
+            return false;
+        }
+    } catch (error) {
+        console.log(error);
+        throw error;
+    }
+}
+
+async function deleteGroup(ID_group) {
+    try {
+        const editGroup = await group.findById(ID_group);
+        // null là ko tìm thấy
+        if (editGroup) {
+            editGroup._destroy = true;
+            await editGroup.save();
+            return true;
+        } else {
+            return false;
+        }
+    } catch (error) {
+        console.log(error);
+        throw error;
+    }
+}

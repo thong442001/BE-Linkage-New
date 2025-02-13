@@ -68,5 +68,56 @@ router.get('/getAllGroupOfUser', checkToken, async function (req, res, next) {
   }
 });
 
+//http://localhost:3000/group/addtMembers
+router.post('/addtMembers', checkToken, async function (req, res, next) {
+  try {
+    const { ID_group, new_members } = req.body;
+    const result = await groupController.addtMembers(ID_group, new_members);
+    if (result) {
+      return res.status(200).json({ "status": result, message: "thành công" });
+    }
+  } catch (e) {
+    return res.status(400).json({ "status": false, "message": "lỗi" });
+  }
+});
+
+//http://localhost:3000/group/deleteMember
+router.post('/deleteMember', checkToken, async function (req, res, next) {
+  try {
+    const { ID_group, ID_user } = req.body;
+    const result = await groupController.deleteMember(ID_group, ID_user);
+    if (result) {
+      return res.status(200).json({ "status": result, message: "thành công" });
+    }
+  } catch (e) {
+    return res.status(400).json({ "status": false, "message": "lỗi" });
+  }
+});
+
+//http://localhost:3000/group/passKey
+router.post('/passKey', checkToken, async function (req, res, next) {
+  try {
+    const { ID_group, oldAdmin, newAdmin } = req.body;
+    const result = await groupController.passKey(ID_group, oldAdmin, newAdmin);
+    if (result) {
+      return res.status(200).json({ "status": result, message: "thành công" });
+    }
+  } catch (e) {
+    return res.status(400).json({ "status": false, "message": "lỗi" });
+  }
+});
+
+//http://localhost:3000/group/deleteGroup
+router.post('/deleteGroup', checkToken, async function (req, res, next) {
+  try {
+    const { ID_group } = req.body;
+    const result = await groupController.deleteGroup(ID_group);
+    if (result) {
+      return res.status(200).json({ "status": result, message: "thành công" });
+    }
+  } catch (e) {
+    return res.status(400).json({ "status": false, "message": "lỗi" });
+  }
+});
 
 module.exports = router;
