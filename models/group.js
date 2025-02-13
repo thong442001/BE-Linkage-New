@@ -8,7 +8,7 @@ const group = new Schema({
     },
     avatar: {
         type: String, // kiểu dữ liệu
-        default: null,
+        default: 'https://firebasestorage.googleapis.com/v0/b/hamstore-5c2f9.appspot.com/o/Linkage-Logo%2FGroup%201%201.png?alt=media&token=bcd761a4-a236-437f-962b-a12b01e57497',
     },
     members: [{
         type: ObjectId,
