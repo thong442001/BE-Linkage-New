@@ -58,8 +58,8 @@ function setupSocket(server) {
                 ID_message_reply,
                 first_name: checkUser.first_name,
                 last_name: checkUser.last_name,
-                avatar: checkUser.avatar,
-                updatedAt: newMessage.updatedAt,      // Thêm avatar
+                avatar: checkUser.avatar,// Thêm avatar
+                updatedAt: newMessage.updatedAt,
                 createdAt: newMessage.createdAt,// tạo newMessage trc mới có createdAt
                 _destroy: newMessage._destroy,
             };

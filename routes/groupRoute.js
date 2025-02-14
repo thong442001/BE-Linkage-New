@@ -120,4 +120,17 @@ router.post('/deleteGroup', checkToken, async function (req, res, next) {
   }
 });
 
+//http://localhost:3000/group/editAvtNameGroup
+router.post('/editAvtNameGroup', checkToken, async function (req, res, next) {
+  try {
+    const { ID_group, avatar, name } = req.body;
+    const result = await groupController.editAvtNameGroup(ID_group, avatar, name);
+    if (result) {
+      return res.status(200).json({ "status": result, message: "thành công" });
+    }
+  } catch (e) {
+    return res.status(400).json({ "status": false, "message": "lỗi" });
+  }
+});
+
 module.exports = router;

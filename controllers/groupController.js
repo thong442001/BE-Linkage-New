@@ -10,7 +10,8 @@ module.exports = {
     addtMembers,
     deleteMember,
     passKey,
-    deleteGroup
+    deleteGroup,
+    editAvtNameGroup,
 }
 //
 async function addGroupPrivate(user1, user2) {
@@ -206,6 +207,28 @@ async function deleteGroup(ID_group) {
         // null là ko tìm thấy
         if (editGroup) {
             editGroup._destroy = true;
+            await editGroup.save();
+            return true;
+        } else {
+            return false;
+        }
+    } catch (error) {
+        console.log(error);
+        throw error;
+    }
+}
+
+async function editAvtNameGroup(ID_group, avatar, name) {
+    try {
+        const editGroup = await group.findById(ID_group);
+        // null là ko tìm thấy
+        if (editGroup) {
+            editGroup.avatar = avatar
+                ? avatar
+                : editGroup.avatar;
+            editGroup.name = name
+                ? name
+                : editGroup.name;
             await editGroup.save();
             return true;
         } else {
