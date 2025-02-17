@@ -4,7 +4,7 @@ const relationship = require("../models/relationship");
 
 module.exports = {
     addPost,
-    getProfile,// api cho trang profile
+    allProfile,// api cho trang profile
 }
 
 async function addPost(
@@ -34,7 +34,7 @@ async function addPost(
 }
 
 // api trang cá nhân
-async function getProfile(ID_user, me) {
+async function allProfile(ID_user, me) {
     try {
         let rUser, rRelationship, rPosts;
         rUser = await users.findById(ID_user);

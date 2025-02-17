@@ -74,11 +74,11 @@ router.post('/addPost', checkToken, async function (req, res, next) {
 });
 
 // getProfile
-//http://localhost:3000/post/getProfile
-router.get('/getProfile', checkToken, async function (req, res, next) {
+//http://localhost:3000/post/allProfile
+router.post('/allProfile', checkToken, async function (req, res, next) {
   try {
-    const { ID_user, me } = req.query;
-    const result = await postController.getProfile(ID_user, me);
+    const { ID_user, me } = req.body;
+    const result = await postController.allProfile(ID_user, me);
     if (result) {
       res.status(200).json({
         "status": true,
