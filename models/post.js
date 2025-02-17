@@ -2,36 +2,44 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 const ObjectId = Schema.ObjectId;
 const post = new Schema({
-    id: { type: ObjectId }, // khóa chính
-    userId: {
+    ID_user: {
         type: ObjectId,
         ref: 'user',
     },
-    content: {
+    caption: {
         type: String, // kiểu dữ liệu
         default: null
     },
-    images: [{
+    medias: [{
         type: String, // kiểu dữ liệu
         default: null
     }],
     status: {
-        type: Number, // kiểu dữ liệu
-        // 0 xoá (vào thùng rác)
-        // 1 công khai
-        // 2 bạn bè
-        // 3 chỉ mình tôi
+        type: String, // kiểu dữ liệu
+        enum: [
+            'Công khai',
+            'Bạn bè',
+            'Chỉ mình tôi',
+        ],
     },
-    likes: [{
+    type: {
+        type: String, // kiểu dữ liệu
+        enum: [
+            'Story',
+            'Share',
+            'Tag',
+            'Normal',
+        ],
+    },
+    ID_post_shared: {
         type: ObjectId,
-        ref: 'interation',
-    }],
-    comments: [{
+        ref: 'post',
+    },
+    tags: [{
         type: ObjectId,
-        ref: 'interation',
+        ref: 'user',
     }],
 }, {
     timestamps: true
-
 });
 module.exports = mongoose.models.post || mongoose.model('post', post);
