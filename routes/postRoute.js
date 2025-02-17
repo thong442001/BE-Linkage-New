@@ -2,7 +2,6 @@ var express = require('express');
 var router = express.Router();
 
 const postController = require("../controllers/postController")
-const userController = require("../controllers/userController")
 
 //checkToken
 const checkToken = require("./checkToken");
@@ -47,18 +46,24 @@ const checkToken = require("./checkToken");
 //http://localhost:3000/post/add
 router.post('/add', checkToken, async function (req, res, next) {
   try {
-    const { userId, content, images, status } = req.body;
-    //check userId đã đc đăng kí chưa
-    const check_id = await userController.checkUserId(userId);
-    if (check_id) {
-      //const nameAndAvatar = await userController.getNameAndAvatar(userId);
-      const postId = await postController.addPost(userId,
-        content,
-        images,
-        status);
-      // add post mới vào user
-      //await userController.addPostUser(userId, postId)
-      res.status(200).json({ "status": true, "message": "add post thành công" });
+    const {
+      ID_user,
+      caption,
+      medias,
+      status,
+      ID_post_shared,
+      tags
+    } = req.body;
+    const postId = await postController.addPost(
+      ID_user,
+      caption,
+      medias,
+      status,
+      ID_post_shared,
+      tags
+    );
+    if (postId) {
+      res.status(200).json({ "status": true, "message": "add post thành công", "ID_post": postId });
     } else {
       res.status(401).json({ "status": false, "message": "user không tồn tại" });
     }
