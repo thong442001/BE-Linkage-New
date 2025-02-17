@@ -1,14 +1,7 @@
 const posts = require("../models/post");
 
 module.exports = {
-    getMyPosts,
-    getAllPostsUserId,
-    getPostsUserIdDestroyFalse,
-    getPostsUserIdDestroyTrue,
     addPost,
-    destroyPost,
-    deletePost,
-    editNameAndAvatar,// chung
 }
 
 async function addPost(
