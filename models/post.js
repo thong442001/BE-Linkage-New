@@ -39,6 +39,10 @@ const post = new Schema({
         type: ObjectId,
         ref: 'user',
     }],
+    _destroy: {
+        type: Boolean, // kiểu dữ liệu
+        default: false
+    },
 }, {
     timestamps: true
 });
