@@ -43,8 +43,8 @@ const checkToken = require("./checkToken");
  *         description:  user không tồn tại 
  */
 //add  
-//http://localhost:3000/post/add
-router.post('/add', checkToken, async function (req, res, next) {
+//http://localhost:3000/post/addPost
+router.post('/addPost', checkToken, async function (req, res, next) {
   try {
     const {
       ID_user,
