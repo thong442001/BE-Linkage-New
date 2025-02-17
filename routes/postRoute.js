@@ -73,17 +73,24 @@ router.post('/addPost', checkToken, async function (req, res, next) {
   }
 });
 
-//getMyPosts
-// http://localhost:3000/post/getMyPosts
-// router.get('/getMyPosts', checkToken, async function (req, res, next) {
-//   try {
-//     const { userId } = req.query;
-//     const list = await postController.getMyPosts(userId);
-//     res.status(200).json({ "status": true, "posts": list });
-//   } catch (e) {
-//     res.status(400).json({ "status": false, "message": "lỗi API" });
-//   }
-// });
+// getProfile
+//http://localhost:3000/post/getProfile
+router.get('/getProfile', checkToken, async function (req, res, next) {
+  try {
+    const { ID_user, me } = req.query;
+    const result = await postController.getProfile(ID_user, me);
+    if (result) {
+      res.status(200).json({
+        "status": true,
+        "user": result.rUser,
+        "posts": result.rPosts,
+        "relationship": result.rRelationship,
+      });
+    }
+  } catch (e) {
+    res.status(400).json({ "status": false, "message": "lỗi API" });
+  }
+});
 
 
 //getPostsUserIdDestroyFalse

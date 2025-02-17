@@ -1,7 +1,10 @@
 const posts = require("../models/post");
+const users = require("../models/user");
+const relationship = require("../models/relationship");
 
 module.exports = {
     addPost,
+    getProfile,// api cho trang profile
 }
 
 async function addPost(
@@ -27,6 +30,68 @@ async function addPost(
     } catch (error) {
         console.log(error);
         return false;
+    }
+}
+
+// api trang cá nhân
+async function getProfile(ID_user, me) {
+    try {
+        let rUser, rRelationship, rPosts;
+        rUser = await users.findById(ID_user);
+        // check profile của mình hay ng khác
+        if (ID_user == me) {
+            rPosts = await posts.find({
+                $and: [
+                    { ID_user: me },
+                    { _destroy: false }
+                ]
+            });
+            rRelationship = null;
+        } else {
+            rRelationship = await relationship.findOne({
+                $or: [
+                    { ID_userA: ID_user, ID_userB: me },
+                    { ID_userA: me, ID_userB: ID_user }
+                ]
+            }).lean();
+            if (!rRelationship) {
+                // Nếu chưa có, 
+                // tạo mới với trạng thái "Người lạ"
+                rRelationship = await relationship.create({
+                    ID_userA: ID_user,
+                    ID_userB: me,
+                    relation: 'Người lạ',
+                });
+            }
+            // lấy post status dựa trên relation
+            if (rRelationship.relation == 'Bạn bè') {
+                rPosts = await posts.find({
+                    $and: [
+                        { ID_user: ID_user },
+                        { _destroy: false },
+                        {
+                            $or: [
+                                { status: "Công khai" },
+                                { status: "Bạn bè" }
+                            ]
+                        }
+                    ]
+                });
+            } else {
+                rPosts = await posts.find({
+                    $and: [
+                        { ID_user: ID_user },
+                        { _destroy: false },
+                        { status: "Công khai" }
+                    ]
+                });
+            }
+        }
+        return { rUser, rRelationship, rPosts };
+
+    } catch (error) {
+        console.log(error);
+        throw error;
     }
 }
 
