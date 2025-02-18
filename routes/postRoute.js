@@ -85,7 +85,7 @@ router.post('/allProfile', checkToken, async function (req, res, next) {
         "user": result.rUser,
         "posts": result.rPosts,
         "relationship": result.rRelationship,
-        "rFriends": result.rFriends,
+        "friends": result.rFriends,
       });
     }
   } catch (e) {
