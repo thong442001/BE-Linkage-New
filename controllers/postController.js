@@ -5,6 +5,7 @@ const relationship = require("../models/relationship");
 module.exports = {
     addPost,
     allProfile,// api cho trang profile
+    getAllPostsInHome, //all posts in home
 }
 
 async function addPost(
@@ -36,8 +37,18 @@ async function addPost(
 // api trang cá nhân
 async function allProfile(ID_user, me) {
     try {
-        let rUser, rRelationship, rPosts;
+        let rUser, rRelationship, rPosts, rFriends;
         rUser = await users.findById(ID_user);
+        // Tìm tất cả các bạn bè
+        rFriends = await relationship.find({
+            $or: [
+                { ID_userA: ID_user, relation: 'Bạn bè' },
+                { ID_userB: ID_user, relation: 'Bạn bè' }
+            ]
+        })
+            .populate('ID_userA', 'first_name last_name avatar')
+            .populate('ID_userB', 'first_name last_name avatar')
+            .lean(); // Convert to plain JS objects
         // check profile của mình hay ng khác
         if (ID_user == me) {
             rPosts = await posts.find({
@@ -45,7 +56,7 @@ async function allProfile(ID_user, me) {
                     { ID_user: me },
                     { _destroy: false }
                 ]
-            });
+            }).populate('ID_user', 'first_name last_name avatar');
             rRelationship = null;
         } else {
             rRelationship = await relationship.findOne({
@@ -84,10 +95,11 @@ async function allProfile(ID_user, me) {
                         { _destroy: false },
                         { status: "Công khai" }
                     ]
-                });
+                }).populate('ID_user', 'first_name last_name avatar');
             }
         }
-        return { rUser, rRelationship, rPosts };
+
+        return { rUser, rRelationship, rPosts, rFriends };
 
     } catch (error) {
         console.log(error);
@@ -95,15 +107,34 @@ async function allProfile(ID_user, me) {
     }
 }
 
-// async function getAllPostsUserId(userId) {
-//     try {
-//         const result = await posts.find({ "userId": userId });
-//         return result;
-//     } catch (error) {
-//         console.log(error);
-//         throw error;
-//     }
-// }
+async function getAllPostsInHome(me) {
+    try {
+        // Tìm tất cả bạn bè
+        const rFriends = await relationship.find({
+            $or: [
+                { ID_userA: me, relation: 'Bạn bè' },
+                { ID_userB: me, relation: 'Bạn bè' }
+            ]
+        });
+
+        // Lấy danh sách ID bạn bè
+        const friendIDs = rFriends.map(f =>
+            f.ID_userA.toString() === me.toString() ? f.ID_userB : f.ID_userA
+        );
+
+        // Thêm ID của mày vào danh sách
+        friendIDs.push(me);
+
+        // Lấy tất cả bài post của mày và bạn bè
+        const rPosts = await posts.find({
+            ID_user: { $in: friendIDs }
+        }).sort({ createdAt: 1 });
+        return rPosts;
+    } catch (error) {
+        console.log(error);
+        throw error;
+    }
+}
 
 // async function getPostsUserIdDestroyFalse(userId) {
 //     try {

@@ -85,6 +85,7 @@ router.post('/allProfile', checkToken, async function (req, res, next) {
         "user": result.rUser,
         "posts": result.rPosts,
         "relationship": result.rRelationship,
+        "rFriends": result.rFriends,
       });
     }
   } catch (e) {
@@ -94,16 +95,20 @@ router.post('/allProfile', checkToken, async function (req, res, next) {
 
 
 //getPostsUserIdDestroyFalse
-//http://localhost:3000/post/getPostsUserIdDestroyFalse
-// router.get('/getPostsUserIdDestroyFalse', checkToken, async function (req, res, next) {
-//   try {
-//     const { userId } = req.body;
-//     const list = await postController.getPostsUserIdDestroyFalse(userId);
-//     res.status(200).json({ "status": true, "posts": list });
-//   } catch (e) {
-//     res.status(400).json({ "status": false, "message": "lỗi" });
-//   }
-// });
+// http://localhost:3000/post/getAllPostsInHome
+router.get('/getAllPostsInHome', checkToken, async function (req, res, next) {
+  try {
+    const { me } = req.query;
+    const posts = await postController.getAllPostsInHome(me);
+    if (posts) {
+      res.status(200).json({ "status": true, "posts": posts });
+    } else {
+      res.status(200).json({ "status": false, "posts": [] });
+    }
+  } catch (e) {
+    res.status(400).json({ "status": false, "message": "lỗi" });
+  }
+});
 
 
 //getPostsUserIdDestroyTrue
