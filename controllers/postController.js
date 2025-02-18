@@ -117,18 +117,32 @@ async function getAllPostsInHome(me) {
             ]
         });
 
-        // Lấy danh sách ID bạn bè
-        const friendIDs = rFriends.map(f =>
-            f.ID_userA.toString() === me.toString() ? f.ID_userB : f.ID_userA
-        );
+        // Kiểm tra nếu không có bạn bè
+        if (!rFriends || rFriends.length === 0) {
+            return await posts.find({
+                ID_user: me,
+                _destroy: false,
+                $or: [{ status: "Công khai" }, { status: "Bạn bè" }]
+            })
+                .populate('ID_user', 'first_name last_name avatar')
+                .sort({ createdAt: -1 });
+        }
 
-        // Thêm ID của mày vào danh sách
-        friendIDs.push(me);
+        // Lấy danh sách ID bạn bè
+        const friendIDs = new Set(
+            rFriends.map(f => (f.ID_userA.toString() === me.toString() ? f.ID_userB : f.ID_userA))
+        );
+        friendIDs.add(me); // Thêm ID của mình
 
         // Lấy tất cả bài post của mày và bạn bè
         const rPosts = await posts.find({
-            ID_user: { $in: friendIDs }
-        }).sort({ createdAt: 1 });
+            ID_user: { $in: [...friendIDs] },
+            _destroy: false,
+            $or: [{ status: "Công khai" }, { status: "Bạn bè" }]
+        })
+            .populate('ID_user', 'first_name last_name avatar')
+            .sort({ createdAt: -1 });
+
         return rPosts;
     } catch (error) {
         console.log(error);
