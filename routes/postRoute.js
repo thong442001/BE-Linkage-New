@@ -51,6 +51,7 @@ router.post('/addPost', checkToken, async function (req, res, next) {
       caption,
       medias,
       status,
+      type,
       ID_post_shared,
       tags
     } = req.body;
@@ -59,6 +60,7 @@ router.post('/addPost', checkToken, async function (req, res, next) {
       caption,
       medias,
       status,
+      type,
       ID_post_shared,
       tags
     );
@@ -86,6 +88,7 @@ router.post('/allProfile', checkToken, async function (req, res, next) {
         "posts": result.rPosts,
         "relationship": result.rRelationship,
         "friends": result.rFriends,
+        "stories": result.rStories,
       });
     }
   } catch (e) {
@@ -99,9 +102,13 @@ router.post('/allProfile', checkToken, async function (req, res, next) {
 router.get('/getAllPostsInHome', checkToken, async function (req, res, next) {
   try {
     const { me } = req.query;
-    const posts = await postController.getAllPostsInHome(me);
-    if (posts) {
-      res.status(200).json({ "status": true, "posts": posts });
+    const result = await postController.getAllPostsInHome(me);
+    if (result) {
+      res.status(200).json({
+        "status": true,
+        "posts": result.rPosts,
+        "stories": result.rStories,
+      });
     } else {
       res.status(200).json({ "status": false, "posts": [] });
     }

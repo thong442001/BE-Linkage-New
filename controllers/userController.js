@@ -13,6 +13,10 @@ module.exports = {
     login,
     checkEmail,
     checkPhone,
+    editNameOfUser,// edit
+    editAvatarOfUser,// editAvatars
+    editBackgroundOfUser,// editBackground
+    editPasswordOfUser,// editPassword
 }
 
 async function getAllUsers() {
@@ -107,7 +111,90 @@ async function login(email, phone, password) {
         throw error;
     }
 }
+async function editNameOfUser(ID_user, first_name, last_name) {
+    try {
+        const editUser = await users.findById(ID_user);
+        // null là ko tìm thấy
+        if (editUser) {
+            editUser.first_name = first_name
+                ? first_name
+                : editUser.first_name;
+            editUser.last_name = last_name
+                ? last_name
+                : editUser.last_name;
+            await editUser.save();
+            return true;
+        } else {
+            return false;
+        }
+    } catch (error) {
+        console.log(error);
+        throw error;
+    }
+}
 
+async function editAvatarOfUser(ID_user, avatar) {
+    try {
+        const editUser = await users.findById(ID_user);
+        // null là ko tìm thấy
+        if (editUser) {
+            editUser.avatar = avatar
+                ? avatar
+                : editUser.avatar;
+            await editUser.save();
+            return true;
+        } else {
+            return false;
+        }
+    } catch (error) {
+        console.log(error);
+        throw error;
+    }
+}
+
+async function editBackgroundOfUser(ID_user, background) {
+    try {
+        const editUser = await users.findById(ID_user);
+        // null là ko tìm thấy
+        if (editUser) {
+            editUser.background = background
+                ? background
+                : editUser.background;
+            await editUser.save();
+            return true;
+        } else {
+            return false;
+        }
+    } catch (error) {
+        console.log(error);
+        throw error;
+    }
+}
+
+async function editPasswordOfUser(ID_user, passwordOLd, passwordNew) {
+    try {
+        const editUser = await users.findById(ID_user);
+        // null là ko tìm thấy
+        if (editUser) {
+            const checkPasswordOld = bcrypt.compareSync(passwordOLd, editUser.password);
+            if (checkPasswordOld) {
+                // Mã hóa mật khẩu
+                var hashPass = bcrypt.hashSync(passwordNew, 10);
+                editUser.password = hashPass
+                await editUser.save();
+                return true;
+            } else {
+                return false;
+            }
+
+        } else {
+            return false;
+        }
+    } catch (error) {
+        console.log(error);
+        throw error;
+    }
+}
 // async function loginWeb(body) {
 //     try {
 //         const { email, password } = body;
@@ -146,31 +233,6 @@ async function login(email, phone, password) {
 //         const { email } = body;
 //         const result = await users.findOneAndDelete({ "email": email });
 //         return result;
-//     } catch (error) {
-//         console.log(error);
-//         throw error;
-//     }
-// }
-
-// async function editUser(body) {
-//     try {
-//         const { email, password, avatar, displayName } = body;
-//         const itemEdit = await users.findOne({ "email": email });
-//         var hashPass = bcrypt.hashSync(password, 10);
-//         if (itemEdit) {
-
-//             itemEdit.password = hashPass ? hashPass : itemEdit.password;
-//             itemEdit.avatar = avatar ? avatar : itemEdit.avatar;
-//             itemEdit.displayName = displayName ? displayName : itemEdit.displayName;
-//             // itemEdit.phoneNumber = phoneNumber ? phoneNumber : itemEdit.phoneNumber;
-//             // itemEdit.birthday = birthday ? birthday : itemEdit.birthday;
-//             await itemEdit.save();
-
-//             // chỉnh name và avatar của posts
-//             await postController.editNameAndAvatar(itemEdit._id, displayName, avatar);
-//             return itemEdit;
-//         }
-//         return false;
 //     } catch (error) {
 //         console.log(error);
 //         throw error;

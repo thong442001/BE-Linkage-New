@@ -211,55 +211,6 @@ router.get('/checkPhone', async function (req, res, next) {
 });
 
 
-//loginWeb  
-//http://localhost:3000/user/loginWeb
-// router.post('/loginWeb', async function (req, res, next) {
-//   try {
-//     const body = req.body;
-//     const result = await userController.loginWeb(body);
-//     if (result.status == 200) {
-//       res.status(200).json({ "status": true, "token": result.token, "refreshToken": result.refreshToken, "user": result.user });
-//     } else if (result.status == 401) {
-//       //sai tài khoản 
-//       res.status(401).json({ "status": false, "message": result.message });
-//     } else if (result.status == 402) {
-//       //sai mật khẩu 
-//       res.status(402).json({ "status": false, "message": result.message });
-//     } else if (result.status == 403) {
-//       //sai mật khẩu 
-//       res.status(403).json({ "status": false, "message": result.message });
-//     }
-//   } catch (e) {
-//     res.status(400).json({ "status": false, "message": "lỗi" });
-//   }
-// });
-
-/**
- * @swagger
- * /user/getAllUsers:
- *   get:
- *     security: 
- *       - bearerAuth: []
- *     tags:
- *     - users
- *     summary: Get All Users
- *     responses:
- *       200:
- *         description: list all users
- *       400:
- *         description: lỗi API
- */
-//get all
-//http://localhost:3000/user/getAllUsers
-// router.get('/getAllUsers', checkToken, async function (req, res, next) {
-//   try {
-//     const list = await userController.getAllUsers();
-//     res.status(200).json({ "status": true, "users": list });
-//   } catch (e) {
-//     res.status(400).json({ "status": false, "message": "lỗi" });
-//   }
-// });
-
 //http://localhost:3000/user/getRoleUser
 router.get('/getAllUsers', checkToken, async function (req, res, next) {
   try {
@@ -292,157 +243,117 @@ router.get('/getUser', checkToken, async function (req, res, next) {
   }
 });
 
+//http://localhost:3000/user/editNameOfUser
+router.post('/editNameOfUser', async function (req, res, next) {
+  try {
+    const {
+      ID_user,
+      first_name,
+      last_name
+    } = req.body;
+    const result = await userController.editNameOfUser(
+      ID_user,
+      first_name,
+      last_name
+    );
+    if (result) {
+      return res.status(200).json({
+        "status": result,
+        message: "Đổi name thành công"
+      });
+    } else {
+      return res.status(401).json({
+        "status": result,
+        message: "Đổi name thất bại"
+      });
+    }
+  } catch (e) {
+    res.status(400).json({ "status": false, "message": "lỗi" });
+  }
+});
 
-//get Users DisplayName (search)
-//http://localhost:3000/user/getUsersDisplayName
-// router.get('/getUsersDisplayName', checkToken, async function (req, res, next) {
-//   try {
-//     const { displayName } = req.body;
-//     const list = await userController.getUsersDisplayName(displayName);
-//     res.status(200).json({ "status": true, "users": list });
+//http://localhost:3000/user/editAvatarOfUser
+router.post('/editNameOfUser', async function (req, res, next) {
+  try {
+    const {
+      ID_user,
+      avatar,
+    } = req.body;
+    const result = await userController.editAvatarOfUser(
+      ID_user,
+      avatar,
+    );
+    if (result) {
+      return res.status(200).json({
+        "status": result,
+        message: "Đổi avatar thành công"
+      });
+    } else {
+      return res.status(401).json({
+        "status": result,
+        message: "Đổi avatar thất bại"
+      });
+    }
+  } catch (e) {
+    res.status(400).json({ "status": false, "message": "lỗi" });
+  }
+});
 
-//   } catch (e) {
-//     res.status(400).json({ "status": false, "message": "lỗi" });
-//   }
-// });
-
-/**
- * @swagger
- * /user/edit:
- *   post:
- *     security: 
- *       - bearerAuth: []
- *     tags:
- *     - users
- *     summary: edit user
- *     requestBody:
- *      required: true
- *      content:
- *        application/json:
- *           schema:
- *            type: object
- *            required:
- *              - email
- *              - password
- *              - avatar
- *              - displayName
- *              - phoneNumber
- *              - birthday
- *            properties:
- *              email:
- *                type: string
- *                default: thong442001@gmail.com 
- *              password:
- *                type: string
- *                default: 123
- *              avatar:
- *                type: string
- *                default: ''
- *              displayName:
- *                type: string
- *                default: ''
- *              phoneNumber:
- *                type: string
- *                default: ''
- *              birthday:
- *                type: string
- *                default: ''
- *     responses:
- *       200:
- *         description: edit thành công và user
- *       400:
- *         description: lỗi API
- *       401:
- *         description: Không tìm thấy user
- */
-//edit 
-//http://localhost:3000/user/edit
-// router.post('/edit', checkToken, async function (req, res, next) {
-//   try {
-//     const body = req.body;
-//     const result = await userController.editUser(body);
-//     if (result) {
-//       res.status(200).json({ "status": true, "mess": "edit thành công", "user": result });
-//     } else {
-//       res.status(401).json({ "status": false, "mess": "Không tìm thấy user" });
-//     }
-
-//   } catch (e) {
-//     res.status(400).json({ "status": false, "message": "lỗi" });
-//   }
-// });
-
-
-/**
- * @swagger
- * /user/delete:
- *   post:
- *     security: 
- *       - bearerAuth: []
- *     tags:
- *     - users
- *     summary: delete user
- *     requestBody:
- *      required: true
- *      content:
- *        application/json:
- *           schema:
- *            type: object
- *            required:
- *              - email
- *            properties:
- *              email:
- *                type: string
- *                default: a@gmail.com 
- *     responses:
- *       200:
- *         description: delete thành công
- *       400:
- *         description: lỗi API
- *       401:
- *         description: Không tìm thấy user
- */
-//delete
-//http://localhost:3000/user/delete
-// router.post('/delete', checkToken, async function (req, res, next) {
-//   try {
-//     const body = req.body;
-//     const result = await userController.deleteUser(body);
-//     if (result) {
-//       res.status(200).json({ "status": true, "mess": "delete thành công" });
-//     } else {
-//       res.status(401).json({ "status": false, "mess": "Không tìm thấy user" });
-//     }
-
-//   } catch (e) {
-//     res.status(400).json({ "status": false, "message": "lỗi" });
-//   }
-// });
-
-//chấp nhận lời mời kết bạn
-//http://localhost:3000/user/addFriend
-// router.post('/addFriend', checkToken, async function (req, res, next) {
-//   try {
-//     const { friendNotificationId } = req.body;
-//     // lấy userId, friendId của friendNotification
-//     const twoPeople = await friendNotificationController.getFromAndTo(friendNotificationId);
-//     const userId = twoPeople.to;
-//     const friendId = twoPeople.from;
-//     // xóa friendNotification trong user 
-//     const remoteFriendNotificationInUser = await userController.deleteFriendNotificationInUser(userId, friendNotificationId);
-//     // xóa friendNotification trong friendNotifications 
-//     const result = await friendNotificationController.deleteFriendNotification(friendNotificationId);
-//     // add friend in user
-//     const user = await userController.addFriendInUser(userId, friendId);
-//     // add friend in friend
-//     const friend = await userController.addFriendInUser(friendId, userId);
-//     res.status(200).json({ "status": true, "mess": "add friend thành công" });
-
-//   } catch (e) {
-//     res.status(400).json({ "status": false, "message": "lỗi" });
-//   }
-// });
+//http://localhost:3000/user/editBackgroundOfUser
+router.post('/editBackgroundOfUser', async function (req, res, next) {
+  try {
+    const {
+      ID_user,
+      background,
+    } = req.body;
+    const result = await userController.editBackgroundOfUser(
+      ID_user,
+      background,
+    );
+    if (result) {
+      return res.status(200).json({
+        "status": result,
+        message: "Đổi background thành công"
+      });
+    } else {
+      return res.status(401).json({
+        "status": result,
+        message: "Đổi background thất bại"
+      });
+    }
+  } catch (e) {
+    res.status(400).json({ "status": false, "message": "lỗi" });
+  }
+});
 
 
+//http://localhost:3000/user/editPasswordOfUser
+router.post('/editPasswordOfUser', async function (req, res, next) {
+  try {
+    const {
+      ID_user,
+      passwordOLd,
+      passwordNew,
+    } = req.body;
+    const result = await userController.editPasswordOfUser(
+      ID_user,
+      passwordOLd,
+      passwordNew,
+    );
+    if (result) {
+      return res.status(200).json({
+        "status": result,
+        message: "Đổi password thành công"
+      });
+    } else {
+      return res.status(401).json({
+        "status": result,
+        message: "Sai mật khẩu cũ"
+      });
+    }
+  } catch (e) {
+    res.status(400).json({ "status": false, "message": "lỗi" });
+  }
+});
 
 module.exports = router;
