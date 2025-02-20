@@ -273,7 +273,7 @@ router.post('/editNameOfUser', async function (req, res, next) {
 });
 
 //http://localhost:3000/user/editAvatarOfUser
-router.post('/editNameOfUser', async function (req, res, next) {
+router.post('/editAvatarOfUser', async function (req, res, next) {
   try {
     const {
       ID_user,
@@ -346,7 +346,7 @@ router.post('/editPasswordOfUser', async function (req, res, next) {
         message: "Đổi password thành công"
       });
     } else {
-      return res.status(401).json({
+      return res.status(201).json({
         "status": result,
         message: "Sai mật khẩu cũ"
       });
