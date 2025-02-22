@@ -50,6 +50,7 @@ async function allProfile(ID_user, me) {
         })
             .populate('ID_userA', 'first_name last_name avatar')
             .populate('ID_userB', 'first_name last_name avatar')
+            .sort({ createdAt: 1 })
             .lean(); // Convert to plain JS objects
         //lấy timestamps 24h trc
         const twentyFourHoursAgo = Date.now() - 24 * 60 * 60 * 1000;
@@ -79,7 +80,9 @@ async function allProfile(ID_user, me) {
                         { path: 'ID_user', select: 'first_name last_name avatar' },
                         { path: 'tags', select: 'first_name last_name avatar' }
                     ]
-                }).lean();
+                })
+                .sort({ createdAt: 1 })
+                .lean();
             //story
             rStories = await posts.find({
                 _destroy: false,
@@ -88,6 +91,7 @@ async function allProfile(ID_user, me) {
                 createdAt: { $gte: new Date(twentyFourHoursAgo) } // Lọc Story trong 24 giờ qua
             })
                 .populate('ID_user', 'first_name last_name avatar')
+                .sort({ createdAt: -1 })
                 .lean();
             // ko có mối quan hệ vì trang cá nhân của chính mình
             rRelationship = null;
@@ -113,10 +117,7 @@ async function allProfile(ID_user, me) {
                 let postFilter = {
                     _destroy: false,
                     type: { $ne: 'Story' },
-                    $or: [
-                        { status: "Công khai" }, // Bài viết công khai
-                        { status: "Bạn bè" }     // Bài viết chỉ dành cho bạn bè
-                    ],
+                    status: { $ne: 'Chỉ mình tôi' },
                     $or: [
                         { ID_user: ID_user },  // Bài viết do user đăng
                         {
@@ -135,26 +136,33 @@ async function allProfile(ID_user, me) {
                             { path: 'ID_user', select: 'first_name last_name avatar' },
                             { path: 'tags', select: 'first_name last_name avatar' }
                         ]
-                    }).lean();
+                    })
+                    .sort({ createdAt: 1 })
+                    .lean();
                 //story
                 rStories = await posts.find({
                     _destroy: false,
                     type: 'Story',
                     ID_user: ID_user,
-                    $or: [
-                        { status: "Công khai" }, // Bài viết công khai
-                        { status: "Bạn bè" }     // Bài viết chỉ dành cho bạn bè
-                    ],
+                    status: { $ne: 'Chỉ mình tôi' },
                     createdAt: { $gte: new Date(twentyFourHoursAgo) } // Lọc Story trong 24 giờ qua
                 })
                     .populate('ID_user', 'first_name last_name avatar')
+                    .sort({ createdAt: -1 })
                     .lean();
             } else {
                 //post
                 let postFilter = {
-                    ID_user: ID_user,
+                    //ID_user: ID_user,
                     _destroy: false,
-                    status: "Công khai"
+                    status: "Công khai",
+                    $or: [
+                        { ID_user: ID_user },  // Bài viết do user đăng
+                        {
+                            tags: ID_user,  // User được tag vào bài viết
+                            status: "Công khai", // Không phải bài viết riêng tư
+                        }
+                    ]
                 };
 
                 rPosts = await posts.find(postFilter)
@@ -166,7 +174,9 @@ async function allProfile(ID_user, me) {
                             { path: 'ID_user', select: 'first_name last_name avatar' },
                             { path: 'tags', select: 'first_name last_name avatar' }
                         ]
-                    }).lean();
+                    })
+                    .sort({ createdAt: 1 })
+                    .lean();
                 //story
                 rStories = await posts.find({
                     _destroy: false,
@@ -176,6 +186,7 @@ async function allProfile(ID_user, me) {
                     createdAt: { $gte: new Date(twentyFourHoursAgo) } // Lọc Story trong 24 giờ qua
                 })
                     .populate('ID_user', 'first_name last_name avatar')
+                    .sort({ createdAt: -1 })
                     .lean();
             }
         }
