@@ -208,7 +208,9 @@ async function getAllPostsInHome(me) {
                 { ID_userA: me, relation: 'Bạn bè' },
                 { ID_userB: me, relation: 'Bạn bè' }
             ]
-        }).lean(); // Convert to plain objects for better performance
+        })
+            .sort({ createdAt: -1 })
+            .lean(); // Convert to plain objects for better performance
 
         // Lấy danh sách ID bạn bè
         const friendIDs = new Set();
@@ -258,7 +260,13 @@ async function getAllPostsInHome(me) {
         }, {});
 
         // Convert object thành mảng
-        rStories = Object.values(rStories);
+        //rStories = Object.values(rStories);
+
+        // Convert object thành mảng và sort stories theo createdAt tăng dần
+        rStories = Object.values(rStories).map(userStories => ({
+            ...userStories,
+            stories: userStories.stories.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt))
+        }));
 
         return { rPosts, rStories };
 
