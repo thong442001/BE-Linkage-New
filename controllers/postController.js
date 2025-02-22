@@ -81,7 +81,7 @@ async function allProfile(ID_user, me) {
                         { path: 'tags', select: 'first_name last_name avatar' }
                     ]
                 })
-                .sort({ createdAt: 1 })
+                .sort({ createdAt: -1 })
                 .lean();
             //story
             rStories = await posts.find({
@@ -91,7 +91,7 @@ async function allProfile(ID_user, me) {
                 createdAt: { $gte: new Date(twentyFourHoursAgo) } // Lọc Story trong 24 giờ qua
             })
                 .populate('ID_user', 'first_name last_name avatar')
-                .sort({ createdAt: -1 })
+                .sort({ createdAt: 1 })
                 .lean();
             // ko có mối quan hệ vì trang cá nhân của chính mình
             rRelationship = null;
@@ -137,7 +137,7 @@ async function allProfile(ID_user, me) {
                             { path: 'tags', select: 'first_name last_name avatar' }
                         ]
                     })
-                    .sort({ createdAt: 1 })
+                    .sort({ createdAt: -1 })
                     .lean();
                 //story
                 rStories = await posts.find({
@@ -148,7 +148,7 @@ async function allProfile(ID_user, me) {
                     createdAt: { $gte: new Date(twentyFourHoursAgo) } // Lọc Story trong 24 giờ qua
                 })
                     .populate('ID_user', 'first_name last_name avatar')
-                    .sort({ createdAt: -1 })
+                    .sort({ createdAt: 1 })
                     .lean();
             } else {
                 //post
@@ -175,7 +175,7 @@ async function allProfile(ID_user, me) {
                             { path: 'tags', select: 'first_name last_name avatar' }
                         ]
                     })
-                    .sort({ createdAt: 1 })
+                    .sort({ createdAt: -1 })
                     .lean();
                 //story
                 rStories = await posts.find({
@@ -186,7 +186,7 @@ async function allProfile(ID_user, me) {
                     createdAt: { $gte: new Date(twentyFourHoursAgo) } // Lọc Story trong 24 giờ qua
                 })
                     .populate('ID_user', 'first_name last_name avatar')
-                    .sort({ createdAt: -1 })
+                    .sort({ createdAt: 1 })
                     .lean();
             }
         }
