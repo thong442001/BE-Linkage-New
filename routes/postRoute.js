@@ -153,7 +153,7 @@ router.get('/getPostsUserIdDestroyTrue', checkToken, async function (req, res, n
 
 //delete vĩnh viễn
 //http://localhost:3000/post/delete
-router.post('/delete', checkToken, async function (req, res, next) {
+router.post('/deletePost', checkToken, async function (req, res, next) {
   try {
     const { _id } = req.body;
     // xóa post trong user 
