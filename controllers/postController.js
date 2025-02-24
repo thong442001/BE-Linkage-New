@@ -6,6 +6,9 @@ module.exports = {
     addPost,
     allProfile,// api cho trang profile
     getAllPostsInHome, //all posts in home
+    getPostsUserIdDestroyTrue,// thùng rác
+    changeDestroyPost,// xóa và hôi phục
+    deletePost,// delete vĩnh viễn
 }
 
 async function addPost(
@@ -276,74 +279,47 @@ async function getAllPostsInHome(me) {
     }
 }
 
+async function getPostsUserIdDestroyTrue(me) {
+    try {
+        const rPosts = await posts.find({
+            "ID_user": me,
+            "_destroy": true,
+            type: { $ne: 'Story' },
+        });
+        return rPosts;
+    } catch (error) {
+        console.log(error);
+        throw error;
+    }
+}
 
-// async function getPostsUserIdDestroyFalse(userId) {
-//     try {
-//         const result = await posts.find({ "userId": userId, "destroy": false });
-//         return result;
-//     } catch (error) {
-//         console.log(error);
-//         throw error;
-//     }
-// }
-
-// async function getPostsUserIdDestroyTrue(userId) {
-//     try {
-//         const result = await posts.find({ "userId": userId, "destroy": true });
-//         return result;
-//     } catch (error) {
-//         console.log(error);
-//         throw error;
-//     }
-// }
-
-// posts trong trang cá nhân của tôi
-// async function getMyPosts(userId) {
-//     try {
-//         const result = await posts.find({ "userId": userId, "status": { $ne: 0 } })//$ne -> !=
-//             .populate("userId", "displayName avatar")// FK
-//             .sort({ 'createdAt': -1 });// xếp sắp (1->tăng dần) (-1->giảm dần)
-
-
-//         return result;
-//     } catch (error) {
-//         console.log(error);
-//         throw error;
-//     }
-// }
-
-
-// đổi destroy thành true
-// async function destroyPost(body) {
-//     try {
-//         const { id } = body;
-//         const result = await posts.findById(id);
-//         if (result) {
-
-//             result.destroy = true;
-//             await result.save();
-
-//             return true;
-//         } else {
-//             return false;
-//         }
-//     } catch (error) {
-//         console.log(error);
-//         return false;
-//     }
-// }
+async function changeDestroyPost(_id) {
+    try {
+        const result = await posts.findById(_id);
+        if (result) {
+            result._destroy = !result._destroy;
+            await result.save();
+            return true;
+        } else {
+            return false;
+        }
+    } catch (error) {
+        console.log(error);
+        return false;
+    }
+}
 
 // delete post vĩnh viễn
-// async function deletePost(id) {
-//     try {
-//         // xóa post vĩnh viễn
-//         await posts.findByIdAndDelete(id);
-//         return true;
-//     } catch (error) {
-//         console.log(error);
-//         return false;
-//     }
-// }
+async function deletePost(_id) {
+    try {
+        // xóa post vĩnh viễn
+        await posts.findByIdAndDelete(_id);
+        return true;
+    } catch (error) {
+        console.log(error);
+        return false;
+    }
+}
 
 // ************* chung *************
 
