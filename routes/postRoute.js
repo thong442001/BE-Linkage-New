@@ -159,7 +159,7 @@ router.post('/deletePost', checkToken, async function (req, res, next) {
     // xóa post trong user 
     const result = await postController.deletePost(_id);
     if (result) {
-      res.status(402).json({
+      res.status(200).json({
         "status": result,
         "mess": "xóa vĩnh viễn thành công"
       });
