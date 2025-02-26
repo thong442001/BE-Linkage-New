@@ -82,7 +82,7 @@ app.use('/message', messageRoute);
 app.use('/reaction', reactionRoute);
 app.use('/message_reaction', message_reactionRoute);
 app.use('/relationship', relationshipRoute);
-app.use('/post_reactionRoute', post_reactionRoute);
+app.use('/post_reaction', post_reactionRoute);
 
 // // catch 404 and forward to error handler
 // app.use(function (req, res, next) {
