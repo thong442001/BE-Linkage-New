@@ -13,9 +13,16 @@ router.post('/addPost_Reaction', checkToken, async function (req, res, next) {
     const { ID_post, ID_user, ID_reaction } = req.body;
     const result = await post_reactionController.addPost_Reaction(ID_post, ID_user, ID_reaction);
     if (result.status) {
-      res.status(200).json({ "status": result.status, "message": result.message });
+      res.status(200).json({
+        "status": result.status,
+        "message": result.message,
+        "post_reaction": result.post_reaction
+      });
     } else {
-      res.status(401).json({ "status": result.status, "message": result.message });
+      res.status(401).json({
+        "status": result.status,
+        "message": result.message
+      });
     }
   } catch (e) {
     return res.status(400).json({ "status": false, "message": "lỗi" });
