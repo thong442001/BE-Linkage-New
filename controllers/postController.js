@@ -1,6 +1,7 @@
 const posts = require("../models/post");
 const users = require("../models/user");
 const relationship = require("../models/relationship");
+const post_reaction = require("../models/post_reaction");
 
 module.exports = {
     addPost,
@@ -86,6 +87,7 @@ async function allProfile(ID_user, me) {
                 })
                 .sort({ createdAt: -1 })
                 .lean();
+
             //story
             rStories = await posts.find({
                 _destroy: false,
@@ -194,6 +196,32 @@ async function allProfile(ID_user, me) {
             }
         }
 
+        // post_reactions (lấy các reaction của từng bài post)
+        if (rPosts.length > 0) {
+            const postIds = rPosts.map(post => post._id);
+
+            // Tìm tất cả reactions của danh sách bài post
+            const allReactions = await post_reaction.find({ ID_post: { $in: postIds } })
+                .populate('ID_user', 'first_name last_name avatar')
+                .populate('ID_reaction', 'name icon')
+                .lean();
+
+            // Nhóm reactions theo ID_post
+            const reactionMap = {};
+            allReactions.forEach(reaction => {
+                if (!reactionMap[reaction.ID_post]) {
+                    reactionMap[reaction.ID_post] = [];  // Nếu chưa có mảng này, tạo mảng rỗng
+                }
+                reactionMap[reaction.ID_post].push(reaction); // Thêm reaction vào mảng của post đó
+            });
+
+
+            // Gán vào rPosts
+            rPosts.forEach(post => {
+                post.post_reactions = reactionMap[post._id] || [];
+            });
+        }
+
         return { rUser, rRelationship, rPosts, rFriends, rStories };
 
     } catch (error) {
@@ -271,6 +299,33 @@ async function getAllPostsInHome(me) {
             stories: userStories.stories.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt))
         }));
 
+
+        // post_reactions (lấy các reaction của từng bài post)
+        if (rPosts.length > 0) {
+            const postIds = rPosts.map(post => post._id);
+
+            // Tìm tất cả reactions của danh sách bài post
+            const allReactions = await post_reaction.find({ ID_post: { $in: postIds } })
+                .populate('ID_user', 'first_name last_name avatar')
+                .populate('ID_reaction', 'name icon')
+                .lean();
+
+            // Nhóm reactions theo ID_post
+            const reactionMap = {};
+            allReactions.forEach(reaction => {
+                if (!reactionMap[reaction.ID_post]) {
+                    reactionMap[reaction.ID_post] = [];  // Nếu chưa có mảng này, tạo mảng rỗng
+                }
+                reactionMap[reaction.ID_post].push(reaction); // Thêm reaction vào mảng của post đó
+            });
+
+
+            // Gán vào rPosts
+            rPosts.forEach(post => {
+                post.post_reactions = reactionMap[post._id] || [];
+            });
+        }
+
         return { rPosts, rStories };
 
     } catch (error) {
@@ -279,6 +334,7 @@ async function getAllPostsInHome(me) {
     }
 }
 
+// trang thùng rác (trash)
 async function getPostsUserIdDestroyTrue(me) {
     try {
         const rPosts = await posts.find({
@@ -296,6 +352,33 @@ async function getPostsUserIdDestroyTrue(me) {
             })
             .sort({ createdAt: -1 })
             .lean();
+
+        // post_reactions (lấy các reaction của từng bài post)
+        if (rPosts.length > 0) {
+            const postIds = rPosts.map(post => post._id);
+
+            // Tìm tất cả reactions của danh sách bài post
+            const allReactions = await post_reaction.find({ ID_post: { $in: postIds } })
+                .populate('ID_user', 'first_name last_name avatar')
+                .populate('ID_reaction', 'name icon')
+                .lean();
+
+            // Nhóm reactions theo ID_post
+            const reactionMap = {};
+            allReactions.forEach(reaction => {
+                if (!reactionMap[reaction.ID_post]) {
+                    reactionMap[reaction.ID_post] = [];  // Nếu chưa có mảng này, tạo mảng rỗng
+                }
+                reactionMap[reaction.ID_post].push(reaction); // Thêm reaction vào mảng của post đó
+            });
+
+
+            // Gán vào rPosts
+            rPosts.forEach(post => {
+                post.post_reactions = reactionMap[post._id] || [];
+            });
+        }
+
         return rPosts;
     } catch (error) {
         console.log(error);
@@ -322,8 +405,12 @@ async function changeDestroyPost(_id) {
 // delete post vĩnh viễn
 async function deletePost(_id) {
     try {
-        // xóa post vĩnh viễn
-        await posts.findByIdAndDelete(_id);
+        await Promise.all([
+            // xóa post vĩnh viễn
+            posts.findByIdAndDelete(_id),
+            // xóa post vĩnh viễn
+            post_reaction.deleteMany({ ID_post: _id })
+        ]);
         return true;
     } catch (error) {
         console.log(error);

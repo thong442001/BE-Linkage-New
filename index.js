@@ -16,6 +16,7 @@ require("./models/message");
 require("./models/reaction");
 require("./models/message_reaction");
 require("./models/relationship");
+require("./models/post_reaction");
 
 var indexRouter = require('./routes/index');
 //mogo
@@ -26,6 +27,7 @@ var messageRoute = require('./routes/messageRoute');
 var reactionRoute = require('./routes/reactionRoute');
 var message_reactionRoute = require('./routes/message_reactionRoute');
 var relationshipRoute = require('./routes/relationshipRoute');
+var post_reactionRoute = require('./routes/post_reactionRoute');
 
 var app = express();
 
@@ -80,6 +82,7 @@ app.use('/message', messageRoute);
 app.use('/reaction', reactionRoute);
 app.use('/message_reaction', message_reactionRoute);
 app.use('/relationship', relationshipRoute);
+app.use('/post_reactionRoute', post_reactionRoute);
 
 // // catch 404 and forward to error handler
 // app.use(function (req, res, next) {

@@ -23,7 +23,6 @@ async function addMessage_Reaction(ID_message, ID_user, ID_reaction) {
                 ID_message,
                 ID_user,
                 ID_reaction,
-                createdAt: Date.now(),
             };
             const newMessage_Reaction = await message_reaction.create(newItem);
             return { status: true, message: "tạo message_reaction mới thành công" };
