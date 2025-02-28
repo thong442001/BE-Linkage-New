@@ -175,5 +175,18 @@ router.post('/deletePost', checkToken, async function (req, res, next) {
   }
 });
 
+//chi tiet post
+//http://localhost:3000/post/getChiTietPost
+router.get('/getChiTietPost', checkToken, async function (req, res, next) {
+  try {
+    const { ID_post } = req.query;
+    const post = await postController.getChiTietPost(ID_post);
+    if (post) {
+      res.status(200).json({ "status": true, "post": post });
+    }
+  } catch (e) {
+    res.status(400).json({ "status": false, "message": "lỗi" });
+  }
+});
 
 module.exports = router;

@@ -2,6 +2,7 @@ const posts = require("../models/post");
 const users = require("../models/user");
 const relationship = require("../models/relationship");
 const post_reaction = require("../models/post_reaction");
+const comment = require("../models/comment");
 
 module.exports = {
     addPost,
@@ -10,6 +11,7 @@ module.exports = {
     getPostsUserIdDestroyTrue,// thùng rác
     changeDestroyPost,// xóa và hôi phục
     deletePost,// delete vĩnh viễn
+    getChiTietPost// chiTietPost
 }
 
 async function addPost(
@@ -204,6 +206,7 @@ async function allProfile(ID_user, me) {
             const allReactions = await post_reaction.find({ ID_post: { $in: postIds } })
                 .populate('ID_user', 'first_name last_name avatar')
                 .populate('ID_reaction', 'name icon')
+                .sort({ createdAt: 1 })
                 .lean();
 
             // Nhóm reactions theo ID_post
@@ -308,6 +311,7 @@ async function getAllPostsInHome(me) {
             const allReactions = await post_reaction.find({ ID_post: { $in: postIds } })
                 .populate('ID_user', 'first_name last_name avatar')
                 .populate('ID_reaction', 'name icon')
+                .sort({ createdAt: 1 })
                 .lean();
 
             // Nhóm reactions theo ID_post
@@ -361,6 +365,7 @@ async function getPostsUserIdDestroyTrue(me) {
             const allReactions = await post_reaction.find({ ID_post: { $in: postIds } })
                 .populate('ID_user', 'first_name last_name avatar')
                 .populate('ID_reaction', 'name icon')
+                .sort({ createdAt: 1 })
                 .lean();
 
             // Nhóm reactions theo ID_post
@@ -418,16 +423,51 @@ async function deletePost(_id) {
     }
 }
 
-// ************* chung *************
+// chi tiết bài post
+async function getChiTietPost(ID_post) {
+    try {
+        // Lấy thông tin bài post
+        const post = await posts.findById(ID_post)
+            .populate('ID_user', 'first_name last_name avatar')
+            .populate('tags', 'first_name last_name avatar')
+            .populate({
+                path: 'ID_post_shared',
+                populate: [
+                    { path: 'ID_user', select: 'first_name last_name avatar' },
+                    { path: 'tags', select: 'first_name last_name avatar' }
+                ]
+            })
+            .lean(); // Chuyển sang object để dễ thao tác
 
-// async function editNameAndAvatar(userId, displayName, avatar) {
-//     try {
-//         const itemEdit = await posts.find({ "userId": userId }).updateMany({ "displayName": displayName, "avatar": avatar });
-//         //console.log(itemEdit);
-//         return true;
-//     } catch (error) {
-//         console.log(error);
-//         throw error;
-//     }
-// }
+        if (!post) return null; // Nếu không có bài post, trả về null
+
+        // Tìm danh sách reaction của post
+        const postReactions = await post_reaction.find({ ID_post: ID_post })
+            .populate('ID_user', 'first_name last_name avatar')
+            .populate('ID_reaction', 'name icon')
+            .sort({ createdAt: 1 })
+            .lean();
+
+        // Tìm danh sách comment của post
+        const postComments = await comment.find({ ID_post: ID_post })
+            .populate('ID_user', 'first_name last_name avatar')
+            .populate({
+                path: 'ID_comment_reply',
+                populate: { path: 'ID_user', select: 'first_name last_name avatar' },
+                select: 'content createdAt'
+            })
+            .sort({ createdAt: 1 })
+            .lean();
+
+        // Gắn thêm vào object post
+        post.post_reactions = postReactions;
+        post.comments = postComments;
+
+        return post;
+    } catch (error) {
+        console.error("Error in getChiTietPost:", error);
+        throw error;
+    }
+}
+
 
