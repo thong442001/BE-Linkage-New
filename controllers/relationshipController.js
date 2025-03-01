@@ -6,7 +6,7 @@ module.exports = {
     getRelationshipAvsB,
     guiLoiMoiKetBan,
     chapNhanLoiMoiKetBan,
-    huyLoiMoiKetBan,
+    setRelationNguoiLa,
     getAllLoiMoiKetBan,
     getAllFriendOfID_user,
 }
@@ -141,11 +141,11 @@ async function chapNhanLoiMoiKetBan(ID_relationship) {
     }
 }
 
-async function huyLoiMoiKetBan(ID_relationship) {
+async function setRelationNguoiLa(ID_relationship) {
     try {
         // chapNhanLoiMoiKetBan là set lại relation: 'Người lạ'
         const relation = await relationship.findById(ID_relationship);
-        if (relation && (relation.relation == 'A gửi lời kết bạn B' || relation.relation == 'B gửi lời kết bạn A')) {
+        if (relation) {
             // set lại
             relation.relation = 'Người lạ';
             await relation.save();

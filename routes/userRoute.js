@@ -358,4 +358,29 @@ router.post('/editPasswordOfUser', async function (req, res, next) {
   }
 });
 
+//http://localhost:3000/user/setNoti_token
+router.post('/setNoti_token', async function (req, res, next) {
+  try {
+    const {
+      ID_user,
+    } = req.body;
+    const result = await userController.setNoti_token(
+      ID_user,
+    );
+    if (result) {
+      return res.status(200).json({
+        "status": result,
+        message: "set noti_token null thành công"
+      });
+    } else {
+      return res.status(401).json({
+        "status": result,
+        message: "Ko tìm thấy ID_user"
+      });
+    }
+  } catch (e) {
+    res.status(400).json({ "status": false, "message": "lỗi" });
+  }
+});
+
 module.exports = router;

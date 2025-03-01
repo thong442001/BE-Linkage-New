@@ -80,21 +80,21 @@ router.post('/chapNhanLoiMoiKetBan', checkToken, async function (req, res, next)
   }
 });
 
-// http://localhost:3000/relationship/huyLoiMoiKetBan
-router.post('/huyLoiMoiKetBan', checkToken, async function (req, res, next) {
+// http://localhost:3000/relationship/setRelationNguoiLa
+router.post('/setRelationNguoiLa', checkToken, async function (req, res, next) {
   try {
     const { ID_relationship } = req.body;
-    const result = await relationshipController.huyLoiMoiKetBan(ID_relationship);
+    const result = await relationshipController.setRelationNguoiLa(ID_relationship);
     if (result) {
       res.status(200).json({
         "status": true,
-        "message": "Hủy lời mời kết bạn thành công",
+        "message": "Set relationship thành người lạ thành công",
         "relationship": result,
       });
     } else {
       res.status(401).json({
         "status": false,
-        "message": "Hủy lời mời kết bạn thất bại!",
+        "message": "Set relationship thành người lạ thất bại!",
       });
     }
   } catch (e) {
