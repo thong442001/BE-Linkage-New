@@ -44,7 +44,8 @@ router.post('/guiLoiMoiKetBan', checkToken, async function (req, res, next) {
       res.status(200).json({
         "status": true,
         "message": "Gửi lời mời thành công",
-        "relationship": result,
+        "relationship": result.relation,
+        "noti": result.noti,
       });
     } else {
       res.status(401).json({

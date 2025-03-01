@@ -1,4 +1,6 @@
+const axios = require("axios");
 const relationship = require("../models/relationship");
+const noti_token = require("../models/noti_token");
 
 module.exports = {
     getRelationshipAvsB,
@@ -72,11 +74,43 @@ async function guiLoiMoiKetBan(ID_relationship, me) {
             if (relation.ID_userA == me) {
                 relation.relation = 'A gửi lời kết bạn B';
                 await relation.save();
-                return relation;
+                // check noti_token
+                const check_noti_token = await noti_token.findOne({ "ID_user": relation.ID_userA })
+                if (check_noti_token && check_noti_token.token) {
+                    // call api thong báo 
+                    const noti = await axios.post(
+                        `https://linkage.id.vn/noti/send-notification`,
+                        {
+                            fcmToken: check_noti_token.token,
+                            title: "Thong bao",
+                            body: "Bạn vừa nhận được một lời mời kết bạn.",
+                            data: {
+                                screen: "Friend"
+                            }
+                        },
+                    );
+                }
+                return { relation, noti };
             } else if (relation.ID_userB == me) {
                 relation.relation = 'B gửi lời kết bạn A';
                 await relation.save();
-                return relation;
+                // check noti_token
+                const check_noti_token = await noti_token.findOne({ "ID_user": relation.ID_userB })
+                if (check_noti_token && check_noti_token.token) {
+                    // call api thong báo 
+                    const noti = await axios.post(
+                        `https://linkage.id.vn/noti/send-notification`,
+                        {
+                            fcmToken: check_noti_token.token,
+                            title: "Thong bao",
+                            body: "Bạn vừa nhận được một lời mời kết bạn.",
+                            data: {
+                                screen: "Friend"
+                            }
+                        },
+                    );
+                }
+                return { relation, noti };
             } else {
                 return false;
             }
