@@ -64,64 +64,63 @@ async function getRelationshipAvsB(ID_user, me) {
     }
 }
 
+const axios = require("axios");
+
 async function guiLoiMoiKetBan(ID_relationship, me) {
     try {
-        // gửi lời mời kết bạn bắt buộc phải có sẵn và relation: 'Người lạ"
+        // Tìm quan hệ giữa hai người
         const relation = await relationship.findById(ID_relationship);
-        if (relation && relation.relation == 'Người lạ') {
-            //return find1;
-            // tìm me ở A
-            if (relation.ID_userA == me) {
-                relation.relation = 'A gửi lời kết bạn B';
-                await relation.save();
-                // check noti_token
-                const check_noti_token = await noti_token.findOne({ "ID_user": relation.ID_userA })
-                if (check_noti_token && check_noti_token.token) {
-                    // call api thong báo 
-                    const noti = await axios.post(
-                        `https://linkage.id.vn/noti/send-notification`,
-                        {
-                            fcmToken: check_noti_token.token,
-                            title: "Thong bao",
-                            body: "Bạn vừa nhận được một lời mời kết bạn.",
-                            data: {
-                                screen: "Friend"
-                            }
-                        },
-                    );
-                }
-                return relation;
-            } else if (relation.ID_userB == me) {
-                relation.relation = 'B gửi lời kết bạn A';
-                await relation.save();
-                // check noti_token
-                const check_noti_token = await noti_token.findOne({ "ID_user": relation.ID_userB })
-                if (check_noti_token && check_noti_token.token) {
-                    // call api thong báo 
-                    const noti = await axios.post(
-                        `https://linkage.id.vn/noti/send-notification`,
-                        {
-                            fcmToken: check_noti_token.token,
-                            title: "Thong bao",
-                            body: "Bạn vừa nhận được một lời mời kết bạn.",
-                            data: {
-                                screen: "Friend"
-                            }
-                        },
-                    );
-                }
-                return relation;
-            } else {
-                return false;
-            }
+        if (!relation || relation.relation !== 'Người lạ') {
+            return false;
+        }
+
+        let newRelationStatus = "";
+        let receiverId = ""; // Người nhận lời mời kết bạn
+
+        if (relation.ID_userA == me) {
+            newRelationStatus = 'A gửi lời kết bạn B';
+            receiverId = relation.ID_userB; // Người nhận là B
+        } else if (relation.ID_userB == me) {
+            newRelationStatus = 'B gửi lời kết bạn A';
+            receiverId = relation.ID_userA; // Người nhận là A
         } else {
             return false;
         }
+
+        // Cập nhật trạng thái lời mời kết bạn
+        relation.relation = newRelationStatus;
+        await relation.save();
+
+        // Gửi thông báo cho người nhận lời mời
+        await guiThongBaoKetBan(receiverId);
+
+        return relation;
     } catch (error) {
-        console.log(error);
+        console.error("❌ Lỗi khi gửi lời mời kết bạn:", error);
         throw error;
     }
 }
+
+// 🛠 Hàm gửi thông báo kết bạn
+async function guiThongBaoKetBan(ID_user) {
+    try {
+        const check_noti_token = await noti_token.findOne({ "ID_user": ID_user });
+        if (!check_noti_token || !check_noti_token.token) return;
+
+        await axios.post(
+            `https://linkage.id.vn/noti/send-notification`,
+            {
+                fcmToken: check_noti_token.token,
+                title: "Thông báo",
+                body: "Bạn vừa nhận được một lời mời kết bạn.",
+                data: { screen: "Friend" }
+            }
+        );
+    } catch (error) {
+        console.error("⚠️ Lỗi khi gửi thông báo FCM:", error.response?.data || error.message);
+    }
+}
+
 
 async function chapNhanLoiMoiKetBan(ID_relationship) {
     try {
