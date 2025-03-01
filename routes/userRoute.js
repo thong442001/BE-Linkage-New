@@ -160,12 +160,14 @@ router.post('/login', async function (req, res, next) {
     const {
       email,
       phone,
-      password
+      password,
+      fcmToken
     } = req.body;
     const result = await userController.login(
       email,
       phone,
-      password
+      password,
+      fcmToken
     );
     if (result.status == 200) {
       res.status(200).json({ "status": true, "token": result.token, "refreshToken": result.refreshToken, "user": result.user });

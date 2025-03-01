@@ -5,6 +5,7 @@ const JWT = require('jsonwebtoken');
 const config = require("../config");
 
 const postController = require("../controllers/postController")
+const noti_token = require('../models/noti_token');
 
 module.exports = {
     getAllUsers,//user
@@ -70,7 +71,7 @@ async function addUser(first_name, last_name, dateOfBirth, sex, email, phone, pa
     }
 }
 
-async function login(email, phone, password) {
+async function login(email, phone, password, fcmToken) {
     try {
         //check email
         const check_username = await users.findOne({ "email": email });
@@ -81,6 +82,18 @@ async function login(email, phone, password) {
                 //token
                 const token = JWT.sign({ id: check_username._id, data: "data ne" }, config.SECRETKEY, { expiresIn: '1d' });
                 const refreshToken = JWT.sign({ id: check_username._id }, config.SECRETKEY, { expiresIn: '1y' })
+                // check noti_token của user
+                const check_noti_token = await noti_token.findOne({ "ID_user": check_username._id })
+                if (check_noti_token) {
+                    check_noti_token.token = fcmToken;
+                    await check_noti_token.save();
+                } else {
+                    const newItem = {
+                        ID_user: check_username._id,
+                        token: fcmToken,
+                    };
+                    await noti_token.create(newItem);
+                }
                 //res.status(200).json({ "status": true, "user": check_username, token: token, refreshToken: refreshToken });
                 return { "status": 200, "user": check_username, token: token, refreshToken: refreshToken };
             } else {
@@ -97,6 +110,18 @@ async function login(email, phone, password) {
                     const token = JWT.sign({ id: check_phone._id, data: "data ne" }, config.SECRETKEY, { expiresIn: '1d' });
                     const refreshToken = JWT.sign({ id: check_phone._id }, config.SECRETKEY, { expiresIn: '1y' })
                     //res.status(200).json({ "status": true, "user": check_username, token: token, refreshToken: refreshToken });
+                    // check noti_token của user
+                    const check_noti_token = await noti_token.findOne({ "ID_user": check_username._id })
+                    if (check_noti_token) {
+                        check_noti_token.token = fcmToken;
+                        await check_noti_token.save();
+                    } else {
+                        const newItem = {
+                            ID_user: check_username._id,
+                            token: fcmToken,
+                        };
+                        await noti_token.create(newItem);
+                    }
                     return { "status": 200, "user": check_phone, token: token, refreshToken: refreshToken };
                 } else {
                     //res.status(401).json({ "status": false, "message": "sai mật khẩu" });
