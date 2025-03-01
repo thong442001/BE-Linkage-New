@@ -258,6 +258,13 @@ async function getAllPostsInHome(me) {
             return posts.find(filter)
                 .populate('ID_user', 'first_name last_name avatar')
                 .populate('tags', 'first_name last_name avatar')
+                .populate({
+                    path: 'ID_post_shared',
+                    populate: [
+                        { path: 'ID_user', select: 'first_name last_name avatar' },
+                        { path: 'tags', select: 'first_name last_name avatar' }
+                    ]
+                })
                 .sort({ createdAt: -1 })
                 .lean();
         };
