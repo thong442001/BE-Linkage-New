@@ -90,7 +90,7 @@ async function guiLoiMoiKetBan(ID_relationship, me) {
                         },
                     );
                 }
-                return { relation, noti };
+                return relation;
             } else if (relation.ID_userB == me) {
                 relation.relation = 'B gửi lời kết bạn A';
                 await relation.save();
@@ -110,7 +110,7 @@ async function guiLoiMoiKetBan(ID_relationship, me) {
                         },
                     );
                 }
-                return { relation, noti };
+                return relation;
             } else {
                 return false;
             }
