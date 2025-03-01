@@ -255,6 +255,7 @@ async function setNoti_token(ID_user) {
         const result = await noti_token.findOne({ "ID_user": ID_user });
         if (result) {
             result.token = null;
+            await result.save();
             return true;
         } else {
             return false;
