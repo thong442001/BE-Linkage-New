@@ -18,6 +18,7 @@ require("./models/message_reaction");
 require("./models/relationship");
 require("./models/post_reaction");
 require("./models/comment");
+require("./models/noti_token");
 
 var indexRouter = require('./routes/index');
 //mogo
