@@ -64,8 +64,6 @@ async function getRelationshipAvsB(ID_user, me) {
     }
 }
 
-const axios = require("axios");
-
 async function guiLoiMoiKetBan(ID_relationship, me) {
     try {
         // Tìm quan hệ giữa hai người
