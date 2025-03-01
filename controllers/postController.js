@@ -85,7 +85,8 @@ async function allProfile(ID_user, me) {
                     populate: [
                         { path: 'ID_user', select: 'first_name last_name avatar' },
                         { path: 'tags', select: 'first_name last_name avatar' }
-                    ]
+                    ],
+                    select: '-__v' // Lấy tất cả các thuộc tính trừ __v (hoặc bỏ select nếu muốn lấy hết)
                 })
                 .sort({ createdAt: -1 })
                 .lean();
@@ -142,7 +143,8 @@ async function allProfile(ID_user, me) {
                         populate: [
                             { path: 'ID_user', select: 'first_name last_name avatar' },
                             { path: 'tags', select: 'first_name last_name avatar' }
-                        ]
+                        ],
+                        select: '-__v' // Lấy tất cả các thuộc tính trừ __v (hoặc bỏ select nếu muốn lấy hết)
                     })
                     .sort({ createdAt: -1 })
                     .lean();
@@ -180,7 +182,8 @@ async function allProfile(ID_user, me) {
                         populate: [
                             { path: 'ID_user', select: 'first_name last_name avatar' },
                             { path: 'tags', select: 'first_name last_name avatar' }
-                        ]
+                        ],
+                        select: '-__v' // Lấy tất cả các thuộc tính trừ __v (hoặc bỏ select nếu muốn lấy hết)
                     })
                     .sort({ createdAt: -1 })
                     .lean();
@@ -263,7 +266,8 @@ async function getAllPostsInHome(me) {
                     populate: [
                         { path: 'ID_user', select: 'first_name last_name avatar' },
                         { path: 'tags', select: 'first_name last_name avatar' }
-                    ]
+                    ],
+                    select: '-__v' // Lấy tất cả các thuộc tính trừ __v (hoặc bỏ select nếu muốn lấy hết)
                 })
                 .sort({ createdAt: -1 })
                 .lean();
@@ -359,7 +363,8 @@ async function getPostsUserIdDestroyTrue(me) {
                 populate: [
                     { path: 'ID_user', select: 'first_name last_name avatar' },
                     { path: 'tags', select: 'first_name last_name avatar' }
-                ]
+                ],
+                select: '-__v' // Lấy tất cả các thuộc tính trừ __v (hoặc bỏ select nếu muốn lấy hết)
             })
             .sort({ createdAt: -1 })
             .lean();
@@ -442,7 +447,8 @@ async function getChiTietPost(ID_post) {
                 populate: [
                     { path: 'ID_user', select: 'first_name last_name avatar' },
                     { path: 'tags', select: 'first_name last_name avatar' }
-                ]
+                ],
+                select: '-__v' // Lấy tất cả các thuộc tính trừ __v (hoặc bỏ select nếu muốn lấy hết)
             })
             .lean(); // Chuyển sang object để dễ thao tác
 
