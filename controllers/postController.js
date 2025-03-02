@@ -496,7 +496,7 @@ async function getChiTietPost(ID_post) {
                 ],
                 select: '-__v' // Lấy tất cả các thuộc tính trừ __v (hoặc bỏ select nếu muốn lấy hết)
             })
-            .lean(); // Chuyển sang object để dễ thao tác
+            .lean();
 
         if (!post) return null; // Nếu không có bài post, trả về null
 
@@ -518,9 +518,27 @@ async function getChiTietPost(ID_post) {
             .sort({ createdAt: 1 })
             .lean();
 
+        // Xử lý để nhóm các comment reply vào từng comment cha
+        const commentMap = {};
+        const rootComments = [];
+
+        postComments.forEach((cmt) => {
+            commentMap[cmt._id] = { ...cmt, replys: [] }; // Thêm mảng replys cho từng comment
+        });
+
+        postComments.forEach((cmt) => {
+            if (cmt.ID_comment_reply) {
+                // Nếu là reply, thêm vào mảng replys của comment cha
+                commentMap[cmt.ID_comment_reply._id]?.replys.push(commentMap[cmt._id]);
+            } else {
+                // Nếu là comment chính, thêm vào danh sách root
+                rootComments.push(commentMap[cmt._id]);
+            }
+        });
+
         // Gắn thêm vào object post
         post.post_reactions = postReactions;
-        post.comments = postComments;
+        post.comments = rootComments; // Chỉ chứa comment gốc, mỗi cái có mảng replys
 
         return post;
     } catch (error) {
@@ -528,5 +546,6 @@ async function getChiTietPost(ID_post) {
         throw error;
     }
 }
+
 
 
