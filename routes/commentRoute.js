@@ -14,12 +14,14 @@ router.post('/addComment', checkToken, async function (req, res, next) {
       ID_user,
       ID_post,
       content,
+      type,
       ID_comment_reply
     } = req.body;
     const result = await commentController.addComment(
       ID_user,
       ID_post,
       content,
+      type,
       ID_comment_reply
     );
     if (result) {

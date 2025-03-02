@@ -8,12 +8,16 @@ const serviceAccount = require("../linkage-9deac-firebase-adminsdk-fbsvc-48fc1af
 // 🛠 Hàm lấy Access Token từ Google Cloud
 async function getAccessToken() {
   try {
+    console.log("-----1")
     const auth = new GoogleAuth({
       credentials: serviceAccount,
       scopes: ["https://www.googleapis.com/auth/firebase.messaging"],
     });
+    console.log("-----2")
     const client = await auth.getClient();
+    console.log("-----3" + client)
     const accessToken = await client.getAccessToken();
+    console.log("-----4" + accessToken)
     if (!accessToken.token) {
       throw new Error("Không thể lấy Access Token từ Google Cloud");
     }
@@ -32,7 +36,6 @@ router.post('/send-notification', async function (req, res, next) {
     const { fcmToken, title, body, data } = req.body;
     const accessToken = await getAccessToken();
 
-    //console.log("token3: " + accessToken);
     const response = await axios.post(
       `https://fcm.googleapis.com/v1/projects/linkage-9deac/messages:send`, // 🔹 Thay YOUR_PROJECT_ID bằng Firebase Project ID
       {

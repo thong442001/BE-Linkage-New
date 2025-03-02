@@ -5,9 +5,9 @@ module.exports = {
     setComment_destroyTrue,
 };
 
-async function addComment(ID_user, ID_post, content, ID_comment_reply) {
+async function addComment(ID_user, ID_post, content, type, ID_comment_reply) {
     try {
-        const newItem = { ID_user, ID_post, content, ID_comment_reply };
+        const newItem = { ID_user, ID_post, content, type, ID_comment_reply };
         const newComment = await comment.create(newItem);
 
         await newComment.populate('ID_user', 'first_name last_name avatar')
