@@ -1,11 +1,12 @@
 const users = require("../models/user");
+const noti_token = require('../models/noti_token');
 const bcrypt = require('bcryptjs');
 //token
 const JWT = require('jsonwebtoken');
 const config = require("../config");
 
 const postController = require("../controllers/postController")
-const noti_token = require('../models/noti_token');
+
 
 module.exports = {
     getAllUsers,//user

@@ -5,17 +5,26 @@ module.exports = {
     setComment_destroyTrue,
 };
 
-async function addComment(ID_user, ID_post, content, type, ID_comment_reply) {
+async function addComment(ID_user, ID_post, content, type, ID_comment_reply = null) {
     try {
-        const newItem = { ID_user, ID_post, content, type, ID_comment_reply };
+        const newItem = {
+            ID_user,
+            ID_post,
+            content,
+            type,
+            ID_comment_reply: ID_comment_reply || undefined // Nếu null thì không lưu vào DB
+        };
         const newComment = await comment.create(newItem);
 
-        await newComment.populate('ID_user', 'first_name last_name avatar')
-            .populate({
+        await newComment.populate('ID_user', 'first_name last_name avatar');
+
+        // Chỉ populate 'ID_comment_reply' nếu nó KHÔNG null
+        if (ID_comment_reply) {
+            await newComment.populate({
                 path: 'ID_comment_reply',
                 populate: { path: 'ID_user', select: 'first_name last_name avatar' },
-                select: 'content'
-            }).execPopulate();
+            });
+        }
 
         return newComment;
     } catch (error) {
@@ -23,6 +32,7 @@ async function addComment(ID_user, ID_post, content, type, ID_comment_reply) {
         throw error; // Ném lỗi để phía trên xử lý
     }
 }
+
 
 async function setComment_destroyTrue(ID_comment) {
     try {
