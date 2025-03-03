@@ -1,6 +1,7 @@
 const posts = require("../models/post");
 const users = require("../models/user");
 const relationship = require("../models/relationship");
+
 const post_reaction = require("../models/post_reaction");
 const comment = require("../models/comment");
 
@@ -469,17 +470,23 @@ async function changeDestroyPost(_id) {
 async function deletePost(_id) {
     try {
         await Promise.all([
-            // xóa post vĩnh viễn
+            // Xóa tất cả reactions của bài post
+            post_reaction.deleteMany({ ID_post: _id }),
+
+            // Xóa tất cả comments liên quan đến bài post
+            comment.deleteMany({ ID_post: _id }),
+
+            // Xóa bài post
             posts.findByIdAndDelete(_id),
-            // xóa post vĩnh viễn
-            post_reaction.deleteMany({ ID_post: _id })
         ]);
+
         return true;
     } catch (error) {
-        console.log(error);
+        console.error("Lỗi khi xóa bài post:", error);
         return false;
     }
 }
+
 
 // chi tiết bài post
 async function getChiTietPost(ID_post) {

@@ -2,6 +2,7 @@ const post_reaction = require("../models/post_reaction");
 
 module.exports = {
     addPost_Reaction,
+    deletePost_reaction,
 }
 
 async function addPost_Reaction(ID_post, ID_user, ID_reaction) {
@@ -46,5 +47,15 @@ async function addPost_Reaction(ID_post, ID_user, ID_reaction) {
     }
 }
 
-
+// delete vĩnh viễn
+async function deletePost_reaction(_id) {
+    try {
+        // Xóa bài post
+        await post_reaction.findByIdAndDelete(_id)
+        return true;
+    } catch (error) {
+        console.error("Lỗi khi xóa bài post:", error);
+        return false;
+    }
+}
 

@@ -30,4 +30,28 @@ router.post('/addPost_Reaction', checkToken, async function (req, res, next) {
 });
 
 
+//delete vĩnh viễn
+//http://localhost:3000/post_reaction/deletePost_reaction
+router.post('/deletePost_reaction', checkToken, async function (req, res, next) {
+  try {
+    const { _id } = req.body;
+    // xóa post_reaction 
+    const result = await post_reactionController.deletePost_reaction(_id);
+    if (result) {
+      res.status(200).json({
+        "status": result,
+        "mess": "xóa vĩnh viễn thành công"
+      });
+    } else {
+      res.status(402).json({
+        "status": false,
+        "mess": "Không tìm thấy post "
+      });
+    }
+
+  } catch (e) {
+    res.status(400).json({ "status": false, "message": "lỗi" });
+  }
+});
+
 module.exports = router;
