@@ -27,7 +27,7 @@ router.post('/addComment', checkToken, async function (req, res, next) {
     if (result) {
       res.status(200).json({
         "status": true,
-        "comment": result.newComment,
+        "comment": result,
         "message": "tạo comment thành công"
       });
     } else {
