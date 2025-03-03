@@ -16,14 +16,15 @@ async function addComment(ID_user, ID_post, content, type, ID_comment_reply = nu
         };
         const newComment = await comment.create(newItem);
 
-        await newComment.populate('ID_user', 'first_name last_name avatar');
+        await newComment.populate('ID_user', 'first_name last_name avatar')
+            .lean();
 
         // Chỉ populate 'ID_comment_reply' nếu nó KHÔNG null
         if (ID_comment_reply) {
             await newComment.populate({
                 path: 'ID_comment_reply',
                 populate: { path: 'ID_user', select: 'first_name last_name avatar' },
-            });
+            }).lean();
         }
 
         return newComment;
@@ -47,7 +48,7 @@ async function setComment_destroyTrue(ID_comment) {
                 path: 'ID_comment_reply',
                 populate: { path: 'ID_user', select: 'first_name last_name avatar' },
                 select: 'content'
-            }).execPopulate();
+            }).lean();
 
         return newComment;
     } catch (error) {
