@@ -17,17 +17,17 @@ async function addComment(ID_user, ID_post, content, type, ID_comment_reply = nu
         const newComment = await comment.create(newItem);
 
         await newComment.populate('ID_user', 'first_name last_name avatar')
-            .lean();
+
 
         // Chỉ populate 'ID_comment_reply' nếu nó KHÔNG null
         if (ID_comment_reply) {
             await newComment.populate({
                 path: 'ID_comment_reply',
                 populate: { path: 'ID_user', select: 'first_name last_name avatar' },
-            }).lean();
+            })
         }
 
-        return newComment;
+        return newComment.toObject();
     } catch (error) {
         console.error("Error in addComment:", error);
         throw error; // Ném lỗi để phía trên xử lý
