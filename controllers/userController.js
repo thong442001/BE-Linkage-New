@@ -20,6 +20,7 @@ module.exports = {
     editBackgroundOfUser,// editBackground
     editPasswordOfUser,// editPassword
     setNoti_token,
+    loginAdmin,// login admin
 }
 
 async function getAllUsers() {
@@ -138,6 +139,60 @@ async function login(email, phone, password, fcmToken) {
         throw error;
     }
 }
+
+// login admin
+async function loginAdmin(email, phone, password) {
+    try {
+        //check email
+        const check_username = await users.findOne({ "email": email });
+
+        if (check_username) {
+            const ssPassword1 = bcrypt.compareSync(password, check_username.password);
+            if (ssPassword1) {
+                //token
+                const token = JWT.sign({ id: check_username._id, data: "data ne" }, config.SECRETKEY, { expiresIn: '1d' });
+                const refreshToken = JWT.sign({ id: check_username._id }, config.SECRETKEY, { expiresIn: '1y' })
+                if (check_username.role == 1) {
+                    //res.status(200).json({ "status": true, "user": check_username, token: token, refreshToken: refreshToken });
+                    return { "status": 200, "user": check_username, token: token, refreshToken: refreshToken };
+                } else {
+                    //res.status(200).json({ "status": true, "user": check_username, token: token, refreshToken: refreshToken });
+                    return { "status": 402, "message": "Không phải tài khoản Admin" };
+                }
+            } else {
+                //res.status(401).json({ "status": false, "message": "sai mật khẩu" });
+                return { "status": 402, "message": "sai mật khẩu" };
+            }
+        } else {
+            //check phone
+            const check_phone = await users.findOne({ "phone": phone });
+            if (check_phone) {
+                const ssPassword2 = bcrypt.compareSync(password, check_phone.password);
+                if (ssPassword2) {
+                    //token
+                    const token = JWT.sign({ id: check_phone._id, data: "data ne" }, config.SECRETKEY, { expiresIn: '1d' });
+                    const refreshToken = JWT.sign({ id: check_phone._id }, config.SECRETKEY, { expiresIn: '1y' })
+                    if (check_phone.role == 1) {
+                        //res.status(200).json({ "status": true, "user": check_username, token: token, refreshToken: refreshToken });
+                        return { "status": 200, "user": check_phone, token: token, refreshToken: refreshToken };
+                    } else {
+                        //res.status(200).json({ "status": true, "user": check_username, token: token, refreshToken: refreshToken });
+                        return { "status": 402, "message": "Không phải tài khoản Admin" };
+                    }
+                } else {
+                    //res.status(401).json({ "status": false, "message": "sai mật khẩu" });
+                    return { "status": 402, "message": "sai mật khẩu" };
+                }
+            }
+            // phone và email ko có
+            return { "status": 401, "message": "sai email hoặc phone" };
+        }
+    } catch (error) {
+        console.log(error);
+        throw error;
+    }
+}
+
 async function editNameOfUser(ID_user, first_name, last_name) {
     try {
         const editUser = await users.findById(ID_user);

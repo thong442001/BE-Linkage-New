@@ -183,6 +183,45 @@ router.post('/login', async function (req, res, next) {
   }
 });
 
+//login admin
+//http://localhost:3000/user/loginAdmin
+router.post('/loginAdmin', async function (req, res, next) {
+  try {
+    const {
+      username,
+      password,
+    } = req.body;
+
+    // Kiểm tra nếu nhập vào là số điện thoại
+    const isPhoneNumber = /^(84|0[3|5|7|8|9])[0-9]{8}$/.test(username);
+
+    let email = isPhoneNumber ? '' : username;
+    let phone = isPhoneNumber ? username : '';
+
+    const result = await userController.loginAdmin(
+      email,
+      phone,
+      password,
+    );
+    if (result.status == 200) {
+      // Lưu token vào cookie
+      res.cookie("token", result.token, { httpOnly: true, maxAge: 3600000 });
+
+      // Chuyển hướng về trang chủ
+      res.redirect("/");
+
+      //res.status(200).json({ "status": true, "token": result.token, "refreshToken": result.refreshToken, "user": result.user });
+    } else if (result.status == 401) {
+      //sai tài khoản 
+      res.status(401).json({ "status": false, "message": result.message });
+    } else if (result.status == 402) {
+      //sai mật khẩu 
+      res.status(402).json({ "status": false, "message": result.message });
+    }
+  } catch (e) {
+    res.status(400).json({ "status": false, "message": "lỗi" });
+  }
+});
 // http://localhost:3000/post/getMyPosts
 router.get('/checkEmail', async function (req, res, next) {
   try {
