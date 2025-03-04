@@ -59,6 +59,16 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
+
+// Static files
+app.use(express.static('assets'))
+app.use('/css', express.static(__dirname + 'assets/css'))
+app.use('/js', express.static(__dirname + 'assets/js'))
+app.use('/images', express.static(__dirname + 'assets/images'))
+// Auth Css/Jss/Image
+app.use('/auth/css', express.static(__dirname + '/assets/css'))
+app.use('/auth/js', express.static(__dirname + '/assets/js'))
+app.use('/auth/images', express.static(__dirname + '/assets/images'))
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'hbs');

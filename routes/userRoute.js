@@ -206,7 +206,7 @@ router.post('/loginAdmin', async function (req, res, next) {
     if (result.status == 200) {
       // Lưu token vào cookie
       res.cookie("token", result.token, { httpOnly: true, maxAge: 3600000 });
-
+      res.cookie("user", result.user, { httpOnly: true, maxAge: 3600000 });
       // Chuyển hướng về trang chủ
       res.redirect("/");
 

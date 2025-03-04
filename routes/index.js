@@ -8,7 +8,8 @@ const authMiddleware = require("../middleware/auth");
 
 /* GET home page. */
 router.get('/', authMiddleware, function (req, res, next) {
-  res.render("home", { user: req.user });
+  const user = req.cookies.user;// Lấy user từ cookie
+  res.render("index", { user: user, isMiniLogo: false });
   //res.render('loginAdmin', { title: 'Linkage', layout: false });
   //res.render('loginAdmin', { title: 'Linkage' });
   //res.send("Express on Vercel");

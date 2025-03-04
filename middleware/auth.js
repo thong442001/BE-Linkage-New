@@ -15,7 +15,7 @@ function authMiddleware(req, res, next) {
         //             }
         //         });
         const decoded = jwt.verify(token, config.SECRETKEY);
-        req.user = decoded;
+        //req.user = decoded;
         next();
     } catch (error) {
         res.clearCookie("token");
