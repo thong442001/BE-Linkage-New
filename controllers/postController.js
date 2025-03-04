@@ -1,9 +1,9 @@
 const posts = require("../models/post");
 const users = require("../models/user");
 const relationship = require("../models/relationship");
-
 const post_reaction = require("../models/post_reaction");
 const comment = require("../models/comment");
+const comment_reaction = require("../models/comment_reaction");
 
 module.exports = {
     addPost,
@@ -489,11 +489,10 @@ async function deletePost(_id) {
 
 
 // chi tiết bài post
-// Chi tiết bài post
 async function getChiTietPost(ID_post) {
     try {
         // Chạy các truy vấn song song để tối ưu hiệu suất
-        const [post, postReactions, postComments] = await Promise.all([
+        const [post, postReactions, postComments, commentReactions] = await Promise.all([
             posts.findById(ID_post)
                 .populate('ID_user', 'first_name last_name avatar')
                 .populate('tags', 'first_name last_name avatar')
@@ -521,14 +520,32 @@ async function getChiTietPost(ID_post) {
                     select: 'content createdAt'
                 })
                 .sort({ createdAt: 1 })
+                .lean(),
+
+            comment_reaction.find({ ID_comment: { $in: postComments.map(cmt => cmt._id) } })
+                .populate('ID_user', 'first_name last_name avatar')
+                .populate('ID_reaction', 'name icon')
                 .lean()
         ]);
 
         if (!post) return null; // Nếu không có bài post, trả về null
 
+        // Xử lý phản ứng cho comment
+        const commentReactionMap = {};
+        commentReactions.forEach(reaction => {
+            if (!commentReactionMap[reaction.ID_comment]) {
+                commentReactionMap[reaction.ID_comment] = [];
+            }
+            commentReactionMap[reaction.ID_comment].push(reaction);
+        });
+
         // Xử lý comment bằng reduce để giảm số vòng lặp
         const commentMap = postComments.reduce((map, cmt) => {
-            map[cmt._id] = { ...cmt, replys: [] };
+            map[cmt._id] = {
+                ...cmt,
+                replys: [],
+                comment_reactions: commentReactionMap[cmt._id] || [] // Gắn reactions vào từng comment
+            };
             return map;
         }, {});
 
@@ -553,3 +570,4 @@ async function getChiTietPost(ID_post) {
         throw error;
     }
 }
+

@@ -20,6 +20,7 @@ require("./models/message_reaction");
 require("./models/relationship");
 require("./models/post_reaction");
 require("./models/comment");
+require("./models/comment_reaction");
 require("./models/noti_token");
 
 var indexRouter = require('./routes/index');
@@ -33,6 +34,7 @@ var message_reactionRoute = require('./routes/message_reactionRoute');
 var relationshipRoute = require('./routes/relationshipRoute');
 var post_reactionRoute = require('./routes/post_reactionRoute');
 var commentRoute = require('./routes/commentRoute');
+var comment_reactionRoute = require('./routes/comment_reactionRoute');
 var notiRoute = require('./routes/notiRoute');
 
 var app = express();
@@ -90,6 +92,7 @@ app.use('/message_reaction', message_reactionRoute);
 app.use('/relationship', relationshipRoute);
 app.use('/post_reaction', post_reactionRoute);
 app.use('/comment', commentRoute);
+app.use('/comment_reaction', comment_reactionRoute);
 app.use('/noti', notiRoute);
 
 // // catch 404 and forward to error handler
