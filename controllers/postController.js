@@ -489,63 +489,63 @@ async function deletePost(_id) {
 
 
 // chi tiết bài post
+// Chi tiết bài post
 async function getChiTietPost(ID_post) {
     try {
-        // Lấy thông tin bài post
-        const post = await posts.findById(ID_post)
-            .populate('ID_user', 'first_name last_name avatar')
-            .populate('tags', 'first_name last_name avatar')
-            .populate({
-                path: 'ID_post_shared',
-                populate: [
-                    { path: 'ID_user', select: 'first_name last_name avatar' },
-                    { path: 'tags', select: 'first_name last_name avatar' }
-                ],
-                select: '-__v' // Lấy tất cả các thuộc tính trừ __v (hoặc bỏ select nếu muốn lấy hết)
-            })
-            .lean();
+        // Chạy các truy vấn song song để tối ưu hiệu suất
+        const [post, postReactions, postComments] = await Promise.all([
+            posts.findById(ID_post)
+                .populate('ID_user', 'first_name last_name avatar')
+                .populate('tags', 'first_name last_name avatar')
+                .populate({
+                    path: 'ID_post_shared',
+                    populate: [
+                        { path: 'ID_user', select: 'first_name last_name avatar' },
+                        { path: 'tags', select: 'first_name last_name avatar' }
+                    ],
+                    select: '-__v' // Lấy tất cả các trường trừ __v
+                })
+                .lean(),
+
+            post_reaction.find({ ID_post: ID_post })
+                .populate('ID_user', 'first_name last_name avatar')
+                .populate('ID_reaction', 'name icon')
+                .sort({ createdAt: 1 })
+                .lean(),
+
+            comment.find({ ID_post: ID_post })
+                .populate('ID_user', 'first_name last_name avatar')
+                .populate({
+                    path: 'ID_comment_reply',
+                    populate: { path: 'ID_user', select: 'first_name last_name avatar' },
+                    select: 'content createdAt'
+                })
+                .sort({ createdAt: 1 })
+                .lean()
+        ]);
 
         if (!post) return null; // Nếu không có bài post, trả về null
 
-        // Tìm danh sách reaction của post
-        const postReactions = await post_reaction.find({ ID_post: ID_post })
-            .populate('ID_user', 'first_name last_name avatar')
-            .populate('ID_reaction', 'name icon')
-            .sort({ createdAt: 1 })
-            .lean();
+        // Xử lý comment bằng reduce để giảm số vòng lặp
+        const commentMap = postComments.reduce((map, cmt) => {
+            map[cmt._id] = { ...cmt, replys: [] };
+            return map;
+        }, {});
 
-        // Tìm danh sách comment của post
-        const postComments = await comment.find({ ID_post: ID_post })
-            .populate('ID_user', 'first_name last_name avatar')
-            .populate({
-                path: 'ID_comment_reply',
-                populate: { path: 'ID_user', select: 'first_name last_name avatar' },
-                select: 'content createdAt'
-            })
-            .sort({ createdAt: 1 })
-            .lean();
-
-        // Xử lý để nhóm các comment reply vào từng comment cha
-        const commentMap = {};
         const rootComments = [];
 
         postComments.forEach((cmt) => {
-            commentMap[cmt._id] = { ...cmt, replys: [] }; // Thêm mảng replys cho từng comment
-        });
-
-        postComments.forEach((cmt) => {
             if (cmt.ID_comment_reply) {
-                // Nếu là reply, thêm vào mảng replys của comment cha
                 commentMap[cmt.ID_comment_reply._id]?.replys.push(commentMap[cmt._id]);
             } else {
-                // Nếu là comment chính, thêm vào danh sách root
                 rootComments.push(commentMap[cmt._id]);
             }
         });
 
-        // Gắn thêm vào object post
+        // Gắn dữ liệu vào object post
         post.post_reactions = postReactions;
-        post.comments = rootComments; // Chỉ chứa comment gốc, mỗi cái có mảng replys
+        post.comments = rootComments;
+        post.countComments = postComments.length; // Đếm số comments
 
         return post;
     } catch (error) {
@@ -553,6 +553,3 @@ async function getChiTietPost(ID_post) {
         throw error;
     }
 }
-
-
-
