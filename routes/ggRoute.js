@@ -1,6 +1,7 @@
 var express = require('express');
 const axios = require("axios");
 var router = express.Router();
+const users = require("../models/user");
 const admin = require("firebase-admin");
 const { GoogleAuth } = require("google-auth-library");
 // 🔹 Load Service Account JSON (Thay bằng đường dẫn đúng)
@@ -35,7 +36,7 @@ async function getAccessToken() {
 
 
 // 🚀 API gửi thông báo
-//http://localhost:3001/noti/send-notification
+//http://localhost:3001/gg/send-notification
 router.post('/send-notification', async function (req, res, next) {
   try {
     const { fcmToken, title, body, data } = req.body;
@@ -86,6 +87,59 @@ router.post('/send-notification', async function (req, res, next) {
   }
 });
 
+//http://localhost:3001/gg/loginGG
+router.post('/loginGG', async function (req, res, next) {
+  try {
+    const { tokengg } = req.body;
+    const decodedToken = await admin.auth().verifyIdToken(tokengg);
+    const { email, name, picture } = decodedToken;
+
+    let user = await users.findOne({ "email": email });
+
+    if (!user) {
+      // Tách name thành first_name và last_name
+      const nameParts = name.split(" ");
+      const first_name = nameParts[0];
+      const last_name = nameParts.slice(1).join(" "); // Ghép phần còn lại
+
+      // lấy now làm dateOfBirth
+      const date = new Date();
+      const formattedDate = `${String(date.getDate()).padStart(2, '0')}-${String(date.getMonth() + 1).padStart(2, '0')}-${date.getFullYear()}`;
+
+      // Tạo password ngẫu nhiên
+      const randomPassword = Math.random().toString(36).slice(-8);
+      // Mã hóa password
+      const hashedPassword = await bcrypt.hash(randomPassword, 10);
+
+      // Tạo đối tượng người dùng mới
+      const newItem = {
+        first_name,
+        last_name,
+        dateOfBirth: formattedDate,
+        sex: null,
+        email: email,  // Nếu email trống, set là null
+        phone: null,  // Nếu phone trống, set là null
+        password: hashedPassword,
+        avatar: picture || null, // avt
+        role: 2,
+      };
+
+      // Lưu vào database
+      user = await users.create(newItem);
+    }
+    //token
+    const token = JWT.sign({ id: user._id, data: "data ne" }, config.SECRETKEY, { expiresIn: '1d' });
+    const refreshToken = JWT.sign({ id: user._id }, config.SECRETKEY, { expiresIn: '1y' })
+    res.status(200).json({
+      "status": true,
+      "token": token,
+      "refreshToken": refreshToken,
+      "user": user
+    });
+  } catch (error) {
+    res.status(400).json({ "status": false, "message": "lỗi" });
+  }
+});
 
 module.exports = router;
 

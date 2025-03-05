@@ -35,7 +35,7 @@ var relationshipRoute = require('./routes/relationshipRoute');
 var post_reactionRoute = require('./routes/post_reactionRoute');
 var commentRoute = require('./routes/commentRoute');
 var comment_reactionRoute = require('./routes/comment_reactionRoute');
-var notiRoute = require('./routes/notiRoute');
+var ggRoute = require('./routes/ggRoute');
 
 var app = express();
 
@@ -103,7 +103,7 @@ app.use('/relationship', relationshipRoute);
 app.use('/post_reaction', post_reactionRoute);
 app.use('/comment', commentRoute);
 app.use('/comment_reaction', comment_reactionRoute);
-app.use('/noti', notiRoute);
+app.use('/gg', ggRoute);
 
 // // catch 404 and forward to error handler
 // app.use(function (req, res, next) {
@@ -127,7 +127,7 @@ app.use('/noti', notiRoute);
 // });
 
 // Khởi động server
-const PORT = 4000;
+const PORT = 3001;
 server.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
 });

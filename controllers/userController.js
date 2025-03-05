@@ -5,9 +5,6 @@ const bcrypt = require('bcryptjs');
 const JWT = require('jsonwebtoken');
 const config = require("../config");
 
-const postController = require("../controllers/postController")
-
-
 module.exports = {
     getAllUsers,//user
     getUser,
