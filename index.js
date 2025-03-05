@@ -127,7 +127,7 @@ app.use('/gg', ggRoute);
 // });
 
 // Khởi động server
-const PORT = 3001;
+const PORT = 4000;
 server.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
 });
