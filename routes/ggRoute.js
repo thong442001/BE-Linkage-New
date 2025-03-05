@@ -93,9 +93,9 @@ router.post('/send-notification', async function (req, res, next) {
 //http://localhost:3001/gg/loginGG
 router.post('/loginGG', async function (req, res, next) {
   try {
-    const { tokengg } = req.body;
-    const decodedToken = await admin.auth().verifyIdToken(tokengg);
-    const { email, name, picture } = decodedToken;
+    const { email, name, picture } = req.body;
+    // const decodedToken = await admin.auth().verifyIdToken(tokengg);
+    // const { email, name, picture } = decodedToken;
 
     let user = await users.findOne({ "email": email });
 
