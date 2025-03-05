@@ -7,7 +7,7 @@ const comment_reactionController = require("../controllers/comment_reactionContr
 const checkToken = require("./checkToken");
 
 //add 
-//http://localhost:3000/comment_reactionController/addComment_Reaction
+//http://localhost:3000/comment_reaction/addComment_Reaction
 router.post('/addComment_Reaction', checkToken, async function (req, res, next) {
   try {
     const { ID_comment, ID_user, ID_reaction } = req.body;
@@ -31,7 +31,7 @@ router.post('/addComment_Reaction', checkToken, async function (req, res, next) 
 
 
 //delete vĩnh viễn
-//http://localhost:3000/comment_reactionController/deleteComment_reaction
+//http://localhost:3000/comment_reaction/deleteComment_reaction
 router.post('/deleteComment_reaction', checkToken, async function (req, res, next) {
   try {
     const { _id } = req.body;
