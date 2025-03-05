@@ -530,6 +530,7 @@ async function getChiTietPost(ID_post) {
                 ? comment_reaction.find({ ID_comment: { $in: postComments.map(cmt => cmt._id) } })
                     .populate('ID_user', 'first_name last_name avatar')
                     .populate('ID_reaction', 'name icon')
+                    .sort({ createdAt: 1 })
                     .lean()
                 : [] // Nếu không có comment thì tránh lỗi query rỗng
         ]);

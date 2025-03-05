@@ -3,6 +3,8 @@ const message = require("./models/message");
 const user = require("./models/user");
 const message_reaction = require("./models/message_reaction");
 
+const onlineUsers = new Map(); // Lưu user online
+
 function setupSocket(server) {
     const io = new Server(server, {
         cors: {
@@ -19,6 +21,20 @@ function setupSocket(server) {
     io.on('connection', (socket) => {
 
         console.log(`✅ User connected: ${socket.id}`);
+
+        // Khi user login, lưu vào danh sách online
+        socket.on("user_online", async (ID_user) => {
+            if (!ID_user) return;
+
+            onlineUsers.set(ID_user, socket.id);
+            console.log(`🟢 User ${ID_user} is online`);
+
+            // Cập nhật trạng thái trong database (nếu cần)
+            await user.findByIdAndUpdate(ID_user, { isActive: 1 });
+
+            // Phát danh sách user online cho tất cả client
+            io.emit("online_users", Array.from(onlineUsers.keys()));
+        });
 
         socket.on("joinGroup", (ID_group) => {
             if (!ID_group) {
@@ -122,9 +138,21 @@ function setupSocket(server) {
             }
         });
 
+        // Khi user ngắt kết nối
+        socket.on('disconnect', async () => {
+            const ID_user = [...onlineUsers.entries()].find(([key, value]) => value === socket.id)?.[0];
 
-        // Ngắt kết nối
-        socket.on('disconnect', () => {
+            if (ID_user) {
+                onlineUsers.delete(ID_user);
+                console.log(`🔴 User ${ID_user} is offline`);
+
+                // Cập nhật trạng thái offline trong database
+                await user.findByIdAndUpdate(ID_user, { isActive: 0 });
+
+                // Phát danh sách user online mới
+                io.emit("online_users", Array.from(onlineUsers.keys()));
+            }
+
             console.log(`❌ User disconnected: ${socket.id}`);
         });
 
