@@ -1,11 +1,14 @@
 var express = require('express');
 const axios = require("axios");
 var router = express.Router();
+const JWT = require('jsonwebtoken');
+const config = require("../config");
 const users = require("../models/user");
+const bcrypt = require('bcryptjs');
 const admin = require("firebase-admin");
 const { GoogleAuth } = require("google-auth-library");
 // 🔹 Load Service Account JSON (Thay bằng đường dẫn đúng)
-const serviceAccount = require("../hamstore-5c2f9-firebase-adminsdk-le25c-8ea648ca65.json");
+const serviceAccount = require("../hamstore-5c2f9-firebase-adminsdk-le25c-680e19f4fa.json");
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
   databaseURL: "https://hamstore-5c2f9-default-rtdb.firebaseio.com"
@@ -137,7 +140,8 @@ router.post('/loginGG', async function (req, res, next) {
       "user": user
     });
   } catch (error) {
-    res.status(400).json({ "status": false, "message": "lỗi" });
+    console.error("Lỗi đăng nhập Google:", error);
+    res.status(400).json({ "status": false, "message": error.message });
   }
 });
 
