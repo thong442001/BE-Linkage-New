@@ -68,13 +68,22 @@ router.get('/getAllGroupOfUser', checkToken, async function (req, res, next) {
   }
 });
 
-//http://localhost:3000/group/addtMembers
-router.post('/addtMembers', checkToken, async function (req, res, next) {
+//http://localhost:3000/group/addMembers
+router.post('/addMembers', checkToken, async function (req, res, next) {
   try {
     const { ID_group, new_members } = req.body;
-    const result = await groupController.addtMembers(ID_group, new_members);
+    const result = await groupController.addMembers(ID_group, new_members);
     if (result) {
-      return res.status(200).json({ "status": result, message: "thành công" });
+      console.log("");
+      return res.status(200).json({
+        "status": true,
+        message: "Thêm thành viên thành công!"
+      });
+    } else {
+      return res.status(401).json({
+        "status": false,
+        message: "Người dùng đã có trong nhóm hoặc nhóm không tồn tại."
+      });
     }
   } catch (e) {
     return res.status(400).json({ "status": false, "message": "lỗi" });

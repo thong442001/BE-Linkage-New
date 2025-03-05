@@ -7,7 +7,7 @@ module.exports = {
     getGroupID,
     getAllGroupOfUser,
     addGroup,
-    addtMembers,
+    addMembers,
     deleteMember,
     passKey,
     deleteGroup,
@@ -129,24 +129,27 @@ async function getAllGroupOfUser(ID_user) {
 }
 
 // edit 
-async function addtMembers(ID_group, new_members) {
+async function addMembers(ID_group, new_members) {
     try {
         const editGroup = await group.findById(ID_group);
-        // null là ko tìm thấy
-        if (editGroup) {
-            editGroup.members = new_members
-                ? [...new Set([...editGroup.members, ...new_members])]// set sẽ tự động loại bỏ các phần tử trùng.
-                : editGroup.members;
-            await editGroup.save();
-            return true;
-        } else {
-            return false;
-        }
+        if (!editGroup) return false; // Nhóm không tồn tại
+
+        // Lọc ra những thành viên chưa có trong nhóm
+        const membersToAdd = new_members.filter(member => !editGroup.members.includes(member));
+
+        if (membersToAdd.length === 0) return false; // Không có ai để thêm
+
+        // Cập nhật danh sách thành viên
+        editGroup.members = [...editGroup.members, ...membersToAdd];
+        await editGroup.save();
+
+        return true; // Thành công
     } catch (error) {
         console.log(error);
         throw error;
     }
 }
+
 
 async function deleteMember(ID_group, ID_user) {
     try {
