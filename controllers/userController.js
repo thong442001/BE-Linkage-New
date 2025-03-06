@@ -309,10 +309,8 @@ async function setNoti_token(ID_user) {
         if (result) {
             result.token = null;
             await result.save();
-            return true;
-        } else {
-            return false;
         }
+        return true;
     } catch (error) {
         console.log(error);
         throw error;

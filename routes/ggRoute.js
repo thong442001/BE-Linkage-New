@@ -4,6 +4,7 @@ var router = express.Router();
 const JWT = require('jsonwebtoken');
 const config = require("../config");
 const users = require("../models/user");
+const noti_token = require("../models/noti_token");
 const bcrypt = require('bcryptjs');
 const admin = require("firebase-admin");
 const { GoogleAuth } = require("google-auth-library");
@@ -93,7 +94,7 @@ router.post('/send-notification', async function (req, res, next) {
 //http://localhost:3001/gg/loginGG
 router.post('/loginGG', async function (req, res, next) {
   try {
-    const { email, name, picture } = req.body;
+    const { email, name, picture, fcmToken } = req.body;
     // const decodedToken = await admin.auth().verifyIdToken(tokengg);
     // const { email, name, picture } = decodedToken;
 
@@ -129,6 +130,18 @@ router.post('/loginGG', async function (req, res, next) {
 
       // Lưu vào database
       user = await users.create(newItem);
+    }
+    // check noti_token của user
+    const check_noti_token = await noti_token.findOne({ "ID_user": user._id })
+    if (check_noti_token) {
+      check_noti_token.token = fcmToken;
+      await check_noti_token.save();
+    } else {
+      const newItem = {
+        ID_user: user._id,
+        token: fcmToken,
+      };
+      await noti_token.create(newItem);
     }
     //token
     const token = JWT.sign({ id: user._id, data: "data ne" }, config.SECRETKEY, { expiresIn: '1d' });
