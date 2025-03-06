@@ -114,6 +114,7 @@ async function guiThongBaoKetBan(ID_user) {
                 data: { screen: "Friend" }
             }
         );
+        return;
     } catch (error) {
         console.error("⚠️ Lỗi khi gửi thông báo FCM:", error.response?.data || error.message);
     }
