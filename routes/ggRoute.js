@@ -167,7 +167,7 @@ router.get('/verify-email', async function (req, res, next) {
   }
 
   try {
-    await admin.auth().applyActionCode(oobCode);
+    await auth().applyActionCode(oobCode);
     console.log("✅ Email đã được xác thực!");
 
     // Tạo response tự động đóng trang sau khi xác thực
