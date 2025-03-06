@@ -158,6 +158,32 @@ router.post('/loginGG', async function (req, res, next) {
   }
 });
 
+//http://localhost:3001/gg/verify-email
+router.get('/verify-email', async function (req, res, next) {
+  const { oobCode } = req.query;
+
+  if (!oobCode) {
+    return res.status(400).send('Mã xác thực không hợp lệ.');
+  }
+
+  try {
+    await admin.auth().applyActionCode(oobCode);
+    console.log("✅ Email đã được xác thực!");
+
+    // Tạo response tự động đóng trang sau khi xác thực
+    res.send(`
+          <script>
+              fetch("https://yourserver.com/api/email-verified", { method: "POST", credentials: "include" })
+                  .then(() => window.close())
+                  .catch(console.error);
+          </script>
+          <h2>Email xác thực thành công! Bạn có thể đóng trang này.</h2>
+      `);
+  } catch (error) {
+    res.status(400).send("❌ Lỗi xác thực: " + error.message);
+  }
+});
+
 module.exports = router;
 
 
