@@ -22,6 +22,8 @@ require("./models/post_reaction");
 require("./models/comment");
 require("./models/comment_reaction");
 require("./models/noti_token");
+require("./models/report_post");
+require("./models/report_user");
 
 var indexRouter = require('./routes/index');
 //mogo
@@ -36,6 +38,8 @@ var post_reactionRoute = require('./routes/post_reactionRoute');
 var commentRoute = require('./routes/commentRoute');
 var comment_reactionRoute = require('./routes/comment_reactionRoute');
 var ggRoute = require('./routes/ggRoute');
+var report_postRoute = require('./routes/report_postRoute');
+var report_userRoute = require('./routes/report_userRoute');
 
 var app = express();
 
@@ -104,6 +108,9 @@ app.use('/post_reaction', post_reactionRoute);
 app.use('/comment', commentRoute);
 app.use('/comment_reaction', comment_reactionRoute);
 app.use('/gg', ggRoute);
+app.use('/report_post', report_postRoute);
+app.use('/report_use', report_userRoute);
+
 
 // // catch 404 and forward to error handler
 // app.use(function (req, res, next) {
@@ -127,7 +134,7 @@ app.use('/gg', ggRoute);
 // });
 
 // Khởi động server
-const PORT = 4000;
+const PORT = 3001;
 server.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
 });
