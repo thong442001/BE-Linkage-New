@@ -167,20 +167,20 @@ router.get('/verify-email', async function (req, res, next) {
   }
 
   try {
-    await auth().applyActionCode(oobCode);
-    console.log("✅ Email đã được xác thực!");
-
-    // Tạo response tự động đóng trang sau khi xác thực
-    res.send(`
-          <script>
-              fetch("https://yourserver.com/api/email-verified", { method: "POST", credentials: "include" })
-                  .then(() => window.close())
-                  .catch(console.error);
-          </script>
-          <h2>Email xác thực thành công! Bạn có thể đóng trang này.</h2>
-      `);
+    // ✅ Chuyển hướng user đến Firebase để xác thực
+    res.redirect(`https://www.googleapis.com/identitytoolkit/v3/relyingparty/setAccountInfo?key=${serviceAccount.apiKey}&oobCode=${oobCode}`);
   } catch (error) {
     res.status(400).send("❌ Lỗi xác thực: " + error.message);
+  }
+});
+
+router.get('/check-email', async function (req, res) {
+  const { uid } = req.query;
+  try {
+    const user = await admin.auth().getUser(uid);
+    res.status(200).json({ emailVerified: user.emailVerified });
+  } catch (error) {
+    res.status(400).json({ error: error.message });
   }
 });
 
