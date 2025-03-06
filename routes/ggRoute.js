@@ -173,7 +173,7 @@ router.get('/verify-email', async function (req, res, next) {
     res.status(400).send("❌ Lỗi xác thực: " + error.message);
   }
 });
-
+//http://localhost:3001/gg/check-email
 router.get('/check-email', async function (req, res) {
   const { uid } = req.query;
   try {

@@ -106,7 +106,7 @@ async function guiThongBaoKetBan(ID_user) {
         if (!check_noti_token || !check_noti_token.token) return;
 
         await axios.post(
-            `https://linkage.id.vn/noti/send-notification`,
+            `https://linkage.id.vn/gg/send-notification`,
             {
                 fcmToken: check_noti_token.token,
                 title: "Thông báo",

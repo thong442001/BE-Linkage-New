@@ -51,8 +51,8 @@ const user = new Schema({
         type: Number, // kiểu dữ liệu
         default: 1,
         // 0 bị khoá
-        // 1 mặc định
-        // 2 riêng tư
+        // 1 offline
+        // 2 online
     },
     role: {
         type: Number, // kiểu dữ liệu
