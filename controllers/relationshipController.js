@@ -101,7 +101,7 @@ async function guiLoiMoiKetBan(ID_relationship, me) {
         await notificationItem.save();
 
         // Gửi thông báo cho người nhận lời mời
-        await guiThongBaoKetBan(receiverId, notificationItem);
+        await guiThongBaoKetBan(receiverId, notificationItem.lean());
 
         return relation;
     } catch (error) {
@@ -125,7 +125,6 @@ async function guiThongBaoKetBan(ID_user, notifi) {
                 body: notifi.content,
                 data: notifi
             },
-            { headers: { "Content-Type": "application/json" } } // Fix lỗi thiếu headers
         );
         return;
     } catch (error) {
