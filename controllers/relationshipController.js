@@ -81,10 +81,10 @@ async function guiLoiMoiKetBan(ID_relationship, me) {
 
         if (relation.ID_userA._id.toString() === me.toString()) {
             newRelationStatus = 'A gửi lời kết bạn B';
-            receiverId = relation.ID_userB._id.toString(); // Người nhận là B
+            receiverId = relation.ID_userB._id; // Người nhận là B
         } else if (relation.ID_userB._id.toString() === me.toString()) {
             newRelationStatus = 'B gửi lời kết bạn A';
-            receiverId = relation.ID_userA._id.toString(); // Người nhận là A
+            receiverId = relation.ID_userA._id; // Người nhận là A
         } else {
             return false;
         }
