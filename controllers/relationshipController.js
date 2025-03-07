@@ -77,10 +77,10 @@ async function guiLoiMoiKetBan(ID_relationship, me) {
         let newRelationStatus = "";
         let receiverId; // Người nhận lời mời kết bạn
 
-        if (relation.ID_userA == me) {
+        if (relation.ID_userA.equals(me)) {
             newRelationStatus = 'A gửi lời kết bạn B';
             receiverId = relation.ID_userB;
-        } else if (relation.ID_userB == me) {
+        } else if (relation.ID_userB.equals(me)) {
             newRelationStatus = 'B gửi lời kết bạn A';
             receiverId = relation.ID_userA;
         } else {
@@ -101,7 +101,7 @@ async function guiLoiMoiKetBan(ID_relationship, me) {
         await notificationItem.save();
 
         // Gửi thông báo cho người nhận lời mời
-        await guiThongBaoKetBan(receiverId, notificationItem.lean());
+        await guiThongBaoKetBan(receiverId, notificationItem.toObject());
 
         return relation;
     } catch (error) {
