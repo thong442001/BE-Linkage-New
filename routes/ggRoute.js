@@ -44,7 +44,7 @@ async function getAccessToken() {
 //http://localhost:3001/gg/send-notification
 router.post('/send-notification', async function (req, res, next) {
   try {
-    const { fcmToken, title, body, data } = req.body;
+    const { fcmToken, title, body, notification } = req.body;
     //const accessToken = await getAccessToken();
 
     // const response = await axios.post(
@@ -73,19 +73,19 @@ router.post('/send-notification', async function (req, res, next) {
     const message = {
       token: fcmToken,
       notification: {
-        title,
-        body,
-        data
+        title: title,
+        body: body,
+        notification: notification
       },
       data: {
-        ...data,
+        ...notification,
         click_action: "FLUTTER_NOTIFICATION_CLICK",
       },
     };
 
     await admin.messaging().send(message);
     //console.log("token1: " + accessToken);
-    res.json({ success: true, message: "Thông báo đã được gửi!", notification: data });
+    res.json({ success: true, message: "Thông báo đã được gửi!", notification: notification });
   } catch (error) {
     console.error("❌ Lỗi khi gửi thông báo FCM:", error.response?.data || error.message);
     res.status(500).json({ success: false, error: error.response?.data || error.message });

@@ -103,7 +103,7 @@ async function guiLoiMoiKetBan(ID_relationship, me) {
         await notificationItem.save();
 
         // Gửi thông báo cho người nhận lời mời
-        await guiThongBaoKetBan(receiverId, notificationItem.toObject());
+        await guiThongBaoKetBan(receiverId, notificationItem._id);
 
         return relation;
     } catch (error) {
@@ -114,18 +114,79 @@ async function guiLoiMoiKetBan(ID_relationship, me) {
 
 
 // 🛠 Hàm gửi thông báo kết bạn
-async function guiThongBaoKetBan(ID_user, notifi) {
+async function guiThongBaoKetBan(ID_user, ID_noti) {
     try {
+
         const check_noti_token = await noti_token.findOne({ "ID_user": ID_user });
         if (!check_noti_token || !check_noti_token.token) return;
+
+        //tìm notifi
+        const notifi = await notification.findById(ID_noti)
+            .populate({
+                path: 'ID_post',
+                populate: [
+                    { path: 'ID_user', select: 'first_name last_name avatar' },
+                    { path: 'tags', select: 'first_name last_name avatar' },
+                    {
+                        path: 'ID_post_shared',
+                        select: '-__v',
+                        populate: [
+                            { path: 'ID_user', select: 'first_name last_name avatar' },
+                            { path: 'tags', select: 'first_name last_name avatar' }
+                        ]
+                    }
+                ],
+                select: '-__v' // Lấy tất cả các thuộc tính trừ __v
+            })
+            .populate({
+                path: 'ID_relationship',
+                populate: [
+                    { path: 'ID_userA', select: 'first_name last_name avatar' },
+                    { path: 'ID_userB', select: 'first_name last_name avatar' },
+                ],
+                select: '-__v' // Lấy tất cả các thuộc tính trừ __v)
+            })
+            .populate({
+                path: 'ID_group',
+                populate: [
+                    { path: 'members', select: 'first_name last_name avatar' },
+                ],
+                select: '-__v' // Lấy tất cả các thuộc tính trừ __v)
+            })
+            .populate({
+                path: 'ID_message',
+                populate: [
+                    { path: 'ID_group', select: '-_v' },
+                    { path: 'sender', select: 'first_name last_name avatar' },
+                ],
+                select: '-__v' // Lấy tất cả các thuộc tính trừ __v)
+            })
+            .populate({
+                path: 'ID_comment',
+                populate: [
+                    { path: 'ID_user', select: 'first_name last_name avatar' },
+                    { path: 'ID_post', select: '-_v' },
+                ],
+                select: '-__v' // Lấy tất cả các thuộc tính trừ __v)
+            })
+            .populate({
+                path: 'ID_post_reaction',
+                populate: [
+                    { path: 'ID_post', select: '-_v' },
+                    { path: 'ID_user', select: 'first_name last_name avatar' },
+                    { path: 'ID_reaction', select: '-_v' },
+                ],
+                select: '-__v' // Lấy tất cả các thuộc tính trừ __v)
+            })
+            .lean()
 
         await axios.post(
             `https://linkage.id.vn/gg/send-notification`,
             {
                 fcmToken: check_noti_token.token,
-                title: "Thông báo",
+                title: "Thông báo mới",
                 body: notifi.content,
-                data: JSON.stringify(notifi)
+                notification: notifi
             },
         );
         return;
