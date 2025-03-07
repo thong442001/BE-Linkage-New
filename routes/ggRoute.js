@@ -75,6 +75,7 @@ router.post('/send-notification', async function (req, res, next) {
       notification: {
         title,
         body,
+        data
       },
       data: {
         ...data,
