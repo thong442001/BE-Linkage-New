@@ -11,6 +11,7 @@ const admin = require("firebase-admin");
 const { GoogleAuth } = require("google-auth-library");
 // 🔹 Load Service Account JSON (Thay bằng đường dẫn đúng)
 const serviceAccount = require("../hamstore-5c2f9-firebase-adminsdk-le25c-680e19f4fa.json");
+const { notify } = require('.');
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
   databaseURL: "https://hamstore-5c2f9-default-rtdb.firebaseio.com"
@@ -44,7 +45,7 @@ async function getAccessToken() {
 //http://localhost:3001/gg/send-notification
 router.post('/send-notification', async function (req, res, next) {
   try {
-    const { fcmToken, title, ID_noti } = req.body;
+    const { fcmToken, title, body, ID_noti } = req.body;
     //tìm notifi
     const notifi = await notification.findById(ID_noti)
       .populate({
@@ -109,10 +110,10 @@ router.post('/send-notification', async function (req, res, next) {
       token: fcmToken,
       notification: {
         title,
-        notifi
+        body,
       },
       data: {
-        ...data,
+        notification: JSON.stringify(notifi), // ✅ Chuyển toàn bộ object thành JSON string
         click_action: "FLUTTER_NOTIFICATION_CLICK",
       },
     };
