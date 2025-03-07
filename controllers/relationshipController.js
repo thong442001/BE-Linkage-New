@@ -79,12 +79,12 @@ async function guiLoiMoiKetBan(ID_relationship, me) {
         let newRelationStatus = "";
         let receiverId; // Người nhận lời mời kết bạn
 
-        if (relation.ID_userA._id.toString() === me.toString()) {
+        if (relation.ID_userA._id.equals(me)) {
             newRelationStatus = 'A gửi lời kết bạn B';
-            receiverId = relation.ID_userB._id; // Người nhận là B
-        } else if (relation.ID_userB._id.toString() === me.toString()) {
+            receiverId = relation.ID_userB._id;
+        } else if (relation.ID_userB._id.equals(me)) {
             newRelationStatus = 'B gửi lời kết bạn A';
-            receiverId = relation.ID_userA._id; // Người nhận là A
+            receiverId = relation.ID_userA._id;
         } else {
             return false;
         }
@@ -97,7 +97,7 @@ async function guiLoiMoiKetBan(ID_relationship, me) {
         const notificationItem = new notification({
             ID_relationship: relation._id,
             ID_user: receiverId,
-            content: me.toString() === relation.ID_userA._id.toString()
+            content: relation.ID_userA._id.equals(me)
                 ? `${relation.ID_userA.first_name} ${relation.ID_userA.last_name} đã gửi lời mời kết bạn với bạn`
                 : `${relation.ID_userB.first_name} ${relation.ID_userB.last_name} đã gửi lời mời kết bạn với bạn`,
             type: 'Lời mời kết bạn',
@@ -114,6 +114,7 @@ async function guiLoiMoiKetBan(ID_relationship, me) {
         throw error;
     }
 }
+
 
 // 🛠 Hàm gửi thông báo kết bạn
 async function guiThongBaoKetBan(ID_user, notifi) {
