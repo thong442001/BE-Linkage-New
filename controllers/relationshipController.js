@@ -69,8 +69,6 @@ async function guiLoiMoiKetBan(ID_relationship, me) {
     try {
         // Tìm quan hệ giữa hai người
         const relation = await relationship.findById(ID_relationship)
-            .populate('ID_userA', 'first_name last_name avatar')
-            .populate('ID_userB', 'first_name last_name avatar');
 
         if (!relation || relation.relation !== 'Người lạ') {
             return false;
@@ -79,12 +77,12 @@ async function guiLoiMoiKetBan(ID_relationship, me) {
         let newRelationStatus = "";
         let receiverId; // Người nhận lời mời kết bạn
 
-        if (relation.ID_userA._id.equals(me)) {
+        if (relation.ID_userA == me) {
             newRelationStatus = 'A gửi lời kết bạn B';
-            receiverId = relation.ID_userB._id;
-        } else if (relation.ID_userB._id.equals(me)) {
+            receiverId = relation.ID_userB;
+        } else if (relation.ID_userB == me) {
             newRelationStatus = 'B gửi lời kết bạn A';
-            receiverId = relation.ID_userA._id;
+            receiverId = relation.ID_userA;
         } else {
             return false;
         }
@@ -97,9 +95,6 @@ async function guiLoiMoiKetBan(ID_relationship, me) {
         const notificationItem = new notification({
             ID_relationship: relation._id,
             ID_user: receiverId,
-            content: relation.ID_userA._id.equals(me)
-                ? `${relation.ID_userA.first_name} ${relation.ID_userA.last_name} đã gửi lời mời kết bạn với bạn`
-                : `${relation.ID_userB.first_name} ${relation.ID_userB.last_name} đã gửi lời mời kết bạn với bạn`,
             type: 'Lời mời kết bạn',
         });
 
