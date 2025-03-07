@@ -71,6 +71,7 @@ async function guiLoiMoiKetBan(ID_relationship, me) {
         const relation = await relationship.findById(ID_relationship)
 
         if (!relation || relation.relation !== 'Người lạ') {
+            console.log("relation ko có")
             return false;
         }
 
@@ -84,6 +85,7 @@ async function guiLoiMoiKetBan(ID_relationship, me) {
             newRelationStatus = 'B gửi lời kết bạn A';
             receiverId = relation.ID_userA;
         } else {
+            console.log("ss ID vs me k đc")
             return false;
         }
 
@@ -123,7 +125,7 @@ async function guiThongBaoKetBan(ID_user, notifi) {
                 fcmToken: check_noti_token.token,
                 title: "Thông báo",
                 body: notifi.content,
-                data: notifi
+                data: JSON.stringify(notifi)
             },
         );
         return;
