@@ -10,6 +10,10 @@ const report_post = new Schema({
         type: ObjectId,
         ref: 'post',
     },
+    status: {
+        type: Boolean, // kiểu dữ liệu
+        default: false
+    },
 }, {
     timestamps: true
 });

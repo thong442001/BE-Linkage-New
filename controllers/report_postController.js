@@ -25,7 +25,7 @@ async function addReport_post(me, ID_post) {
 async function getAllReport_post() {
     try {
         // Lấy danh sách report_post và populate dữ liệu cần thiết
-        const reports = await report_post.find()
+        const reports = await report_post.find({ status: false })
             .populate('reporters', 'first_name last_name avatar')
             .populate({
                 path: 'ID_post',

@@ -25,7 +25,7 @@ async function addReport_user(me, ID_user) {
 async function getAllReport_user() {
     try {
         // Lấy danh sách report_user và populate dữ liệu cần thiết
-        const reports = await report_user.find()
+        const reports = await report_user.find({ status: false })
             .sort({ createdAt: 1 })
             .lean();
 

@@ -10,6 +10,7 @@ const admin = require("firebase-admin");
 const { GoogleAuth } = require("google-auth-library");
 // 🔹 Load Service Account JSON (Thay bằng đường dẫn đúng)
 const serviceAccount = require("../hamstore-5c2f9-firebase-adminsdk-le25c-680e19f4fa.json");
+const notification = require('../models/notification');
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
   databaseURL: "https://hamstore-5c2f9-default-rtdb.firebaseio.com"
@@ -78,13 +79,12 @@ router.post('/send-notification', async function (req, res, next) {
       data: {
         ...data,
         click_action: "FLUTTER_NOTIFICATION_CLICK",
-        screen: "Friend",
       },
     };
 
     await admin.messaging().send(message);
     //console.log("token1: " + accessToken);
-    res.json({ success: true, message: "Thông báo đã được gửi!" });
+    res.json({ success: true, message: "Thông báo đã được gửi!", notification: data });
   } catch (error) {
     console.error("❌ Lỗi khi gửi thông báo FCM:", error.response?.data || error.message);
     res.status(500).json({ success: false, error: error.response?.data || error.message });

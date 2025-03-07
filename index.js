@@ -24,6 +24,7 @@ require("./models/comment_reaction");
 require("./models/noti_token");
 require("./models/report_post");
 require("./models/report_user");
+require("./models/notification");
 
 var indexRouter = require('./routes/index');
 //mogo
@@ -40,6 +41,7 @@ var comment_reactionRoute = require('./routes/comment_reactionRoute');
 var ggRoute = require('./routes/ggRoute');
 var report_postRoute = require('./routes/report_postRoute');
 var report_userRoute = require('./routes/report_userRoute');
+var notificationRoute = require('./routes/notificationRoute');
 
 var app = express();
 
@@ -110,6 +112,7 @@ app.use('/comment_reaction', comment_reactionRoute);
 app.use('/gg', ggRoute);
 app.use('/report_post', report_postRoute);
 app.use('/report_use', report_userRoute);
+app.use('/notification', notificationRoute);
 
 
 // // catch 404 and forward to error handler

@@ -10,6 +10,10 @@ const report_user = new Schema({
         type: ObjectId,
         ref: 'user',
     },
+    status: {
+        type: Boolean, // kiểu dữ liệu
+        default: false
+    },
 }, {
     timestamps: true
 });

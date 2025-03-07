@@ -1,6 +1,7 @@
 const axios = require("axios");
 const relationship = require("../models/relationship");
 const noti_token = require("../models/noti_token");
+const notification = require("../models/notification");
 
 module.exports = {
     getRelationshipAvsB,
@@ -67,7 +68,11 @@ async function getRelationshipAvsB(ID_user, me) {
 async function guiLoiMoiKetBan(ID_relationship, me) {
     try {
         // Tìm quan hệ giữa hai người
-        const relation = await relationship.findById(ID_relationship);
+        const relation = await relationship.findById(ID_relationship)
+            .populate('ID_userA', 'first_name last_name avatar')
+            .populate('ID_userB', 'first_name last_name avatar')
+            .lean();
+
         if (!relation || relation.relation !== 'Người lạ') {
             return false;
         }
@@ -89,8 +94,19 @@ async function guiLoiMoiKetBan(ID_relationship, me) {
         relation.relation = newRelationStatus;
         await relation.save();
 
+        // tạo notification
+        const notificationItem = {
+            ID_relationship: relation._id,
+            ID_user: receiverId,
+            content: me == relation.ID_userA
+                ? `${relation.ID_userA.first_name} ${relation.ID_userA.last_name} đã gửi lời mời kết bạn với bạn`
+                : `${relation.ID_userB.first_name} ${relation.ID_userB.last_name} đã gửi lời mời kết bạn với bạn`,
+            type: 'Lời mời kết bạn',
+        }
+        const newNotification = await notification.create(notificationItem);
+
         // Gửi thông báo cho người nhận lời mời
-        await guiThongBaoKetBan(receiverId);
+        await guiThongBaoKetBan(receiverId, newNotification);
 
         return relation;
     } catch (error) {
@@ -100,7 +116,7 @@ async function guiLoiMoiKetBan(ID_relationship, me) {
 }
 
 // 🛠 Hàm gửi thông báo kết bạn
-async function guiThongBaoKetBan(ID_user) {
+async function guiThongBaoKetBan(ID_user, notifi) {
     try {
         const check_noti_token = await noti_token.findOne({ "ID_user": ID_user });
         if (!check_noti_token || !check_noti_token.token) return;
@@ -110,8 +126,8 @@ async function guiThongBaoKetBan(ID_user) {
             {
                 fcmToken: check_noti_token.token,
                 title: "Thông báo",
-                body: "Bạn vừa nhận được một lời mời kết bạn.",
-                data: { screen: "Friend" }
+                body: notifi.content,
+                data: notifi
             }
         );
         return;
