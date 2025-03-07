@@ -77,7 +77,7 @@ async function guiLoiMoiKetBan(ID_relationship, me) {
         }
 
         let newRelationStatus = "";
-        let receiverId = ""; // Người nhận lời mời kết bạn
+        let receiverId; // Người nhận lời mời kết bạn
 
         if (relation.ID_userA._id.toString() === me.toString()) {
             newRelationStatus = 'A gửi lời kết bạn B';
