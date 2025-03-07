@@ -70,7 +70,7 @@ async function guiLoiMoiKetBan(ID_relationship, me) {
         // Tìm quan hệ giữa hai người
         const relation = await relationship.findById(ID_relationship)
             .populate('ID_userA', 'first_name last_name avatar')
-            .populate('ID_userB', 'first_name last_name avatar');
+            .populate('ID_userB', 'first_name last_name avatar')
 
         if (!relation || relation.relation !== 'Người lạ') {
             return false;
@@ -79,12 +79,12 @@ async function guiLoiMoiKetBan(ID_relationship, me) {
         let newRelationStatus = "";
         let receiverId = ""; // Người nhận lời mời kết bạn
 
-        if (relation.ID_userA._id.toString() === me.toString()) {
+        if (relation.ID_userA._id == me) {
             newRelationStatus = 'A gửi lời kết bạn B';
-            receiverId = relation.ID_userB._id.toString(); // Người nhận là B
-        } else if (relation.ID_userB._id.toString() === me.toString()) {
+            receiverId = relation.ID_userB._id; // Người nhận là B
+        } else if (relation.ID_userB._id == me) {
             newRelationStatus = 'B gửi lời kết bạn A';
-            receiverId = relation.ID_userA._id.toString(); // Người nhận là A
+            receiverId = relation.ID_userA._id; // Người nhận là A
         } else {
             return false;
         }
@@ -93,20 +93,19 @@ async function guiLoiMoiKetBan(ID_relationship, me) {
         relation.relation = newRelationStatus;
         await relation.save();
 
-        // Tạo notification
-        const notificationItem = new notification({
+        // tạo notification
+        const notificationItem = {
             ID_relationship: relation._id,
             ID_user: receiverId,
-            content: me.toString() === relation.ID_userA._id.toString()
+            content: me == relation.ID_userA._id
                 ? `${relation.ID_userA.first_name} ${relation.ID_userA.last_name} đã gửi lời mời kết bạn với bạn`
                 : `${relation.ID_userB.first_name} ${relation.ID_userB.last_name} đã gửi lời mời kết bạn với bạn`,
             type: 'Lời mời kết bạn',
-        });
-
-        await notificationItem.save();
+        }
+        const newNotification = await notification.create(notificationItem);
 
         // Gửi thông báo cho người nhận lời mời
-        await guiThongBaoKetBan(receiverId, notificationItem);
+        await guiThongBaoKetBan(receiverId, newNotification);
 
         return relation;
     } catch (error) {
@@ -114,8 +113,6 @@ async function guiLoiMoiKetBan(ID_relationship, me) {
         throw error;
     }
 }
-
-
 
 // 🛠 Hàm gửi thông báo kết bạn
 async function guiThongBaoKetBan(ID_user, notifi) {
