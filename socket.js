@@ -86,32 +86,40 @@ function setupSocket(server) {
             };
             io.to(ID_group).emit('receive_message', newMessageSocket);
 
-            // 🚀 Gửi thông báo FCM cho các thành viên trong nhóm
+            // 🔍 Tìm thông tin nhóm
             const groupInfo = await group.findById(ID_group);
             if (!groupInfo) {
                 console.log('Không tìm thấy nhóm!');
                 return;
             }
 
-            // Danh sách thành viên trừ người gửi
+            // 📜 Lọc danh sách thành viên (trừ người gửi)
             const memberIds = groupInfo.members
                 .map(m => m.toString())
-                .filter(id => !id.equals(sender));
+                .filter(id => id !== sender.toString());
 
-            // 🔥 Tạo thông báo cho từng thành viên
+            if (memberIds.length === 0) return; // ⛔ Không có ai để gửi thông báo
+
+            // 🛠 Tạo thông báo cho từng thành viên
             const notifications = memberIds.map(memberId => ({
                 ID_message: newMessage._id,
                 ID_user: memberId,
                 type: 'Tin nhắn mới',
             }));
 
-            // Lưu thông báo vào MongoDB
+            // 💾 Lưu thông báo vào database
             const createdNotifications = await notification.insertMany(notifications);
             const notificationIds = createdNotifications.map(noti => noti._id.toString());
 
-            // Tìm FCM tokens của các thành viên
+            // 🔍 Tìm FCM tokens của các thành viên
             const fcmTokens = await noti_token.find({ ID_user: { $in: memberIds } }).select('token');
-            const tokens = fcmTokens.map(n => n.token).filter(t => t);
+
+            // 🏷 Lọc token hợp lệ
+            const tokens = fcmTokens
+                .map(n => n.token)
+                .filter(t => typeof t === 'string' && t.trim().length > 0);
+
+            if (tokens.length === 0) return; // ⛔ Không có token nào hợp lệ
 
             await axios.post(
                 //`http://localhost:3001/gg/send-notification`,
