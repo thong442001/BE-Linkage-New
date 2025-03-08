@@ -45,82 +45,107 @@ async function getAccessToken() {
 //http://localhost:3001/gg/send-notification
 router.post('/send-notification', async function (req, res, next) {
   try {
-    const { fcmToken, title, body, ID_noti } = req.body;
-    //tìm notifi
-    const notifi = await notification.findById(ID_noti)
-      .populate({
-        path: 'ID_post',
-        populate: [
-          { path: 'ID_user', select: 'first_name last_name avatar' },
-          { path: 'tags', select: 'first_name last_name avatar' },
-          {
-            path: 'ID_post_shared',
-            select: '-__v',
+    // ⬅️ Nhận danh sách `fcmTokens` (mảng)
+    // ⬅️ Nhận danh sách `ID_noties` (mảng)
+    const { fcmTokens, title, body, ID_noties } = req.body;
+
+    if (!Array.isArray(fcmTokens) || fcmTokens.length === 0) {
+      return res.status(400).json({ success: false, error: "Danh sách fcmTokens không hợp lệ!" });
+    }
+
+    // Tạo danh sách thông báo tương ứng với từng user
+    const notifications = await Promise.all(
+      ID_noties.map(id =>
+        notification.findById(id)
+          .populate({
+            path: 'ID_post',
             populate: [
               { path: 'ID_user', select: 'first_name last_name avatar' },
-              { path: 'tags', select: 'first_name last_name avatar' }
-            ]
-          }
-        ],
-        select: '-__v' // Lấy tất cả các thuộc tính trừ __v
-      })
-      .populate({
-        path: 'ID_relationship',
-        populate: [
-          { path: 'ID_userA', select: 'first_name last_name avatar' },
-          { path: 'ID_userB', select: 'first_name last_name avatar' },
-        ],
-        select: '-__v' // Lấy tất cả các thuộc tính trừ __v)
-      })
-      .populate({
-        path: 'ID_group',
-        populate: [
-          { path: 'members', select: 'first_name last_name avatar' },
-        ],
-        select: '-__v' // Lấy tất cả các thuộc tính trừ __v)
-      })
-      .populate({
-        path: 'ID_message',
-        populate: [
-          { path: 'ID_group', select: '-_v' },
-          { path: 'sender', select: 'first_name last_name avatar' },
-        ],
-        select: '-__v' // Lấy tất cả các thuộc tính trừ __v)
-      })
-      .populate({
-        path: 'ID_comment',
-        populate: [
-          { path: 'ID_user', select: 'first_name last_name avatar' },
-          { path: 'ID_post', select: '-_v' },
-        ],
-        select: '-__v' // Lấy tất cả các thuộc tính trừ __v)
-      })
-      .populate({
-        path: 'ID_post_reaction',
-        populate: [
-          { path: 'ID_post', select: '-_v' },
-          { path: 'ID_user', select: 'first_name last_name avatar' },
-          { path: 'ID_reaction', select: '-_v' },
-        ],
-        select: '-__v' // Lấy tất cả các thuộc tính trừ __v)
-      })
-      .lean()
+              { path: 'tags', select: 'first_name last_name avatar' },
+              {
+                path: 'ID_post_shared',
+                select: '-__v',
+                populate: [
+                  { path: 'ID_user', select: 'first_name last_name avatar' },
+                  { path: 'tags', select: 'first_name last_name avatar' }
+                ]
+              }
+            ],
+            select: '-__v' // Lấy tất cả các thuộc tính trừ __v
+          })
+          .populate({
+            path: 'ID_relationship',
+            populate: [
+              { path: 'ID_userA', select: 'first_name last_name avatar' },
+              { path: 'ID_userB', select: 'first_name last_name avatar' },
+            ],
+            select: '-__v' // Lấy tất cả các thuộc tính trừ __v)
+          })
+          .populate({
+            path: 'ID_group',
+            populate: [
+              { path: 'members', select: 'first_name last_name avatar' },
+            ],
+            select: '-__v' // Lấy tất cả các thuộc tính trừ __v)
+          })
+          .populate({
+            path: 'ID_message',
+            populate: [
+              { path: 'ID_group', select: '-_v' },
+              { path: 'sender', select: 'first_name last_name avatar' },
+            ],
+            select: '-__v' // Lấy tất cả các thuộc tính trừ __v)
+          })
+          .populate({
+            path: 'ID_comment',
+            populate: [
+              { path: 'ID_user', select: 'first_name last_name avatar' },
+              { path: 'ID_post', select: '-_v' },
+            ],
+            select: '-__v' // Lấy tất cả các thuộc tính trừ __v)
+          })
+          .populate({
+            path: 'ID_post_reaction',
+            populate: [
+              { path: 'ID_post', select: '-_v' },
+              { path: 'ID_user', select: 'first_name last_name avatar' },
+              { path: 'ID_reaction', select: '-_v' },
+            ],
+            select: '-__v' // Lấy tất cả các thuộc tính trừ __v)
+          })
+          .lean()
+      )
+    );
 
-    const message = {
-      token: fcmToken,
+    // Kiểm tra nếu có thông báo nào không tồn tại
+    if (notifications.some(noti => !noti)) {
+      return res.status(404).json({ success: false, error: "Một hoặc nhiều thông báo không tồn tại!" });
+    }
+
+    // Tạo danh sách tin nhắn gửi đi
+    const messages = fcmTokens.map((token, index) => ({
+      token,
       notification: {
         title,
         body,
       },
       data: {
-        notification: JSON.stringify(notifi), // ✅ Chuyển toàn bộ object thành JSON string
+        notification: JSON.stringify(notifications[index]), // ✅ Mỗi user nhận thông báo tương ứng
         click_action: "FLUTTER_NOTIFICATION_CLICK",
       },
-    };
+    }));
 
-    await admin.messaging().send(message);
-    //console.log("token1: " + accessToken);
-    res.json({ success: true, message: "Thông báo đã được gửi!" });
+    // Gửi thông báo cho từng user
+    const response = await Promise.all(messages.map(msg => admin.messaging().send(msg)));
+
+    console.log(`📢 Gửi ${response.length} thông báo thành công!`);
+
+    res.json({
+      success: true,
+      message: `Thông báo đã gửi đến ${response.length} thiết bị!`,
+      response,
+    });
+
   } catch (error) {
     console.error("❌ Lỗi khi gửi thông báo FCM:", error.response?.data || error.message);
     res.status(500).json({ success: false, error: error.response?.data || error.message });

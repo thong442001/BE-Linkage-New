@@ -97,10 +97,10 @@ async function guiThongBao(ID_user, ID_noti) {
             //`http://localhost:3001/gg/send-notification`,
             `https://linkage.id.vn/gg/send-notification`,
             {
-                fcmToken: check_noti_token.token,
+                fcmTokens: [check_noti_token.token],
                 title: "Thông báo",
                 body: null,
-                ID_noti: ID_noti,
+                ID_noties: [ID_noti],
             },
         );
         return;
