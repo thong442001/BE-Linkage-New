@@ -208,7 +208,7 @@ async function addMembers(ID_group, new_members) {
         const notifications = fcmTokens.map(({ ID_user }) => ({
             ID_group: ID_group,
             ID_user: ID_user.toString(),
-            type: 'Bạn đã được thêm vào nhóm',
+            type: 'Bạn đã được mời vào nhóm mới',
         }));
 
         // 💾 Lưu thông báo vào database
