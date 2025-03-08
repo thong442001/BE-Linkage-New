@@ -122,7 +122,7 @@ async function guiThongBaoKetBan(ID_user, ID_noti) {
 
         await axios.post(
             //`http://localhost:3001/gg/send-notification`,
-            `https://linkage.id.vn//gg/send-notification`,
+            `https://linkage.id.vn/gg/send-notification`,
             {
                 fcmToken: check_noti_token.token,
                 title: "Thông báo",
