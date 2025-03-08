@@ -134,7 +134,8 @@ app.use('/notification', notificationRoute);
 // // app.listen(3000, () => console.log("Server ready on port 3000."));
 // app.get('/', (req, res) => {
 //     res.send('Socket.io server is running!');
-// });
+// }); 
+
 
 // Khởi động server
 const PORT = 4000;
