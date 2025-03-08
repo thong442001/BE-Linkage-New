@@ -1,32 +1,14 @@
 const { Server } = require("socket.io");
+const axios = require("axios");
 const message = require("./models/message");
 const user = require("./models/user");
 const message_reaction = require("./models/message_reaction");
+const group = require("./models/group");
+const noti_token = require("./models/noti_token");
+const notification = require("./models/notification");
 
 const onlineUsers = new Map(); // Lưu user online
 
-// 🛠 Hàm gửi thông báo kết bạn
-async function guiThongBao(ID_user, ID_noti) {
-    try {
-
-        const check_noti_token = await noti_token.findOne({ "ID_user": ID_user });
-        if (!check_noti_token || !check_noti_token.token) return;
-
-        await axios.post(
-            //`http://localhost:3001/gg/send-notification`,
-            `https://linkage.id.vn/gg/send-notification`,
-            {
-                fcmToken: check_noti_token.token,
-                title: "Thông báo",
-                body: null,
-                ID_noti: ID_noti,
-            },
-        );
-        return;
-    } catch (error) {
-        console.error("⚠️ Lỗi khi gửi thông báo FCM:", error.response?.data || error.message);
-    }
-}
 
 function setupSocket(server) {
     const io = new Server(server, {
@@ -103,6 +85,44 @@ function setupSocket(server) {
                 _destroy: newMessage._destroy,
             };
             io.to(ID_group).emit('receive_message', newMessageSocket);
+
+            // 🚀 Gửi thông báo FCM cho các thành viên trong nhóm
+            const groupInfo = await group.findById(ID_group);
+            if (!groupInfo) {
+                console.log('Không tìm thấy nhóm!');
+                return;
+            }
+
+            // Danh sách thành viên trừ người gửi
+            const memberIds = groupInfo.members
+                .map(m => m.toString())
+                .filter(id => !id.equals(sender));
+
+            // 🔥 Tạo thông báo cho từng thành viên
+            const notifications = memberIds.map(memberId => ({
+                ID_message: newMessage._id,
+                ID_user: memberId,
+                type: 'Tin nhắn mới',
+            }));
+
+            // Lưu thông báo vào MongoDB
+            const createdNotifications = await notification.insertMany(notifications);
+            const notificationIds = createdNotifications.map(noti => noti._id.toString());
+
+            // Tìm FCM tokens của các thành viên
+            const fcmTokens = await noti_token.find({ ID_user: { $in: memberIds } }).select('token');
+            const tokens = fcmTokens.map(n => n.token).filter(t => t);
+
+            await axios.post(
+                //`http://localhost:3001/gg/send-notification`,
+                `https://linkage.id.vn/gg/send-notification`,
+                {
+                    fcmTokens: tokens,
+                    title: "Thông báo",
+                    body: null,
+                    ID_noties: notificationIds,
+                },
+            );
         });
 
         // Xử lý thu hồi tin nhắn
