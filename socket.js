@@ -100,37 +100,48 @@ function setupSocket(server) {
 
             if (memberIds.length === 0) return; // ⛔ Không có ai để gửi thông báo
 
+            // 🔍 Tìm FCM tokens kèm `ID_user`
+            const fcmTokens = await noti_token.find({ ID_user: { $in: memberIds } }).select('ID_user token');
+
             // 🛠 Tạo thông báo cho từng thành viên
-            const notifications = memberIds.map(memberId => ({
+            const notifications = fcmTokens.map(({ ID_user }) => ({
                 ID_message: newMessage._id,
-                ID_user: memberId,
+                ID_user: ID_user.toString(),
                 type: 'Tin nhắn mới',
             }));
 
             // 💾 Lưu thông báo vào database
             const createdNotifications = await notification.insertMany(notifications);
-            const notificationIds = createdNotifications.map(noti => noti._id.toString());
 
-            // 🔍 Tìm FCM tokens của các thành viên
-            const fcmTokens = await noti_token.find({ ID_user: { $in: memberIds } }).select('token');
+            // 🎯 Ghép `token` với `notificationId`
+            const notificationMap = createdNotifications.reduce((acc, noti) => {
+                acc[noti.ID_user.toString()] = noti._id.toString();
+                return acc;
+            }, {});
 
-            // 🏷 Lọc token hợp lệ
-            const tokens = fcmTokens
-                .map(n => n.token)
-                .filter(t => typeof t === 'string' && t.trim().length > 0);
+            // 🔥 Tạo danh sách gửi thông báo từng người
+            const messages = fcmTokens
+                .map(({ ID_user, token }) => ({
+                    token,
+                    notificationId: notificationMap[ID_user.toString()],
+                }))
+                .filter(({ token }) => token && token.trim().length > 0); // Lọc token hợp lệ
 
-            if (tokens.length === 0) return; // ⛔ Không có token nào hợp lệ
+            if (messages.length === 0) return; // ⛔ Không có dữ liệu hợp lệ
 
-            await axios.post(
-                //`http://localhost:3001/gg/send-notification`,
-                `https://linkage.id.vn/gg/send-notification`,
-                {
-                    fcmTokens: tokens,
-                    title: "Thông báo",
-                    body: null,
-                    ID_noties: notificationIds,
-                },
-            );
+            // 🚀 Gửi từng thông báo riêng lẻ
+            await Promise.all(messages.map(({ token, notificationId }) =>
+                axios.post(
+                    //`http://localhost:3001/gg/send-notification`,
+                    `https://linkage.id.vn/gg/send-notification`,
+                    {
+                        fcmTokens: [token], // Chỉ gửi cho 1 user
+                        title: "Thông báo",
+                        body: null,
+                        ID_noties: [notificationId], // Notification tương ứng
+                    })
+            ));
+
         });
 
         // Xử lý thu hồi tin nhắn
