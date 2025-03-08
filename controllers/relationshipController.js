@@ -103,7 +103,7 @@ async function guiLoiMoiKetBan(ID_relationship, me) {
         await notificationItem.save();
 
         // Gửi thông báo cho người nhận lời mời
-        await guiThongBaoKetBan(receiverId, notificationItem._id);
+        await guiThongBao(receiverId, notificationItem._id);
 
         return relation;
     } catch (error) {
@@ -114,7 +114,7 @@ async function guiLoiMoiKetBan(ID_relationship, me) {
 
 
 // 🛠 Hàm gửi thông báo kết bạn
-async function guiThongBaoKetBan(ID_user, ID_noti) {
+async function guiThongBao(ID_user, ID_noti) {
     try {
 
         const check_noti_token = await noti_token.findOne({ "ID_user": ID_user });
@@ -142,9 +142,29 @@ async function chapNhanLoiMoiKetBan(ID_relationship) {
         // chapNhanLoiMoiKetBan là set lại relation: 'Bạn bè'
         const relation = await relationship.findById(ID_relationship);
         if (relation && (relation.relation == 'A gửi lời kết bạn B' || relation.relation == 'B gửi lời kết bạn A')) {
+
+            let receiverId; // Người gửi lời mời kết bạn
+            if (relation.relation == 'A gửi lời kết bạn B') {
+                receiverId = relation.ID_userA;
+            } else if (relation.relation == 'B gửi lời kết bạn A') {
+                receiverId = relation.ID_userB;
+            }
+
+            // Tạo notification
+            const notificationItem = new notification({
+                ID_relationship: relation._id,
+                ID_user: receiverId,
+                type: 'Đã thành bạn bè của bạn',
+            });
+            await notificationItem.save();
+
+            // Gửi thông báo cho người nhận lời mời
+            await guiThongBao(receiverId, notificationItem._id);
+
             // set lại
             relation.relation = 'Bạn bè';
             await relation.save();
+
             return relation;
         } else {
             return false;
