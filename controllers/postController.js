@@ -416,7 +416,7 @@ async function getPostsUserIdDestroyTrue(me) {
             .sort({ createdAt: -1 })
             .lean();
 
-        // post_reactions (lấy các reaction của từng bài post)
+        // post_reactions comment(lấy các reaction của từng bài post)
         if (rPosts.length > 0) {
             const postIds = rPosts.map(post => post._id);
 
@@ -424,6 +424,16 @@ async function getPostsUserIdDestroyTrue(me) {
             const allReactions = await post_reaction.find({ ID_post: { $in: postIds } })
                 .populate('ID_user', 'first_name last_name avatar')
                 .populate('ID_reaction', 'name icon')
+                .sort({ createdAt: 1 })
+                .lean();
+
+            // Tìm tất cả comment của danh sách bài post
+            const allCommetn = await comment.find({ ID_post: { $in: postIds } })
+                .populate('ID_user', 'first_name last_name avatar')
+                .populate({
+                    path: 'ID_comment_reply',
+                    populate: { path: 'ID_user', select: 'first_name last_name avatar' },
+                })
                 .sort({ createdAt: 1 })
                 .lean();
 
@@ -436,10 +446,23 @@ async function getPostsUserIdDestroyTrue(me) {
                 reactionMap[reaction.ID_post].push(reaction); // Thêm reaction vào mảng của post đó
             });
 
+            // Nhóm comment theo ID_post
+            const commetnMap = {};
+            allCommetn.forEach(comment => {
+                if (!commetnMap[comment.ID_post]) {
+                    commetnMap[comment.ID_post] = [];  // Nếu chưa có mảng này, tạo mảng rỗng
+                }
+                commetnMap[comment.ID_post].push(comment); // Thêm reaction vào mảng của post đó
+            });
+
 
             // Gán vào rPosts
             rPosts.forEach(post => {
                 post.post_reactions = reactionMap[post._id] || [];
+            });
+            // Gán vào rPosts
+            rPosts.forEach(post => {
+                post.comments = commetnMap[post._id] || [];
             });
         }
 
