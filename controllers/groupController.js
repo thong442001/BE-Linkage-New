@@ -1,7 +1,7 @@
 const group = require("../models/group");
 const message = require("../models/message");
-const noti_token = require("./models/noti_token");
-const notification = require("./models/notification");
+const noti_token = require("../models/noti_token");
+const notification = require("../models/notification");
 const axios = require("axios");
 
 module.exports = {
