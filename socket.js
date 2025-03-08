@@ -5,6 +5,29 @@ const message_reaction = require("./models/message_reaction");
 
 const onlineUsers = new Map(); // Lưu user online
 
+// 🛠 Hàm gửi thông báo kết bạn
+async function guiThongBao(ID_user, ID_noti) {
+    try {
+
+        const check_noti_token = await noti_token.findOne({ "ID_user": ID_user });
+        if (!check_noti_token || !check_noti_token.token) return;
+
+        await axios.post(
+            //`http://localhost:3001/gg/send-notification`,
+            `https://linkage.id.vn/gg/send-notification`,
+            {
+                fcmToken: check_noti_token.token,
+                title: "Thông báo",
+                body: null,
+                ID_noti: ID_noti,
+            },
+        );
+        return;
+    } catch (error) {
+        console.error("⚠️ Lỗi khi gửi thông báo FCM:", error.response?.data || error.message);
+    }
+}
+
 function setupSocket(server) {
     const io = new Server(server, {
         cors: {

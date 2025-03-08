@@ -7,41 +7,14 @@ module.exports = {
     getRelationshipAvsB,
     guiLoiMoiKetBan,
     chapNhanLoiMoiKetBan,
-    setRelationNguoiLa,
+    huyLoiMoiKetBan,
+    huyBanBe,
     getAllLoiMoiKetBan,
     getAllFriendOfID_user,
 }
 
 async function getRelationshipAvsB(ID_user, me) {
     try {
-        // const find1 = await relationship.findOne({
-        //     $and: [
-        //         { ID_userA: ID_user },
-        //         { ID_userB: me }
-        //     ]
-        // });
-        // if (find1) {
-        //     return find1;
-        // } else {
-        //     const find2 = await relationship.findOne({
-        //         $and: [
-        //             { ID_userA: me },
-        //             { ID_userB: ID_user }
-        //         ]
-        //     });
-        //     if (find2) {
-        //         return find2;
-        //     }
-        //     // chưa có mối quan hệ
-        //     // tạo mối quan hệ (Người lạ)
-        //     const newItem = {
-        //         ID_userA: ID_user,
-        //         ID_userB: me,
-        //         relation: 'Người lạ',
-        //     };
-        //     const newRelationship = await relationship.create(newItem);
-        //     return newRelationship;
-        // }
         let relationshipData = await relationship.findOne({
             $or: [
                 { ID_userA: ID_user, ID_userB: me },
@@ -175,15 +148,39 @@ async function chapNhanLoiMoiKetBan(ID_relationship) {
     }
 }
 
-async function setRelationNguoiLa(ID_relationship) {
+async function huyLoiMoiKetBan(ID_relationship) {
     try {
-        // chapNhanLoiMoiKetBan là set lại relation: 'Người lạ'
         const relation = await relationship.findById(ID_relationship);
         if (relation) {
-            // set lại
-            relation.relation = 'Người lạ';
-            await relation.save();
-            return relation;
+            if (relation.relation == 'A gửi lời kết bạn B' || relation.relation == 'B gửi lời kết bạn A') {
+                // set lại
+                relation.relation = 'Người lạ';
+                await relation.save();
+                return relation;
+            } else {
+                return false;
+            }
+        } else {
+            return false;
+        }
+    } catch (error) {
+        console.log(error);
+        throw error;
+    }
+}
+
+async function huyBanBe(ID_relationship) {
+    try {
+        const relation = await relationship.findById(ID_relationship);
+        if (relation) {
+            if (relation.relation == 'Bạn bè') {
+                // set lại
+                relation.relation = 'Người lạ';
+                await relation.save();
+                return relation;
+            } else {
+                return false;
+            }
         } else {
             return false;
         }

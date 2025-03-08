@@ -79,11 +79,33 @@ router.post('/chapNhanLoiMoiKetBan', checkToken, async function (req, res, next)
   }
 });
 
-// http://localhost:3000/relationship/setRelationNguoiLa
-router.post('/setRelationNguoiLa', checkToken, async function (req, res, next) {
+// http://localhost:3000/relationship/huyLoiMoiKetBan
+router.post('/huyLoiMoiKetBan', checkToken, async function (req, res, next) {
   try {
     const { ID_relationship } = req.body;
-    const result = await relationshipController.setRelationNguoiLa(ID_relationship);
+    const result = await relationshipController.huyLoiMoiKetBan(ID_relationship);
+    if (result) {
+      res.status(200).json({
+        "status": true,
+        "message": "Set relationship thành người lạ thành công",
+        "relationship": result,
+      });
+    } else {
+      res.status(401).json({
+        "status": false,
+        "message": "Set relationship thành người lạ thất bại!",
+      });
+    }
+  } catch (e) {
+    return res.status(400).json({ "status": false, "message": "lỗi" });
+  }
+});
+
+// http://localhost:3000/relationship/huyBanBe
+router.post('/huyBanBe', checkToken, async function (req, res, next) {
+  try {
+    const { ID_relationship } = req.body;
+    const result = await relationshipController.huyBanBe(ID_relationship);
     if (result) {
       res.status(200).json({
         "status": true,
