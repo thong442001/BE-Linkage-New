@@ -4,6 +4,9 @@ const relationship = require("../models/relationship");
 const post_reaction = require("../models/post_reaction");
 const comment = require("../models/comment");
 const comment_reaction = require("../models/comment_reaction");
+const noti_token = require("../models/noti_token");
+const notification = require("../models/notification");
+const axios = require("axios");
 
 module.exports = {
     addPost,
@@ -15,33 +18,92 @@ module.exports = {
     getChiTietPost// chiTietPost
 }
 
-async function addPost(
-    ID_user,
-    caption,
-    medias,
-    status,
-    type,
-    ID_post_shared,
-    tags
-) {
+async function addPost(ID_user, caption, medias, status, type, ID_post_shared, tags) {
     try {
         const newItem = {
-            ID_user: ID_user,
-            caption: caption,
-            medias: medias,
-            status: status,
-            type: type,
-            ID_post_shared: ID_post_shared,
-            tags: tags,
+            ID_user,
+            caption,
+            medias,
+            status,
+            type,
+            ID_post_shared,
+            tags,
         };
         const newPost = await posts.create(newItem);
-        //console.log(newPost);
-        return newPost._id;
+
+        // 📢 Xác định loại thông báo
+        let notificationType = '';
+        if (['Share', 'Tag', 'Normal'].includes(type)) {
+            notificationType = 'Đã đăng bài mới';
+        } else if (type === 'Story') {
+            notificationType = 'Đã đăng story mới';
+        } else {
+            return newPost._id; // Không gửi thông báo nếu không thuộc loại hợp lệ
+        }
+
+        // 🔍 Tìm tất cả bạn bè của người đăng bài
+        const relationships = await relationship.find({
+            $or: [
+                { ID_userA: ID_user, relation: 'Bạn bè' },
+                { ID_userB: ID_user, relation: 'Bạn bè' },
+            ],
+        });
+
+        const friendIds = relationships.map(r =>
+            r.ID_userA.toString() === ID_user.toString() ? r.ID_userB.toString() : r.ID_userA.toString()
+        );
+
+        if (friendIds.length === 0) return newPost._id; // Không có bạn bè để gửi thông báo
+
+        // 🔔 Tạo thông báo cho từng bạn bè
+        const notifications = friendIds.map(friendId => ({
+            ID_post: newPost._id,
+            ID_user: friendId,
+            type: notificationType,
+        }));
+
+        // 💾 Lưu thông báo vào database
+        const createdNotifications = await notification.insertMany(notifications);
+
+        // 🎯 Ghép `ID_user` với `notificationId`
+        const notificationMap = createdNotifications.reduce((acc, noti) => {
+            acc[noti.ID_user.toString()] = noti._id.toString();
+            return acc;
+        }, {});
+
+        // 🔍 Tìm FCM tokens của bạn bè
+        const fcmTokens = await noti_token.find({ ID_user: { $in: friendIds } }).select('ID_user token');
+
+        // 📤 Ghép token với notificationId
+        const messages = fcmTokens
+            .map(({ ID_user, token }) => ({
+                token,
+                notificationId: notificationMap[ID_user.toString()],
+            }))
+            .filter(({ token }) => token && token.trim().length > 0); // Lọc token hợp lệ
+
+        if (messages.length === 0) return newPost._id; // Không có token hợp lệ
+
+        // 🚀 Gửi từng thông báo riêng lẻ
+        await Promise.all(messages.map(({ token, notificationId }) =>
+            axios.post(
+                //`http://localhost:3001/gg/send-notification`,
+                `https://linkage.id.vn/gg/send-notification`,
+                {
+                    fcmTokens: [token], // Chỉ gửi cho 1 user
+                    title: "Thông báo",
+                    body: null,
+                    ID_noties: [notificationId], // Notification tương ứng
+                })
+        ));
+
+        return newPost._id; // Thành công
     } catch (error) {
-        console.log(error);
+        console.log("Lỗi khi đăng bài:", error);
         return false;
     }
 }
+
 
 // api trang cá nhân
 async function allProfile(ID_user, me) {

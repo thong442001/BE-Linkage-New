@@ -1,4 +1,8 @@
 const post_reaction = require("../models/post_reaction");
+const post = require("../models/post");
+const noti_token = require("../models/noti_token");
+const notification = require("../models/notification");
+const axios = require("axios");
 
 module.exports = {
     addPost_Reaction,
@@ -7,6 +11,15 @@ module.exports = {
 
 async function addPost_Reaction(ID_post, ID_user, ID_reaction) {
     try {
+        // 📌 Tìm bài post để lấy thông tin chủ bài viết
+        const postInfo = await post.findById(ID_post);
+        if (!postInfo) {
+            return { status: false, message: "Không tìm thấy bài viết" };
+        }
+
+        // 📌 Chủ bài viết
+        const postOwner = postInfo.ID_user.toString();
+
         // Kiểm tra xem user đã react vào post chưa
         const checkPost_Reaction = await post_reaction.findOneAndUpdate(
             { ID_post, ID_user },
@@ -30,6 +43,33 @@ async function addPost_Reaction(ID_post, ID_user, ID_reaction) {
         // Nếu chưa có reaction trước đó, tạo mới
         const newPost_Reaction = new post_reaction({ ID_post, ID_user, ID_reaction });
         const savedReaction = await newPost_Reaction.save();
+
+        // 🔔 Tạo thông báo nếu người thả reaction KHÔNG PHẢI là chủ bài viết
+        if (ID_user !== postOwner) {
+            const newNotification = new notification({
+                ID_post_reaction: savedReaction._id,
+                ID_user: postOwner, // Gửi thông báo cho chủ bài viết
+                type: "Đã thả biểu cảm vào bài viết của bạn",
+            });
+
+            const savedNotification = await newNotification.save();
+
+            // 📤 Gửi thông báo FCM
+            const fcmToken = await noti_token.findOne({ ID_user: postOwner });
+
+            if (fcmToken && fcmToken.token) {
+                await axios.post(
+                    //`http://localhost:3001/gg/send-notification`,
+                    `https://linkage.id.vn/gg/send-notification`,
+                    {
+                        fcmTokens: [fcmToken.token], // Chỉ gửi cho 1 người
+                        title: "Thông báo",
+                        body: null,
+                        ID_noties: [savedNotification._id.toString()],
+                    }
+                );
+            }
+        }
 
         return {
             status: true,
