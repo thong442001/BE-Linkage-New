@@ -231,6 +231,26 @@ function setupSocket(server) {
             });
         });
 
+        // Xử lý thêm thành viên vào nhóm
+        socket.on("add_members", async ({ group, newMembers }) => {
+            if (!group || !Array.isArray(newMembers) || newMembers.length === 0) {
+                console.error("❌ Thiếu ID_group hoặc danh sách thành viên!");
+                return;
+            }
+
+            // Gửi sự kiện `new_group` đến từng thành viên mới
+            newMembers.forEach(memberId => {
+                const memberSocket = onlineUsers.get(memberId);
+                if (memberSocket) {
+                    io.to(memberSocket).emit("new_group", { group: group, members: newMembers });
+                    console.log(`📡 Gửi thông báo new_group đến user ${memberId}`);
+                } else {
+                    console.log(`⚠️ User ${memberId} offline, không thể gửi socket.`);
+                }
+            });
+        });
+
+
         socket.on("delete_group", async ({ ID_group }) => {
             if (!ID_group) {
                 console.error("❌ Group ID is missing!");

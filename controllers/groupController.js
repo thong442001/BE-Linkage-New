@@ -107,7 +107,6 @@ async function addGroup(name, members) {
     }
 }
 
-//
 async function getGroupID(ID_group) {
     try {
         const result = await group.findById(ID_group).populate({
