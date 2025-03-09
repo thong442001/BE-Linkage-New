@@ -233,10 +233,6 @@ function setupSocket(server) {
 
         // Xử lý thêm thành viên vào nhóm
         socket.on("add_members", async ({ group, members }) => {
-            if (!group || !Array.isArray(members) || members.length === 0) {
-                console.error("❌ Thiếu ID_group hoặc danh sách thành viên!");
-                return;
-            }
             console.log("📢 Server nhận add_members:", group._id);
             group.messageLatest = group.messageLatest || null;
             // Gửi sự kiện `new_group` đến từng thành viên mới
