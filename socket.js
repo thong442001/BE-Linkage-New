@@ -237,7 +237,8 @@ function setupSocket(server) {
                 console.error("❌ Thiếu ID_group hoặc danh sách thành viên!");
                 return;
             }
-
+            console.log("📢 Server nhận add_members:", group._id);
+            group.messageLatest = group.messageLatest || null;
             // Gửi sự kiện `new_group` đến từng thành viên mới
             members.forEach(memberId => {
                 const memberSocket = onlineUsers.get(memberId);
