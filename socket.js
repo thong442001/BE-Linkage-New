@@ -9,7 +9,6 @@ const notification = require("./models/notification");
 
 const onlineUsers = new Map(); // Lưu user online
 
-
 function setupSocket(server) {
     const io = new Server(server, {
         cors: {
@@ -28,16 +27,17 @@ function setupSocket(server) {
         console.log(`✅ User connected: ${socket.id}`);
 
         // Khi user login, lưu vào danh sách online
+        // Khi user login, lưu vào danh sách online
         socket.on("user_online", async (ID_user) => {
             if (!ID_user) return;
 
             onlineUsers.set(ID_user, socket.id);
             console.log(`🟢 User ${ID_user} is online`);
 
-            // Cập nhật trạng thái trong database (nếu cần)
+            // Cập nhật trạng thái user trong database
             await user.findByIdAndUpdate(ID_user, { isActive: 2 });
 
-            // Phát danh sách user online cho tất cả client
+            // Gửi danh sách user online về tất cả client
             io.emit("online_users", Array.from(onlineUsers.keys()));
         });
 
@@ -85,6 +85,23 @@ function setupSocket(server) {
                 _destroy: newMessage._destroy,
             };
             io.to(ID_group).emit('receive_message', newMessageSocket);
+
+            // Gửi sự kiện thông báo nhóm có tin nhắn mới
+            io.emit('new_message', {
+                ID_group: ID_group,
+                message: {
+                    ID_message: newMessage._id,
+                    sender: {
+                        ID_user: checkUser._id,
+                        first_name: checkUser.first_name,
+                        last_name: checkUser.last_name,
+                        avatar: checkUser.avatar,
+                    },
+                    content: newMessage.content,
+                    createdAt: newMessage.createdAt,
+                    _destroy: newMessage._destroy,
+                }
+            });
 
             // 🔍 Tìm thông tin nhóm
             const groupInfo = await group.findById(ID_group);
@@ -199,21 +216,68 @@ function setupSocket(server) {
             }
         });
 
-        // Khi user ngắt kết nối
-        socket.on('disconnect', async () => {
-            const ID_user = [...onlineUsers.entries()].find(([key, value]) => value === socket.id)?.[0];
+        // tạo nhóm
+        socket.on("new_group", ({ group, members }) => {
+            console.log("📢 Server nhận new_group:", group._id);
+            group.messageLatest = group.messageLatest || null;
+            members.forEach(memberId => {
+                const memberSocket = onlineUsers.get(memberId);
+                if (memberSocket) {
+                    io.to(memberSocket).emit("new_group", { group, members });
+                    console.log(`📡 Gửi new_group đến user ${memberId}`);
+                } else {
+                    console.log(`⚠️ User ${memberId} offline, không thể gửi socket.`);
+                }
+            });
+        });
 
-            if (ID_user) {
+        socket.on("delete_group", async ({ ID_group }) => {
+            if (!ID_group) {
+                console.error("❌ Group ID is missing!");
+                return;
+            }
+
+            console.log("delete_group: 1421");
+
+            // Xóa tất cả thành viên khỏi phòng socket
+            io.in(ID_group).socketsLeave(ID_group);
+
+            // homeChat
+            io.emit("group_deleted", { ID_group });
+        });
+
+
+        socket.on("kick_user", async ({ ID_group, ID_user }) => {
+            if (!ID_group || !ID_user) {
+                console.error("❌ Thiếu ID_group hoặc ID_user!");
+                return;
+            }
+
+            // Thông báo cho user bị kick
+            const userSocket = onlineUsers.get(ID_user);
+            if (userSocket) {
+                // Rời khỏi phòng
+                io.to(userSocket).socketsLeave(ID_group);
+                io.emit("kicked_from_group", { ID_group });
+            }
+        });
+
+        // Khi user ngắt kết nối
+        // Khi user disconnect, xóa khỏi danh sách online
+        socket.on("disconnect", async () => {
+            const disconnectedUser = [...onlineUsers.entries()].find(([id, socketId]) => socketId === socket.id);
+
+            if (disconnectedUser) {
+                const [ID_user] = disconnectedUser;
                 onlineUsers.delete(ID_user);
                 console.log(`🔴 User ${ID_user} is offline`);
 
-                // Cập nhật trạng thái offline trong database
+                // Cập nhật trạng thái trong database
                 await user.findByIdAndUpdate(ID_user, { isActive: 1 });
 
-                // Phát danh sách user online mới
+                // Gửi danh sách user online mới
                 io.emit("online_users", Array.from(onlineUsers.keys()));
             }
-            console.log(`❌ User disconnected: ${socket.id}`);
         });
 
         socket.on('connect_error', (err) => {

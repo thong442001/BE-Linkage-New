@@ -49,7 +49,10 @@ async function addGroup(name, members) {
             members: members,// Vẫn thêm tất cả vào nhóm
             isPrivate: false,
         };
-        const newGroup = await group.create(newItem);
+
+        // 🔥 Tạo nhóm và populate members
+        let newGroup = await group.create(newItem);
+        newGroup = await newGroup.populate('members', 'first_name last_name avatar');
 
         // Nếu không có thành viên nào khác để gửi thông báo, dừng lại
         if (otherMembers.length === 0) return newGroup;
@@ -150,13 +153,14 @@ async function getAllGroupOfUser(ID_user) {
             ]
         })
             .populate('members', 'first_name last_name avatar')
-            .lean() // Lấy kết quả dưới dạng object JavaScript để thêm thuộc tính cho group
+            .lean() // Lấy kết quả dưới dạng object JavaScript để dễ thao tác
             .exec();
+
         // Lấy tin nhắn mới nhất của từng nhóm bằng Promise.all()
         const updatedGroups = await Promise.all(groups.map(async (group) => {
             const messageNew = await message.find({ ID_group: group._id })
                 .populate('sender', 'first_name last_name avatar')
-                .sort({ createdAt: -1 })
+                .sort({ createdAt: -1 }) // Lấy tin nhắn mới nhất
                 .limit(1);
 
             if (messageNew.length > 0) {
@@ -166,7 +170,6 @@ async function getAllGroupOfUser(ID_user) {
                         ID_user: messageNew[0].sender._id,
                         first_name: messageNew[0].sender.first_name,
                         last_name: messageNew[0].sender.last_name,
-                        //displayName: messageNew[0].sender.displayName,
                         avatar: messageNew[0].sender.avatar,
                     },
                     content: messageNew[0].content,
@@ -176,15 +179,26 @@ async function getAllGroupOfUser(ID_user) {
             } else {
                 group.messageLatest = null;
             }
-            //console.log(group.messageLatest);
-            return group; // ✅ Quan trọng: Return group để cập nhật giá trị
+            return group;
         }));
-        return updatedGroups.filter(group => group && (group.messageLatest != null || group.isPrivate == false));
+
+        // Lọc nhóm không cần thiết
+        const filteredGroups = updatedGroups.filter(group => group && (group.messageLatest != null || group.isPrivate == false));
+
+        // 🔥 Sắp xếp nhóm theo thời gian tin nhắn mới nhất hoặc createdAt của group
+        filteredGroups.sort((a, b) => {
+            const timeA = a.messageLatest ? new Date(a.messageLatest.createdAt).getTime() : new Date(a.createdAt).getTime();
+            const timeB = b.messageLatest ? new Date(b.messageLatest.createdAt).getTime() : new Date(b.createdAt).getTime();
+            return timeB - timeA; // Sắp xếp giảm dần (mới nhất lên trên)
+        });
+
+        return filteredGroups;
     } catch (error) {
         console.error("Lỗi khi lấy nhóm:", error);
         throw error;
     }
 }
+
 
 // edit 
 async function addMembers(ID_group, new_members) {
