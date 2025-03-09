@@ -109,10 +109,8 @@ async function addGroup(name, members) {
 
 async function getGroupID(ID_group) {
     try {
-        const result = await group.findById(ID_group).populate({
-            path: 'members',
-            select: 'first_name last_name avatar' // Chỉ lấy trường name và email (_id auto lấy)
-        });
+        const result = await group.findById(ID_group)
+            .populate('members', 'first_name last_name avatar');
         return result;
     } catch (error) {
         console.log(error);
