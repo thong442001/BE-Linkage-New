@@ -297,7 +297,7 @@ function setupSocket(server) {
                 console.log(`🔴 User ${ID_user} is offline`);
 
                 // Cập nhật trạng thái user trong database (không chặn event loop)
-                user.findByIdAndUpdate(ID_user, { isActive: 1 }).exec();
+                user.findByIdAndUpdate(ID_user, { isActive: 1 });
 
                 // Gửi danh sách ID user online mới
                 io.emit("online_users", Array.from(onlineUsers.keys()));

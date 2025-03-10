@@ -46,7 +46,7 @@
                     </div>
                 </form> --}}
                 <ul class="nav ml-auto">
-                    <li class="nav-item dropdown">
+                    {{!-- <li class="nav-item dropdown">
                         <a class="nav-link" href="#" id="notificationDropdown" data-toggle="dropdown"
                             aria-expanded="false">
                             <i class="mdi mdi-bell-outline mdi-1x"></i>
@@ -91,8 +91,8 @@
                                 <a href="#">View All</a>
                             </div>
                         </div>
-                    </li>
-                    <li class="nav-item dropdown">
+                    </li> --}}
+                    {{!-- <li class="nav-item dropdown">
                         <a class="nav-link" href="#" id="messageDropdown" data-toggle="dropdown" aria-expanded="false">
                             <i class="mdi mdi-message-outline mdi-1x"></i>
                             <span
@@ -143,37 +143,37 @@
                                 <a href="#">View All</a>
                             </div>
                         </div>
-                    </li>
+                    </li> --}}
                     <li class="nav-item dropdown">
                         <a class="nav-link" href="#" id="appsDropdown" data-toggle="dropdown" aria-expanded="false">
                             <i class="mdi mdi-apps mdi-1x"></i>
                         </a>
                         <div class="dropdown-menu navbar-dropdown dropdown-menu-right" aria-labelledby="appsDropdown">
-                            <div class="dropdown-header">
+                            {{!-- <div class="dropdown-header">
                                 <h6 class="dropdown-title">Apps</h6>
                                 <p class="dropdown-title-text mt-2">Authentication required for 3 apps</p>
-                            </div>
+                            </div> --}}
                             <div class="dropdown-body border-top pt-0">
-                                <a class="dropdown-grid">
+                                {{!-- <a class="dropdown-grid">
                                     <i class="grid-icon mdi mdi-jira mdi-2x"></i>
                                     <span class="grid-tittle">Jira</span>
-                                </a>
+                                </a> --}}
                                 <a class="dropdown-grid">
                                     <i class="grid-icon mdi mdi-trello mdi-2x"></i>
-                                    <span class="grid-tittle">Trello</span>
+                                    <span class="grid-tittle">Users</span>
                                 </a>
                                 <a class="dropdown-grid">
                                     <i class="grid-icon mdi mdi-artstation mdi-2x"></i>
-                                    <span class="grid-tittle">Artstation</span>
+                                    <span class="grid-tittle">Posts</span>
                                 </a>
                                 <a class="dropdown-grid" href="/logout">
                                     <i class="grid-icon mdi mdi-bitbucket mdi-2x"></i>
                                     <span class="grid-tittle">Logout</span>
                                 </a>
                             </div>
-                            <div class="dropdown-footer">
+                            {{!-- <div class="dropdown-footer">
                                 <a href="#">View All</a>
-                            </div>
+                            </div> --}}
                         </div>
                     </li>
                 </ul>
@@ -195,44 +195,49 @@
             </div>
             <ul class="navigation-menu">
                 <li class="nav-category-divider">MAIN</li>
-                <li>
+                {{!-- <li>
                     <a href="/">
                         <span class="link-title">Dashboard</span>
                         <i class="mdi mdi-gauge link-icon"></i>
                     </a>
-                </li>
+                </li> --}}
                 <li>
                     <a href="#sample-pages" data-toggle="collapse" aria-expanded="false">
-                        <span class="link-title">Sample Pages</span>
+                        <span class="link-title">Reports</span>
                         <i class="mdi mdi-flask link-icon"></i>
                     </a>
                     <ul class="collapse navigation-submenu" id="sample-pages">
                         <li>
-                            <a href="login">Login</a>
+                            <a href="login">
+                                Users
+                            </a>
                         </li>
                         <li>
-                            <a href="pages/sample-pages/error_2.html" target="_blank">Error</a>
+                            <a href="pages/sample-pages/error_2.html" target="_blank">
+                                Posts
+                            </a>
                         </li>
                     </ul>
                 </li>
                 <li>
                     <a href="#ui-elements" data-toggle="collapse" aria-expanded="false">
-                        <span class="link-title">UI Elements</span>
+                        <span class="link-title">Bans</span>
                         <i class="mdi mdi-bullseye link-icon"></i>
                     </a>
                     <ul class="collapse navigation-submenu" id="ui-elements">
                         <li>
-                            <a href="pages/ui-components/buttons.html">Buttons</a>
+                            <a href="pages/ui-components/buttons.html">
+                                Users
+                            </a>
                         </li>
                         <li>
-                            <a href="pages/ui-components/tables.html">Tables</a>
-                        </li>
-                        <li>
-                            <a href="pages/ui-components/typography.html">Typography</a>
+                            <a href="pages/ui-components/tables.html">
+                                Posts
+                            </a>
                         </li>
                     </ul>
                 </li>
-                <li>
+                {{!-- <li>
                     <a href="pages/forms/form-elements.html">
                         <span class="link-title">Forms</span>
                         <i class="mdi mdi-clipboard-outline link-icon"></i>
@@ -249,11 +254,11 @@
                         <span class="link-title">Icons</span>
                         <i class="mdi mdi-flower-tulip-outline link-icon"></i>
                     </a>
-                </li>
+                </li> --}}
                 <li class="nav-category-divider">DOCS</li>
                 <li>
                     <a href="../docs/docs.html">
-                        <span class="link-title">Documentation</span>
+                        <span class="link-title">Logout</span>
                         <i class="mdi mdi-asterisk link-icon"></i>
                     </a>
                 </li>
