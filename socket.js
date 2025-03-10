@@ -27,24 +27,19 @@ function setupSocket(server) {
         console.log(`✅ User connected: ${socket.id}`);
 
         // Khi user login, lưu vào danh sách online
-        // Khi user login, lưu vào danh sách online
         socket.on("user_online", async (ID_user) => {
             if (!ID_user) return;
 
             onlineUsers.set(ID_user, socket.id);
             console.log(`🟢 User ${ID_user} is online`);
 
-            // Cập nhật trạng thái user trong database
-            await user.findByIdAndUpdate(ID_user, { isActive: 2 });
+            // Cập nhật trạng thái user trong database (không cần đợi)
+            user.findByIdAndUpdate(ID_user, { isActive: 2 }).exec();
 
-            const onlineUserList = await user.find(
-                { _id: { $in: Array.from(onlineUsers.keys()) } },
-                "_id avatar first_name last_name"
-            );
-
-            // Gửi danh sách user online về tất cả client
-            io.emit("online_users", onlineUserList);
+            // Gửi danh sách ID của user online về tất cả client
+            io.emit("online_users", Array.from(onlineUsers.keys()));
         });
+
 
         socket.on("joinGroup", (ID_group) => {
             if (!ID_group) {
@@ -294,18 +289,14 @@ function setupSocket(server) {
                 onlineUsers.delete(ID_user);
                 console.log(`🔴 User ${ID_user} is offline`);
 
-                // Cập nhật trạng thái trong database
-                await user.findByIdAndUpdate(ID_user, { isActive: 1 });
+                // Cập nhật trạng thái user trong database (không chặn event loop)
+                user.findByIdAndUpdate(ID_user, { isActive: 1 }).exec();
 
-                const onlineUserList = await user.find(
-                    { _id: { $in: Array.from(onlineUsers.keys()) } },
-                    "_id avatar first_name last_name"
-                );
-
-                // Gửi danh sách user online mới
-                io.emit("online_users", onlineUserList);
+                // Gửi danh sách ID user online mới
+                io.emit("online_users", Array.from(onlineUsers.keys()));
             }
         });
+
 
         socket.on('connect_error', (err) => {
             console.error('❌ Socket connection error:', err.message);
