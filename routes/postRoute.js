@@ -189,4 +189,20 @@ router.get('/getChiTietPost', checkToken, async function (req, res, next) {
   }
 });
 
+//http://localhost:3000/post/notiLiveStream
+router.post('/notiLiveStream', checkToken, async function (req, res, next) {
+  try {
+    const { ID_livestream, ID_user } = req.body;
+    const result = await postController.notiLiveStream(ID_livestream, ID_user);
+    if (result) {
+      //console.log("....2...");
+      return res.status(200).json({ "status": true, message: "Thông báo thành công" });
+    } else {
+      return res.status(4001).json({ "status": false, message: "User không có bạn bè" });
+    }
+  } catch (e) {
+    return res.status(400).json({ "status": false, "message": "lỗi" });
+  }
+});
+
 module.exports = router;

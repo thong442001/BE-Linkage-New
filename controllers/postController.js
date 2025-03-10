@@ -15,7 +15,8 @@ module.exports = {
     getPostsUserIdDestroyTrue,// thùng rác
     changeDestroyPost,// xóa và hôi phục
     deletePost,// delete vĩnh viễn
-    getChiTietPost// chiTietPost
+    getChiTietPost,// chiTietPost
+    notiLiveStream, // noti livestream
 }
 
 async function addPost(ID_user, caption, medias, status, type, ID_post_shared, tags) {
@@ -31,71 +32,74 @@ async function addPost(ID_user, caption, medias, status, type, ID_post_shared, t
         };
         const newPost = await posts.create(newItem);
 
-        // 📢 Xác định loại thông báo
-        let notificationType = '';
-        if (['Share', 'Tag', 'Normal'].includes(type)) {
-            notificationType = 'Đã đăng bài mới';
-        } else if (type === 'Story') {
-            notificationType = 'Đã đăng story mới';
-        } else {
-            return newPost._id; // Không gửi thông báo nếu không thuộc loại hợp lệ
+        // nếu status 'Chỉ mình tôi' thì ko thông báo
+        if (status != 'Chỉ mình tôi') {
+            // 📢 Xác định loại thông báo
+            let notificationType = '';
+            if (['Share', 'Tag', 'Normal'].includes(type)) {
+                notificationType = 'Đã đăng bài mới';
+            } else if (type === 'Story') {
+                notificationType = 'Đã đăng story mới';
+            } else {
+                return newPost._id; // Không gửi thông báo nếu không thuộc loại hợp lệ
+            }
+
+            // 🔍 Tìm tất cả bạn bè của người đăng bài
+            const relationships = await relationship.find({
+                $or: [
+                    { ID_userA: ID_user, relation: 'Bạn bè' },
+                    { ID_userB: ID_user, relation: 'Bạn bè' },
+                ],
+            });
+
+            const friendIds = relationships.map(r =>
+                r.ID_userA.toString() === ID_user.toString() ? r.ID_userB.toString() : r.ID_userA.toString()
+            );
+
+            if (friendIds.length === 0) return newPost._id; // Không có bạn bè để gửi thông báo
+
+            // 🔔 Tạo thông báo cho từng bạn bè
+            const notifications = friendIds.map(friendId => ({
+                ID_post: newPost._id,
+                ID_user: friendId,
+                type: notificationType,
+            }));
+
+            // 💾 Lưu thông báo vào database
+            const createdNotifications = await notification.insertMany(notifications);
+
+            // 🎯 Ghép `ID_user` với `notificationId`
+            const notificationMap = createdNotifications.reduce((acc, noti) => {
+                acc[noti.ID_user.toString()] = noti._id.toString();
+                return acc;
+            }, {});
+
+            // 🔍 Tìm FCM tokens của bạn bè
+            const fcmTokens = await noti_token.find({ ID_user: { $in: friendIds } }).select('ID_user token');
+
+            // 📤 Ghép token với notificationId
+            const messages = fcmTokens
+                .map(({ ID_user, token }) => ({
+                    token,
+                    notificationId: notificationMap[ID_user.toString()],
+                }))
+                .filter(({ token }) => token && token.trim().length > 0); // Lọc token hợp lệ
+
+            if (messages.length === 0) return newPost._id; // Không có token hợp lệ
+
+            // 🚀 Gửi từng thông báo riêng lẻ
+            await Promise.all(messages.map(({ token, notificationId }) =>
+                axios.post(
+                    //`http://localhost:3001/gg/send-notification`,
+                    `https://linkage.id.vn/gg/send-notification`,
+                    {
+                        fcmTokens: [token], // Chỉ gửi cho 1 user
+                        title: "Thông báo",
+                        body: null,
+                        ID_noties: [notificationId], // Notification tương ứng
+                    })
+            ));
         }
-
-        // 🔍 Tìm tất cả bạn bè của người đăng bài
-        const relationships = await relationship.find({
-            $or: [
-                { ID_userA: ID_user, relation: 'Bạn bè' },
-                { ID_userB: ID_user, relation: 'Bạn bè' },
-            ],
-        });
-
-        const friendIds = relationships.map(r =>
-            r.ID_userA.toString() === ID_user.toString() ? r.ID_userB.toString() : r.ID_userA.toString()
-        );
-
-        if (friendIds.length === 0) return newPost._id; // Không có bạn bè để gửi thông báo
-
-        // 🔔 Tạo thông báo cho từng bạn bè
-        const notifications = friendIds.map(friendId => ({
-            ID_post: newPost._id,
-            ID_user: friendId,
-            type: notificationType,
-        }));
-
-        // 💾 Lưu thông báo vào database
-        const createdNotifications = await notification.insertMany(notifications);
-
-        // 🎯 Ghép `ID_user` với `notificationId`
-        const notificationMap = createdNotifications.reduce((acc, noti) => {
-            acc[noti.ID_user.toString()] = noti._id.toString();
-            return acc;
-        }, {});
-
-        // 🔍 Tìm FCM tokens của bạn bè
-        const fcmTokens = await noti_token.find({ ID_user: { $in: friendIds } }).select('ID_user token');
-
-        // 📤 Ghép token với notificationId
-        const messages = fcmTokens
-            .map(({ ID_user, token }) => ({
-                token,
-                notificationId: notificationMap[ID_user.toString()],
-            }))
-            .filter(({ token }) => token && token.trim().length > 0); // Lọc token hợp lệ
-
-        if (messages.length === 0) return newPost._id; // Không có token hợp lệ
-
-        // 🚀 Gửi từng thông báo riêng lẻ
-        await Promise.all(messages.map(({ token, notificationId }) =>
-            axios.post(
-                //`http://localhost:3001/gg/send-notification`,
-                `https://linkage.id.vn/gg/send-notification`,
-                {
-                    fcmTokens: [token], // Chỉ gửi cho 1 user
-                    title: "Thông báo",
-                    body: null,
-                    ID_noties: [notificationId], // Notification tương ứng
-                })
-        ));
 
         return newPost._id; // Thành công
     } catch (error) {
@@ -662,3 +666,70 @@ async function getChiTietPost(ID_post) {
 }
 
 
+async function notiLiveStream(ID_livestream, ID_user) {
+    try {
+
+        // 🔍 Tìm tất cả bạn bè của người đăng bài
+        const relationships = await relationship.find({
+            $or: [
+                { ID_userA: ID_user, relation: 'Bạn bè' },
+                { ID_userB: ID_user, relation: 'Bạn bè' },
+            ],
+        });
+
+        const friendIds = relationships.map(r =>
+            r.ID_userA.toString() === ID_user.toString() ? r.ID_userB.toString() : r.ID_userA.toString()
+        );
+
+        if (friendIds.length === 0) return true; // Không có bạn bè để gửi thông báo
+
+        // 🔔 Tạo thông báo cho từng bạn bè
+        const notifications = friendIds.map(friendId => ({
+            content: ID_livestream,
+            ID_user: friendId,
+            type: 'Đang livestream',
+        }));
+
+        // 💾 Lưu thông báo vào database
+        const createdNotifications = await notification.insertMany(notifications);
+
+        // 🎯 Ghép `ID_user` với `notificationId`
+        const notificationMap = createdNotifications.reduce((acc, noti) => {
+            acc[noti.ID_user.toString()] = noti._id.toString();
+            return acc;
+        }, {});
+
+        // 🔍 Tìm FCM tokens của bạn bè
+        const fcmTokens = await noti_token.find({ ID_user: { $in: friendIds } }).select('ID_user token');
+
+        // 📤 Ghép token với notificationId
+        const messages = fcmTokens
+            .map(({ ID_user, token }) => ({
+                token,
+                notificationId: notificationMap[ID_user.toString()],
+            }))
+            .filter(({ token }) => token && token.trim().length > 0); // Lọc token hợp lệ
+
+        if (messages.length === 0) return true; // Không có token hợp lệ
+
+        // 🚀 Gửi từng thông báo riêng lẻ
+        await Promise.all(messages.map(({ token, notificationId }) =>
+            axios.post(
+                //`http://localhost:3001/gg/send-notification`,
+                `https://linkage.id.vn/gg/send-notification`,
+                {
+                    fcmTokens: [token], // Chỉ gửi cho 1 user
+                    title: "Thông báo",
+                    body: null,
+                    ID_noties: [notificationId], // Notification tương ứng
+                })
+        ));
+
+        console.log('noti live stream thành công')
+        return true;
+
+    } catch (error) {
+        console.log(error);
+        throw error;
+    }
+}

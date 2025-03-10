@@ -141,7 +141,7 @@ router.post('/editAvtNameGroup', checkToken, async function (req, res, next) {
   }
 });
 
-//http://localhost:3000/group/joinGroupPrivate
+//http://localhost:3000/group/notiCallVideo
 router.post('/notiCallVideo', checkToken, async function (req, res, next) {
   try {
     const { ID_group, ID_user, isCallVideo } = req.body;
