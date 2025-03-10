@@ -43,7 +43,7 @@ function setupSocket(server) {
             );
 
             // Gửi danh sách user online về tất cả client
-            io.emit("online_users", Array.from(onlineUsers.keys()));
+            io.emit("online_users", onlineUserList);
         });
 
         socket.on("joinGroup", (ID_group) => {
