@@ -279,7 +279,14 @@ function setupSocket(server) {
             }
         });
 
-        // Khi user ngắt kết nối
+
+        // Khi user logout ngắt kết nối
+        socket.on("user_offline", (userId) => {
+            console.log(`❌ User offline: ${userId}`);
+            onlineUsers = onlineUsers.filter(user => user._id !== userId);
+            io.emit("online_users", onlineUsers);
+        });
+
         // Khi user disconnect, xóa khỏi danh sách online
         socket.on("disconnect", async () => {
             const disconnectedUser = [...onlineUsers.entries()].find(([id, socketId]) => socketId === socket.id);
