@@ -161,6 +161,14 @@ function setupSocket(server) {
 
         });
 
+        socket.on("typing", ({ ID_group, ID_user }) => {
+            socket.to(ID_group).emit("user_typing", { ID_group, ID_user });
+        });
+
+        socket.on("stop_typing", ({ ID_group, ID_user }) => {
+            socket.to(ID_group).emit("user_stop_typing", { ID_group, ID_user });
+        });
+
         // Xử lý thu hồi tin nhắn
         socket.on('revoke_message', async (data) => {
             const { ID_message, ID_group } = data;

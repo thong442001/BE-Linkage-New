@@ -10,6 +10,10 @@ const noti_token = new Schema({
         type: String,
         default: null
     },
+    // status: {
+    //     type: Boolean, // true: bật thông báo - false: tắc thông báo
+    //     default: true
+    // },
 }, {
     timestamps: true
 });
