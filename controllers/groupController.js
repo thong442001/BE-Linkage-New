@@ -15,6 +15,7 @@ module.exports = {
     passKey,
     deleteGroup,
     editAvtNameGroup,
+    notiCallVideo,// noti call video
 }
 //
 async function addGroupPrivate(user1, user2) {
@@ -347,6 +348,73 @@ async function editAvtNameGroup(ID_group, avatar, name) {
         } else {
             return false;
         }
+    } catch (error) {
+        console.log(error);
+        throw error;
+    }
+}
+
+async function notiCallVideo(ID_group, ID_user, isCallVideo) {
+    try {
+
+        // 🔍 Tìm thông tin nhóm
+        const groupInfo = await group.findById(ID_group);
+        if (!groupInfo) {
+            console.log('Không tìm thấy nhóm!');
+            return false;
+        }
+
+        // 📜 Lọc danh sách thành viên (trừ người gửi)
+        const memberIds = groupInfo.members
+            .map(m => m.toString())
+            .filter(id => id !== ID_user.toString());
+
+        if (memberIds.length === 0) return false; // ⛔ Không có ai để gửi thông báo
+
+        // 🔍 Tìm FCM tokens kèm `ID_user`
+        const fcmTokens = await noti_token.find({ ID_user: { $in: memberIds } }).select('ID_user token');
+
+        // 🛠 Tạo thông báo cho từng thành viên
+        const notifications = fcmTokens.map(({ ID_user }) => ({
+            ID_group: ID_group,
+            ID_user: ID_user.toString(),
+            type: isCallVideo ? 'Bạn có 1 cuộc gọi video đến' : 'Bạn có 1 cuộc gọi đến',
+        }));
+
+        // 💾 Lưu thông báo vào database
+        const createdNotifications = await notification.insertMany(notifications);
+
+        // 🎯 Ghép `token` với `notificationId`
+        const notificationMap = createdNotifications.reduce((acc, noti) => {
+            acc[noti.ID_user.toString()] = noti._id.toString();
+            return acc;
+        }, {});
+
+        // 🔥 Tạo danh sách gửi thông báo từng người
+        const messages = fcmTokens
+            .map(({ ID_user, token }) => ({
+                token,
+                notificationId: notificationMap[ID_user.toString()],
+            }))
+            .filter(({ token }) => token && token.trim().length > 0); // Lọc token hợp lệ
+
+        if (messages.length === 0) return true;// ⛔ Không có dữ liệu hợp lệ
+
+        // 🚀 Gửi từng thông báo riêng lẻ
+        await Promise.all(messages.map(({ token, notificationId }) =>
+            axios.post(
+                //`http://localhost:3001/gg/send-notification`,
+                `https://linkage.id.vn/gg/send-notification`,
+                {
+                    fcmTokens: [token], // Chỉ gửi cho 1 user
+                    title: "Thông báo",
+                    body: null,
+                    ID_noties: [notificationId], // Notification tương ứng
+                })
+        ));
+
+        return true;
+
     } catch (error) {
         console.log(error);
         throw error;

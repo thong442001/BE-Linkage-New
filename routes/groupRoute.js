@@ -141,4 +141,20 @@ router.post('/editAvtNameGroup', checkToken, async function (req, res, next) {
   }
 });
 
+//http://localhost:3000/group/joinGroupPrivate
+router.post('/notiCallVideo', checkToken, async function (req, res, next) {
+  try {
+    const { ID_group, ID_user, isCallVideo } = req.body;
+    const result = await groupController.notiCallVideo(ID_group, ID_user, isCallVideo);
+    if (result) {
+      //console.log("....2...");
+      return res.status(200).json({ "status": true, message: "Thông báo thành công" });
+    } else {
+      return res.status(4001).json({ "status": false, message: "Không tìm thấy ID_group hoặc không tìm thấy các members khác" });
+    }
+  } catch (e) {
+    return res.status(400).json({ "status": false, "message": "lỗi" });
+  }
+});
+
 module.exports = router;

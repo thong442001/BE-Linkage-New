@@ -37,6 +37,11 @@ function setupSocket(server) {
             // Cập nhật trạng thái user trong database
             await user.findByIdAndUpdate(ID_user, { isActive: 2 });
 
+            const onlineUserList = await user.find(
+                { _id: { $in: Array.from(onlineUsers.keys()) } },
+                "_id avatar first_name last_name"
+            );
+
             // Gửi danh sách user online về tất cả client
             io.emit("online_users", Array.from(onlineUsers.keys()));
         });
@@ -292,8 +297,13 @@ function setupSocket(server) {
                 // Cập nhật trạng thái trong database
                 await user.findByIdAndUpdate(ID_user, { isActive: 1 });
 
+                const onlineUserList = await user.find(
+                    { _id: { $in: Array.from(onlineUsers.keys()) } },
+                    "_id avatar first_name last_name"
+                );
+
                 // Gửi danh sách user online mới
-                io.emit("online_users", Array.from(onlineUsers.keys()));
+                io.emit("online_users", onlineUserList);
             }
         });
 
