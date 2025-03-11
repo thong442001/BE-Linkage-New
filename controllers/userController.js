@@ -335,12 +335,12 @@ async function setNoti_token(ID_user, fcmToken) {
             // result.token = null;
             // await result.save();
 
+            // Xóa token cụ thể nếu nó tồn tại
+            result.tokens = result.tokens.filter(token => token !== fcmToken);
             // Đảm bảo `tokens` luôn là một mảng
             if (!Array.isArray(result.tokens)) {
                 result.tokens = [];
             }
-            // Xóa token cụ thể nếu nó tồn tại
-            result.tokens = result.tokens.filter(token => token !== fcmToken);
             // Lưu lại mảng mới (dù rỗng)
             await result.save();
             console.log("✅ Token đã được xóa:", result);
