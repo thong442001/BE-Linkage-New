@@ -408,9 +408,11 @@ router.post('/setNoti_token', async function (req, res, next) {
   try {
     const {
       ID_user,
+      fcmToken
     } = req.body;
     const result = await userController.setNoti_token(
       ID_user,
+      fcmToken
     );
     if (result) {
       return res.status(200).json({
