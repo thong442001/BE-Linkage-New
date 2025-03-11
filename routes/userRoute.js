@@ -177,6 +177,12 @@ router.post('/login', async function (req, res, next) {
     } else if (result.status == 402) {
       //sai mật khẩu 
       res.status(402).json({ "status": false, "message": result.message });
+    } else if (result.status == 403) {
+      //Tài khoản admin không thể vào app
+      res.status(403).json({ "status": false, "message": result.message });
+    } else if (result.status == 404) {
+      //Tài khoản này đã bị khóa
+      res.status(404).json({ "status": false, "message": result.message });
     }
   } catch (e) {
     res.status(400).json({ "status": false, "message": "lỗi" });

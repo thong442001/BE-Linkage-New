@@ -186,33 +186,45 @@ router.post('/loginGG', async function (req, res, next) {
         phone: null,  // Nếu phone trống, set là null
         password: hashedPassword,
         avatar: picture || null, // avt
-        role: 2,
+        role: 2,// user
       };
 
       // Lưu vào database
       user = await users.create(newItem);
+    } else if (user.role == 2) {
+
+      // check noti_token của user
+      const check_noti_token = await noti_token.findOne({ "ID_user": user._id })
+      if (check_noti_token) {
+        check_noti_token.token = fcmToken;
+        await check_noti_token.save();
+      } else {
+        const newItem = {
+          ID_user: user._id,
+          token: fcmToken,
+        };
+        await noti_token.create(newItem);
+      }
+      //token
+      const token = JWT.sign({ id: user._id, data: "data ne" }, config.SECRETKEY, { expiresIn: '1d' });
+      const refreshToken = JWT.sign({ id: user._id }, config.SECRETKEY, { expiresIn: '1y' })
+      res.status(200).json({
+        "status": true,
+        "token": token,
+        "refreshToken": refreshToken,
+        "user": user
+      });
+    } else if (user.role == 1) {
+      res.status(401).json({
+        "status": false,
+        "message": "Tài khoản admin không thể vào app"
+      });
+    } else if (user.role == 0) {
+      res.status(402).json({
+        "status": false,
+        "message": "Tài khoản đã bị khóa"
+      });
     }
-    // check noti_token của user
-    const check_noti_token = await noti_token.findOne({ "ID_user": user._id })
-    if (check_noti_token) {
-      check_noti_token.token = fcmToken;
-      await check_noti_token.save();
-    } else {
-      const newItem = {
-        ID_user: user._id,
-        token: fcmToken,
-      };
-      await noti_token.create(newItem);
-    }
-    //token
-    const token = JWT.sign({ id: user._id, data: "data ne" }, config.SECRETKEY, { expiresIn: '1d' });
-    const refreshToken = JWT.sign({ id: user._id }, config.SECRETKEY, { expiresIn: '1y' })
-    res.status(200).json({
-      "status": true,
-      "token": token,
-      "refreshToken": refreshToken,
-      "user": user
-    });
   } catch (error) {
     console.error("Lỗi đăng nhập Google:", error);
     res.status(400).json({ "status": false, "message": error.message });

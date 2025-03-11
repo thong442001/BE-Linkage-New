@@ -77,55 +77,67 @@ async function login(email, phone, password, fcmToken) {
         const check_username = await users.findOne({ "email": email });
 
         if (check_username) {
-            const ssPassword1 = bcrypt.compareSync(password, check_username.password);
-            if (ssPassword1) {
-                //token
-                const token = JWT.sign({ id: check_username._id, data: "data ne" }, config.SECRETKEY, { expiresIn: '1d' });
-                const refreshToken = JWT.sign({ id: check_username._id }, config.SECRETKEY, { expiresIn: '1y' })
-                // check noti_token của user
-                const check_noti_token = await noti_token.findOne({ "ID_user": check_username._id })
-                if (check_noti_token) {
-                    check_noti_token.token = fcmToken;
-                    await check_noti_token.save();
-                } else {
-                    const newItem = {
-                        ID_user: check_username._id,
-                        token: fcmToken,
-                    };
-                    await noti_token.create(newItem);
-                }
-                //res.status(200).json({ "status": true, "user": check_username, token: token, refreshToken: refreshToken });
-                return { "status": 200, "user": check_username, token: token, refreshToken: refreshToken };
-            } else {
-                //res.status(401).json({ "status": false, "message": "sai mật khẩu" });
-                return { "status": 402, "message": "sai mật khẩu" };
-            }
-        } else {
-            //check phone
-            const check_phone = await users.findOne({ "phone": phone });
-            if (check_phone) {
-                const ssPassword2 = bcrypt.compareSync(password, check_phone.password);
-                if (ssPassword2) {
+            if (check_username.role == 2) {
+                const ssPassword1 = bcrypt.compareSync(password, check_username.password);
+                if (ssPassword1) {
                     //token
-                    const token = JWT.sign({ id: check_phone._id, data: "data ne" }, config.SECRETKEY, { expiresIn: '1d' });
-                    const refreshToken = JWT.sign({ id: check_phone._id }, config.SECRETKEY, { expiresIn: '1y' })
-                    //res.status(200).json({ "status": true, "user": check_username, token: token, refreshToken: refreshToken });
+                    const token = JWT.sign({ id: check_username._id, data: "data ne" }, config.SECRETKEY, { expiresIn: '1d' });
+                    const refreshToken = JWT.sign({ id: check_username._id }, config.SECRETKEY, { expiresIn: '1y' })
                     // check noti_token của user
-                    const check_noti_token = await noti_token.findOne({ "ID_user": check_phone._id })
+                    const check_noti_token = await noti_token.findOne({ "ID_user": check_username._id })
                     if (check_noti_token) {
                         check_noti_token.token = fcmToken;
                         await check_noti_token.save();
                     } else {
                         const newItem = {
-                            ID_user: check_phone._id,
+                            ID_user: check_username._id,
                             token: fcmToken,
                         };
                         await noti_token.create(newItem);
                     }
-                    return { "status": 200, "user": check_phone, token: token, refreshToken: refreshToken };
+                    //res.status(200).json({ "status": true, "user": check_username, token: token, refreshToken: refreshToken });
+                    return { "status": 200, "user": check_username, token: token, refreshToken: refreshToken };
                 } else {
                     //res.status(401).json({ "status": false, "message": "sai mật khẩu" });
                     return { "status": 402, "message": "sai mật khẩu" };
+                }
+            } else if (check_username.role == 1) {
+                return { "status": 403, "message": "Tài khoản admin không thể vào app" };
+            } else if (check_username.role == 0) {
+                return { "status": 404, "message": "Tài khoản này đã bị khóa" };
+            }
+        } else {
+            //check phone
+            const check_phone = await users.findOne({ "phone": phone });
+            if (check_phone) {
+                if (check_phone.role == 2) {
+                    const ssPassword2 = bcrypt.compareSync(password, check_phone.password);
+                    if (ssPassword2) {
+                        //token
+                        const token = JWT.sign({ id: check_phone._id, data: "data ne" }, config.SECRETKEY, { expiresIn: '1d' });
+                        const refreshToken = JWT.sign({ id: check_phone._id }, config.SECRETKEY, { expiresIn: '1y' })
+                        //res.status(200).json({ "status": true, "user": check_username, token: token, refreshToken: refreshToken });
+                        // check noti_token của user
+                        const check_noti_token = await noti_token.findOne({ "ID_user": check_phone._id })
+                        if (check_noti_token) {
+                            check_noti_token.token = fcmToken;
+                            await check_noti_token.save();
+                        } else {
+                            const newItem = {
+                                ID_user: check_phone._id,
+                                token: fcmToken,
+                            };
+                            await noti_token.create(newItem);
+                        }
+                        return { "status": 200, "user": check_phone, token: token, refreshToken: refreshToken };
+                    } else {
+                        //res.status(401).json({ "status": false, "message": "sai mật khẩu" });
+                        return { "status": 402, "message": "sai mật khẩu" };
+                    }
+                } else if (check_phone.role == 1) {
+                    return { "status": 403, "message": "Tài khoản admin không thể vào app" };
+                } else if (check_phone.role == 0) {
+                    return { "status": 404, "message": "Tài khoản này đã bị khóa" };
                 }
             }
             // phone và email ko có

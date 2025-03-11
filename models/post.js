@@ -29,6 +29,7 @@ const post = new Schema({
             'Share',
             'Tag',
             'Normal',
+            'Ban',// khóa
         ],
     },
     ID_post_shared: {
