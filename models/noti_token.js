@@ -10,10 +10,10 @@ const noti_token = new Schema({
     //     type: String,
     //     default: null
     // },
-    tokens: [{
-        type: String, // kiểu dữ liệu
-        default: null
-    }],
+    tokens: {
+        type: [String], // Mảng các token FCM
+        default: [] // Để mảng rỗng khi chưa có token
+    }
     // status: {
     //     type: Boolean, // true: bật thông báo - false: tắc thông báo
     //     default: true
