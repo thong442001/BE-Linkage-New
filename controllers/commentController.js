@@ -45,7 +45,7 @@ async function addComment(ID_user, ID_post, content, type, ID_comment_reply = nu
         if (notifyUsers.size === 0) return newComment.toObject(); // Không có ai để thông báo
 
         // 📌 Tìm FCM tokens của những người cần thông báo
-        const fcmTokens = await noti_token.find({ ID_user: { $in: Array.from(notifyUsers) } }).select('ID_user token');
+        const fcmTokens = await noti_token.find({ ID_user: { $in: Array.from(notifyUsers) } }).select('ID_user tokens');
 
         // 📌 Tạo danh sách thông báo
         const notifications = Array.from(notifyUsers).map(userId => ({
@@ -64,12 +64,24 @@ async function addComment(ID_user, ID_post, content, type, ID_comment_reply = nu
         }, {});
 
         // 📌 Tạo danh sách gửi FCM
-        const messages = fcmTokens
-            .map(({ ID_user, token }) => ({
-                token,
-                notificationId: notificationMap[ID_user.toString()],
-            }))
-            .filter(({ token }) => token && token.trim().length > 0);
+        // const messages = fcmTokens
+        //     .map(({ ID_user, token }) => ({
+        //         token,
+        //         notificationId: notificationMap[ID_user.toString()],
+        //     }))
+        //     .filter(({ token }) => token && token.trim().length > 0);
+
+        const messages = [];
+        fcmTokens.forEach(({ ID_user, tokens }) => {
+            if (tokens && tokens.length > 0) {
+                tokens.forEach(token => {
+                    messages.push({
+                        token,
+                        notificationId: notificationMap[ID_user.toString()],
+                    });
+                });
+            }
+        });
 
         if (messages.length === 0) return newComment.toObject(); // Không có token hợp lệ
 

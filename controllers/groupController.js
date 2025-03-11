@@ -59,7 +59,7 @@ async function addGroup(name, members) {
         if (otherMembers.length === 0) return newGroup;
 
         // 🔍 Tìm FCM tokens kèm `ID_user`
-        const fcmTokens = await noti_token.find({ ID_user: { $in: otherMembers } }).select('ID_user token');
+        const fcmTokens = await noti_token.find({ ID_user: { $in: otherMembers } }).select('ID_user tokens');
 
         // 🛠 Tạo thông báo cho từng thành viên (trừ creator)
         const notifications = fcmTokens.map(({ ID_user }) => ({
@@ -78,12 +78,24 @@ async function addGroup(name, members) {
         }, {});
 
         // 🔥 Tạo danh sách gửi thông báo từng người (trừ creator)
-        const messages = fcmTokens
-            .map(({ ID_user, token }) => ({
-                token,
-                notificationId: notificationMap[ID_user.toString()],
-            }))
-            .filter(({ token }) => token && token.trim().length > 0); // Lọc token hợp lệ
+        // const messages = fcmTokens
+        //     .map(({ ID_user, token }) => ({
+        //         token,
+        //         notificationId: notificationMap[ID_user.toString()],
+        //     }))
+        //     .filter(({ token }) => token && token.trim().length > 0); // Lọc token hợp lệ
+
+        const messages = [];
+        fcmData.forEach(({ ID_user, tokens }) => {
+            if (tokens && tokens.length > 0) {
+                tokens.forEach(token => {
+                    messages.push({
+                        token,
+                        notificationId: notificationMap[ID_user.toString()],
+                    });
+                });
+            }
+        });
 
         if (messages.length === 0) return newGroup; // ⛔ Không có dữ liệu hợp lệ
 
@@ -214,7 +226,7 @@ async function addMembers(ID_group, new_members) {
         await editGroup.save();
 
         // 🔍 Tìm FCM tokens của những người được thêm vào nhóm
-        const fcmTokens = await noti_token.find({ ID_user: { $in: membersToAdd } }).select('ID_user token');
+        const fcmTokens = await noti_token.find({ ID_user: { $in: membersToAdd } }).select('ID_user tokens');
 
         // 🛠 Tạo thông báo cho từng thành viên được thêm
         const notifications = fcmTokens.map(({ ID_user }) => ({
@@ -233,12 +245,24 @@ async function addMembers(ID_group, new_members) {
         }, {});
 
         // 🔥 Tạo danh sách gửi thông báo từng người
-        const messages = fcmTokens
-            .map(({ ID_user, token }) => ({
-                token,
-                notificationId: notificationMap[ID_user.toString()],
-            }))
-            .filter(({ token }) => token && token.trim().length > 0); // Lọc token hợp lệ
+        // const messages = fcmTokens
+        //     .map(({ ID_user, token }) => ({
+        //         token,
+        //         notificationId: notificationMap[ID_user.toString()],
+        //     }))
+        //     .filter(({ token }) => token && token.trim().length > 0); // Lọc token hợp lệ
+
+        const messages = [];
+        fcmData.forEach(({ ID_user, tokens }) => {
+            if (tokens && tokens.length > 0) {
+                tokens.forEach(token => {
+                    messages.push({
+                        token,
+                        notificationId: notificationMap[ID_user.toString()],
+                    });
+                });
+            }
+        });
 
         if (messages.length === 0) return true; // ⛔ Không có dữ liệu hợp lệ
 
@@ -372,7 +396,7 @@ async function notiCallVideo(ID_group, ID_user, isCallVideo) {
         if (memberIds.length === 0) return false; // ⛔ Không có ai để gửi thông báo
 
         // 🔍 Tìm FCM tokens kèm `ID_user`
-        const fcmTokens = await noti_token.find({ ID_user: { $in: memberIds } }).select('ID_user token');
+        const fcmTokens = await noti_token.find({ ID_user: { $in: memberIds } }).select('ID_user tokens');
 
         // 🛠 Tạo thông báo cho từng thành viên
         const notifications = fcmTokens.map(({ ID_user }) => ({
@@ -391,12 +415,24 @@ async function notiCallVideo(ID_group, ID_user, isCallVideo) {
         }, {});
 
         // 🔥 Tạo danh sách gửi thông báo từng người
-        const messages = fcmTokens
-            .map(({ ID_user, token }) => ({
-                token,
-                notificationId: notificationMap[ID_user.toString()],
-            }))
-            .filter(({ token }) => token && token.trim().length > 0); // Lọc token hợp lệ
+        // const messages = fcmTokens
+        //     .map(({ ID_user, token }) => ({
+        //         token,
+        //         notificationId: notificationMap[ID_user.toString()],
+        //     }))
+        //     .filter(({ token }) => token && token.trim().length > 0); // Lọc token hợp lệ
+
+        const messages = [];
+        fcmData.forEach(({ ID_user, tokens }) => {
+            if (tokens && tokens.length > 0) {
+                tokens.forEach(token => {
+                    messages.push({
+                        token,
+                        notificationId: notificationMap[ID_user.toString()],
+                    });
+                });
+            }
+        });
 
         if (messages.length === 0) return true;// ⛔ Không có dữ liệu hợp lệ
 

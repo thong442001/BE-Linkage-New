@@ -6,10 +6,14 @@ const noti_token = new Schema({
         type: ObjectId,
         ref: 'user',
     },
-    token: {
-        type: String,
+    // token: {
+    //     type: String,
+    //     default: null
+    // },
+    tokens: [{
+        type: String, // kiểu dữ liệu
         default: null
-    },
+    }],
     // status: {
     //     type: Boolean, // true: bật thông báo - false: tắc thông báo
     //     default: true

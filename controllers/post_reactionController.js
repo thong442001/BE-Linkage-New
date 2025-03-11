@@ -55,14 +55,14 @@ async function addPost_Reaction(ID_post, ID_user, ID_reaction) {
             const savedNotification = await newNotification.save();
 
             // 📤 Gửi thông báo FCM
-            const fcmToken = await noti_token.findOne({ ID_user: postOwner });
+            const fcmToken = await noti_token.findOne({ ID_user: postOwner }).select('ID_user tokens');
 
-            if (fcmToken && fcmToken.token) {
+            if (fcmToken && fcmToken.tokens) {
                 await axios.post(
                     //`http://localhost:3001/gg/send-notification`,
                     `https://linkage.id.vn/gg/send-notification`,
                     {
-                        fcmTokens: [fcmToken.token], // Chỉ gửi cho 1 người
+                        fcmTokens: fcmToken.tokens,
                         title: "Thông báo",
                         body: null,
                         ID_noties: [savedNotification._id.toString()],

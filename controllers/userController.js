@@ -86,12 +86,19 @@ async function login(email, phone, password, fcmToken) {
                     // check noti_token của user
                     const check_noti_token = await noti_token.findOne({ "ID_user": check_username._id })
                     if (check_noti_token) {
-                        check_noti_token.token = fcmToken;
-                        await check_noti_token.save();
+                        // check_noti_token.token = fcmToken;
+                        // await check_noti_token.save();
+
+                        // check fcmToken đã có chưa 
+                        // chưa có thì add thêm vào
+                        if (!check_noti_token.tokens.includes(fcmToken)) {
+                            check_noti_token.tokens.push(fcmToken);
+                        }
                     } else {
+                        // chưa có thì tạo mới
                         const newItem = {
                             ID_user: check_username._id,
-                            token: fcmToken,
+                            tokens: [fcmToken],
                         };
                         await noti_token.create(newItem);
                     }
@@ -120,12 +127,18 @@ async function login(email, phone, password, fcmToken) {
                         // check noti_token của user
                         const check_noti_token = await noti_token.findOne({ "ID_user": check_phone._id })
                         if (check_noti_token) {
-                            check_noti_token.token = fcmToken;
-                            await check_noti_token.save();
+                            // check_noti_token.token = fcmToken;
+                            // await check_noti_token.save();
+
+                            // check fcmToken đã có chưa 
+                            // chưa có thì add thêm vào
+                            if (!check_noti_token.tokens.includes(fcmToken)) {
+                                check_noti_token.tokens.push(fcmToken);
+                            }
                         } else {
                             const newItem = {
                                 ID_user: check_phone._id,
-                                token: fcmToken,
+                                tokens: [fcmToken],
                             };
                             await noti_token.create(newItem);
                         }
@@ -315,12 +328,15 @@ async function checkPhone(phone) {
     }
 }
 
-async function setNoti_token(ID_user) {
+async function setNoti_token(ID_user, fcmToken) {
     try {
         const result = await noti_token.findOne({ "ID_user": ID_user });
         if (result) {
-            result.token = null;
+            // result.token = null;
+            // await result.save();
+            result.tokens = result.tokens.filter(token => token !== fcmToken);
             await result.save();
+            console.log("✅ Token đã được xóa:", result);
         }
         return true;
     } catch (error) {
@@ -328,3 +344,4 @@ async function setNoti_token(ID_user) {
         throw error;
     }
 }
+

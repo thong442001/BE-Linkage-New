@@ -118,7 +118,7 @@ function setupSocket(server) {
             if (memberIds.length === 0) return; // ⛔ Không có ai để gửi thông báo
 
             // 🔍 Tìm FCM tokens kèm `ID_user`
-            const fcmTokens = await noti_token.find({ ID_user: { $in: memberIds } }).select('ID_user token');
+            const fcmTokens = await noti_token.find({ ID_user: { $in: memberIds } }).select('ID_user tokens');
 
             // 🛠 Tạo thông báo cho từng thành viên
             const notifications = fcmTokens.map(({ ID_user }) => ({
@@ -137,12 +137,24 @@ function setupSocket(server) {
             }, {});
 
             // 🔥 Tạo danh sách gửi thông báo từng người
-            const messages = fcmTokens
-                .map(({ ID_user, token }) => ({
-                    token,
-                    notificationId: notificationMap[ID_user.toString()],
-                }))
-                .filter(({ token }) => token && token.trim().length > 0); // Lọc token hợp lệ
+            // const messages = fcmTokens
+            //     .map(({ ID_user, token }) => ({
+            //         token,
+            //         notificationId: notificationMap[ID_user.toString()],
+            //     }))
+            //     .filter(({ token }) => token && token.trim().length > 0); // Lọc token hợp lệ
+
+            const messages = [];
+            fcmData.forEach(({ ID_user, tokens }) => {
+                if (tokens && tokens.length > 0) {
+                    tokens.forEach(token => {
+                        messages.push({
+                            token,
+                            notificationId: notificationMap[ID_user.toString()],
+                        });
+                    });
+                }
+            });
 
             if (messages.length === 0) return; // ⛔ Không có dữ liệu hợp lệ
 

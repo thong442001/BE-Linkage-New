@@ -91,13 +91,13 @@ async function guiThongBao(ID_user, ID_noti) {
     try {
 
         const check_noti_token = await noti_token.findOne({ "ID_user": ID_user });
-        if (!check_noti_token || !check_noti_token.token) return;
+        if (!check_noti_token || !check_noti_token.tokens) return;
 
         await axios.post(
             //`http://localhost:3001/gg/send-notification`,
             `https://linkage.id.vn/gg/send-notification`,
             {
-                fcmTokens: [check_noti_token.token],
+                fcmTokens: check_noti_token.tokens,
                 title: "Thông báo",
                 body: null,
                 ID_noties: [ID_noti],

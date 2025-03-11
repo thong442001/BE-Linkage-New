@@ -74,16 +74,21 @@ async function addPost(ID_user, caption, medias, status, type, ID_post_shared, t
                 return acc;
             }, {});
 
-            // 🔍 Tìm FCM tokens của bạn bè
-            const fcmTokens = await noti_token.find({ ID_user: { $in: friendIds } }).select('ID_user token');
+            // 🔍 Tìm FCM tokens của bạn bè (lấy cả danh sách tokens)
+            const fcmData = await noti_token.find({ ID_user: { $in: friendIds } }).select('ID_user tokens');
 
-            // 📤 Ghép token với notificationId
-            const messages = fcmTokens
-                .map(({ ID_user, token }) => ({
-                    token,
-                    notificationId: notificationMap[ID_user.toString()],
-                }))
-                .filter(({ token }) => token && token.trim().length > 0); // Lọc token hợp lệ
+            // 📤 Chuẩn bị danh sách thông báo
+            const messages = [];
+            fcmData.forEach(({ ID_user, tokens }) => {
+                if (tokens && tokens.length > 0) {
+                    tokens.forEach(token => {
+                        messages.push({
+                            token,
+                            notificationId: notificationMap[ID_user.toString()],
+                        });
+                    });
+                }
+            });
 
             if (messages.length === 0) return newPost._id; // Không có token hợp lệ
 
