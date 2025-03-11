@@ -196,12 +196,20 @@ router.post('/loginGG', async function (req, res, next) {
       // check noti_token của user
       const check_noti_token = await noti_token.findOne({ "ID_user": user._id })
       if (check_noti_token) {
-        check_noti_token.token = fcmToken;
-        await check_noti_token.save();
+        // check fcmToken đã có chưa 
+        // chưa có thì add thêm vào
+        if (!check_noti_token.tokens.includes(fcmToken)) {
+          // Đảm bảo tokens luôn là một mảng
+          if (!Array.isArray(check_noti_token.tokens)) {
+            check_noti_token.tokens = [];
+          }
+          check_noti_token.tokens.push(fcmToken);
+          await check_noti_token.save();
+        }
       } else {
         const newItem = {
           ID_user: user._id,
-          token: fcmToken,
+          tokens: [fcmToken],
         };
         await noti_token.create(newItem);
       }
