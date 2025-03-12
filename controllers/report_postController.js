@@ -9,15 +9,9 @@ module.exports = {
 
 async function addReport_post(me, ID_post) {
     try {
-        const report = await report_post.findOneAndUpdate(
-            { ID_post: ID_post, status: false }, // Chỉ update nếu status = false
-            {
-                $addToSet: { reporters: me }, // Thêm nếu chưa có
-                $setOnInsert: { ID_post: ID_post, reporters: [me], status: false, } // Nếu tạo mới, thêm luôn `me`
-            },
-            { upsert: true, new: true } // Tạo mới nếu chưa có, trả về bản ghi mới
-        );
-
+        // const report = await report_post.findOne(
+        //     { ID_post: ID_post, status: false } // Chỉ update nếu status = false
+        // );
         // if (!report) {
         //     // tạo mới report_post
         //     const newItem = {
@@ -26,7 +20,18 @@ async function addReport_post(me, ID_post) {
         //         status: false,
         //     };
         //     await report_post.create(newItem);
+        // } else {
+        //     // có rồi thì add me
+        //     report.reporters.addToSet(me);
+        //     await report.save();
         // }
+        const report = await report_post.findOneAndUpdate(
+            { ID_post: ID_post, status: false }, // Chỉ tìm nếu status = false
+            {
+                $addToSet: { reporters: me }, // Thêm `me` vào `reporters` nếu chưa có
+            },
+            { upsert: true, new: true, setDefaultsOnInsert: true } // Tạo mới nếu chưa có
+        );
 
         return true; // Thành công
     } catch (error) {
