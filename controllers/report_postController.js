@@ -28,11 +28,12 @@ async function addReport_post(me, ID_post) {
         const report = await report_post.findOneAndUpdate(
             { ID_post: ID_post, status: false }, // Chỉ tìm nếu status = false
             {
-                $addToSet: { reporters: me }, // Nếu đã có, thêm `me` vào `reporters`
-                $setOnInsert: { ID_post: ID_post, status: false, reporters: [me] } // Nếu tạo mới, thêm luôn `me`
+                $setOnInsert: { ID_post: ID_post, status: false, reporters: [me] }, // Nếu tạo mới, thêm luôn `me`
+                $addToSet: { reporters: me } // Nếu đã có, thêm `me` vào `reporters`
             },
-            { upsert: true, new: true, setDefaultsOnInsert: true } // Tạo mới nếu chưa có
+            { upsert: true, new: true } // Tạo mới nếu chưa có
         );
+
 
         return true; // Thành công
     } catch (error) {
