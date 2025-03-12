@@ -182,6 +182,7 @@ async function allProfile(ID_user, me) {
                     { ID_userA: me, ID_userB: ID_user }
                 ]
             }).lean();
+
             if (!rRelationship) {
                 // Nếu chưa có, 
                 // tạo mới với trạng thái "Người lạ"
@@ -237,17 +238,34 @@ async function allProfile(ID_user, me) {
                     _destroy: false,
                     type: { $ne: 'Story' },
                     //status: { $ne: 'Chỉ mình tôi' },
-                    $or: [
-                        { status: "Công khai" },
-                        { status: "Bạn bè" },
-                    ],
-                    $or: [
-                        { ID_user: ID_user },  // Bài viết do user đăng
+                    $and: [
                         {
-                            tags: ID_user,  // User được tag vào bài viết
-                            status: { $ne: 'Chỉ mình tôi' }  // Không phải bài viết riêng tư
+                            $or: [
+                                { status: "Công khai" },
+                                { status: "Bạn bè" }
+                            ]
+                        },
+                        {
+                            $or: [
+                                { ID_user: ID_user },  // Bài viết do user đăng
+                                {
+                                    tags: ID_user,  // User được tag vào bài viết
+                                    status: { $ne: 'Chỉ mình tôi' }  // Không phải bài viết riêng tư
+                                }
+                            ]
                         }
-                    ]
+                    ],
+                    // $or: [
+                    //     { status: "Công khai" },
+                    //     { status: "Bạn bè" },
+                    // ],
+                    // $or: [
+                    //     { ID_user: ID_user },  // Bài viết do user đăng
+                    //     {
+                    //         tags: ID_user,  // User được tag vào bài viết
+                    //         status: { $ne: 'Chỉ mình tôi' }  // Không phải bài viết riêng tư
+                    //     }
+                    // ]
                 };
 
                 rPosts = await posts.find(postFilter)
