@@ -690,8 +690,6 @@ async function notiLiveStream(ID_livestream, ID_user) {
 
         if (friendData.length === 0) return true; // Không có bạn bè để gửi thông báo
 
-        await notification.deleteMany({ type: 'Đang livestream', ID_relationship: null })
-
         // 🔔 Tạo thông báo cho từng bạn bè
         const notifications = friendData.map(({ friendId, ID_relationship }) => ({
             ID_relationship: ID_relationship, // Gắn ID_relationship vào thông báo
