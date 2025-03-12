@@ -674,6 +674,8 @@ async function getChiTietPost(ID_post) {
 async function notiLiveStream(ID_livestream, ID_user) {
     try {
 
+
+
         // 🔍 Tìm tất cả bạn bè của người đăng bài
         const relationships = await relationship.find({
             $or: [
@@ -682,19 +684,23 @@ async function notiLiveStream(ID_livestream, ID_user) {
             ],
         });
 
-        const friendIds = relationships.map(r =>
-            r.ID_userA.toString() === ID_user.toString() ? r.ID_userB.toString() : r.ID_userA.toString()
-        );
+        // Tạo danh sách friendIds và ánh xạ ID_relationship
+        const friendData = relationships.map(r => ({
+            friendId: r.ID_userA.toString() === ID_user.toString() ? r.ID_userB.toString() : r.ID_userA.toString(),
+            ID_relationship: r._id.toString(),
+        }));
 
-        if (friendIds.length === 0) return true; // Không có bạn bè để gửi thông báo
+        if (friendData.length === 0) return true; // Không có bạn bè để gửi thông báo
 
         // 🔔 Tạo thông báo cho từng bạn bè
-        const notifications = friendIds.map(friendId => ({
+        const notifications = friendData.map(({ friendId, ID_relationship }) => ({
+            ID_relationship: ID_relationship, // Gắn ID_relationship vào thông báo
             content: ID_livestream,
             ID_user: friendId,
             type: 'Đang livestream',
         }));
 
+        notification.deleteMany({ type: 'Đang livestream', ID_relationship: null })
         // 💾 Lưu thông báo vào database
         const createdNotifications = await notification.insertMany(notifications);
 
