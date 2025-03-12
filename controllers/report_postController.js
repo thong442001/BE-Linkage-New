@@ -28,7 +28,8 @@ async function addReport_post(me, ID_post) {
         const report = await report_post.findOneAndUpdate(
             { ID_post: ID_post, status: false }, // Chỉ tìm nếu status = false
             {
-                $addToSet: { reporters: me }, // Thêm `me` vào `reporters` nếu chưa có
+                $addToSet: { reporters: me }, // Nếu đã có, thêm `me` vào `reporters`
+                $setOnInsert: { ID_post: ID_post, status: false, reporters: [me] } // Nếu tạo mới, thêm luôn `me`
             },
             { upsert: true, new: true, setDefaultsOnInsert: true } // Tạo mới nếu chưa có
         );
