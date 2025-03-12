@@ -10,17 +10,21 @@ module.exports = {
 async function addReport_post(me, ID_post) {
     try {
         const report = await report_post.findOneAndUpdate(
-            { ID_post: ID_post },
-            { $addToSet: { reporters: me } }, // Chỉ thêm nếu chưa có
+            { ID_post: ID_post, status: false }, // Chỉ update nếu status = false
+            {
+                $addToSet: { reporters: me }, // Chỉ thêm nếu chưa có
+                $setOnInsert: { status: false } // Nếu tạo mới, status = false
+            },
             { upsert: true, new: true } // Tạo mới nếu chưa có, trả về bản ghi mới
         );
 
         return true; // Thành công
     } catch (error) {
         console.error("Lỗi khi báo cáo bài viết:", error);
-        throw error; // Ném lỗi để xử lý phía trên
+        throw error; // Để xử lý lỗi ở nơi gọi hàm
     }
 }
+
 
 async function getAllReport_post() {
     try {
@@ -43,7 +47,7 @@ async function getAllReport_post() {
                 ],
                 select: '-__v' // Lấy tất cả các thuộc tính trừ __v
             })
-            .sort({ createdAt: 1 })
+            .sort({ createdAt: -1 })
             .lean();
 
         return reports; // Trả về danh sách thay vì `true`

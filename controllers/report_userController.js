@@ -10,8 +10,11 @@ module.exports = {
 async function addReport_user(me, ID_user) {
     try {
         const report = await report_user.findOneAndUpdate(
-            { ID_user: ID_user },
-            { $addToSet: { reporters: me } }, // Chỉ thêm nếu chưa có
+            { ID_user: ID_user, status: false }, // Chỉ update nếu status = false
+            {
+                $addToSet: { reporters: me }, // Chỉ thêm nếu chưa có
+                $setOnInsert: { status: false } // Nếu tạo mới, status = false
+            },
             { upsert: true, new: true } // Tạo mới nếu chưa có, trả về bản ghi mới
         );
 
@@ -26,7 +29,7 @@ async function getAllReport_user() {
     try {
         // Lấy danh sách report_user và populate dữ liệu cần thiết
         const reports = await report_user.find({ status: false })
-            .sort({ createdAt: 1 })
+            .sort({ createdAt: -1 })
             .lean();
 
         return reports; // Trả về danh sách thay vì `true`
