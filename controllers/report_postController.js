@@ -13,11 +13,11 @@ async function addReport_post(me, ID_post) {
             { ID_post: ID_post, status: false }, // Chỉ update nếu status = false
             {
                 $addToSet: { reporters: me }, // Thêm nếu chưa có
-                $setOnInsert: { status: false, reporters: [me] } // Nếu tạo mới, thêm luôn `me`
+                $setOnInsert: { ID_post: ID_post, reporters: [me], status: false, } // Nếu tạo mới, thêm luôn `me`
             },
             { upsert: true, new: true } // Tạo mới nếu chưa có, trả về bản ghi mới
         );
-        await report.save();
+
         // if (!report) {
         //     // tạo mới report_post
         //     const newItem = {
