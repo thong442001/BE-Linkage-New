@@ -26,16 +26,6 @@ async function addReport_post(me, ID_post) {
             await report.save();
         }
 
-        // const report = await report_post.findOneAndUpdate(
-        //     { ID_post: ID_post, status: false }, // Chỉ tìm nếu status = false
-        //     {
-        //         $setOnInsert: { ID_post: ID_post, status: false, reporters: [me] }, // Nếu tạo mới, thêm luôn `me`
-        //         $addToSet: { reporters: me } // Nếu đã có, thêm `me` vào `reporters`
-        //     },
-        //     { upsert: true, new: true } // Tạo mới nếu chưa có
-        // );
-
-
         return true; // Thành công
     } catch (error) {
         console.error("Lỗi khi báo cáo bài viết:", error);

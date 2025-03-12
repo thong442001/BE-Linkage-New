@@ -9,14 +9,23 @@ module.exports = {
 
 async function addReport_user(me, ID_user) {
     try {
-        const report = await report_user.findOneAndUpdate(
-            { ID_user: ID_user, status: false }, // Chỉ update nếu status = false
-            {
-                $addToSet: { reporters: me }, // Chỉ thêm nếu chưa có
-                $setOnInsert: { status: false, reporters: [me] } // Nếu tạo mới, thêm luôn `me`
-            },
-            { upsert: true, new: true } // Tạo mới nếu chưa có, trả về bản ghi mới
+
+        const report = await report_user.findOne(
+            { ID_user: ID_user, status: false } // Chỉ update nếu status = false
         );
+        if (!report) {
+            // tạo mới report_post
+            const newItem = {
+                ID_user: ID_user,
+                reporters: [me],
+                status: false,
+            };
+            await report_user.create(newItem);
+        } else {
+            // có rồi thì add me
+            report.reporters.addToSet(me);
+            await report.save();
+        }
 
         return true; // Thành công
     } catch (error) {
