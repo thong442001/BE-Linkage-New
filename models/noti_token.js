@@ -6,18 +6,10 @@ const noti_token = new Schema({
         type: ObjectId,
         ref: 'user',
     },
-    // token: {
-    //     type: String,
-    //     default: null
-    // },
     tokens: {
         type: [String], // Mảng các token FCM
         default: [] // Để mảng rỗng khi chưa có token
     }
-    // status: {
-    //     type: Boolean, // true: bật thông báo - false: tắc thông báo
-    //     default: true
-    // },
 }, {
     timestamps: true
 });

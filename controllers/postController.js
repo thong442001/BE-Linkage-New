@@ -705,15 +705,26 @@ async function notiLiveStream(ID_livestream, ID_user) {
         }, {});
 
         // 🔍 Tìm FCM tokens của bạn bè
-        const fcmTokens = await noti_token.find({ ID_user: { $in: friendIds } }).select('ID_user token');
+        const fcmTokens = await noti_token.find({ ID_user: { $in: friendIds } }).select('ID_user tokens');
 
         // 📤 Ghép token với notificationId
-        const messages = fcmTokens
-            .map(({ ID_user, token }) => ({
-                token,
-                notificationId: notificationMap[ID_user.toString()],
-            }))
-            .filter(({ token }) => token && token.trim().length > 0); // Lọc token hợp lệ
+        // const messages = fcmTokens
+        //     .map(({ ID_user, token }) => ({
+        //         token,
+        //         notificationId: notificationMap[ID_user.toString()],
+        //     }))
+        //     .filter(({ token }) => token && token.trim().length > 0); // Lọc token hợp lệ
+        const messages = [];
+        fcmTokens.forEach(({ ID_user, tokens }) => {
+            if (tokens && tokens.length > 0) {
+                tokens.forEach(token => {
+                    messages.push({
+                        token,
+                        notificationId: notificationMap[ID_user.toString()],
+                    });
+                });
+            }
+        });
 
         if (messages.length === 0) return true; // Không có token hợp lệ
 
