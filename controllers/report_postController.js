@@ -12,8 +12,8 @@ async function addReport_post(me, ID_post) {
         const report = await report_post.findOneAndUpdate(
             { ID_post: ID_post, status: false }, // Chỉ update nếu status = false
             {
-                $addToSet: { reporters: me }, // Chỉ thêm nếu chưa có
-                $setOnInsert: { status: false } // Nếu tạo mới, status = false
+                $addToSet: { reporters: me }, // Thêm nếu chưa có
+                $setOnInsert: { status: false, reporters: [me] } // Nếu tạo mới, thêm luôn `me`
             },
             { upsert: true, new: true } // Tạo mới nếu chưa có, trả về bản ghi mới
         );
@@ -21,9 +21,10 @@ async function addReport_post(me, ID_post) {
         return true; // Thành công
     } catch (error) {
         console.error("Lỗi khi báo cáo bài viết:", error);
-        throw error; // Để xử lý lỗi ở nơi gọi hàm
+        throw error;
     }
 }
+
 
 
 async function getAllReport_post() {

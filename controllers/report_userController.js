@@ -13,7 +13,7 @@ async function addReport_user(me, ID_user) {
             { ID_user: ID_user, status: false }, // Chỉ update nếu status = false
             {
                 $addToSet: { reporters: me }, // Chỉ thêm nếu chưa có
-                $setOnInsert: { status: false } // Nếu tạo mới, status = false
+                $setOnInsert: { status: false, reporters: [me] } // Nếu tạo mới, thêm luôn `me`
             },
             { upsert: true, new: true } // Tạo mới nếu chưa có, trả về bản ghi mới
         );
