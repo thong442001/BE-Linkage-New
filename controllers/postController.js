@@ -190,9 +190,48 @@ async function allProfile(ID_user, me) {
                     ID_userB: me,
                     relation: 'Người lạ',
                 });
-            }
-            // lấy post status dựa trên relation
-            if (rRelationship.relation == 'Bạn bè') {
+                //post
+                let postFilter = {
+                    //ID_user: ID_user,
+                    _destroy: false,
+                    status: "Công khai",
+                    $or: [
+                        { ID_user: ID_user },  // Bài viết do user đăng
+                        {
+                            tags: ID_user,  // User được tag vào bài viết
+                            status: "Công khai", // Không phải bài viết riêng tư
+                        }
+                    ]
+                };
+
+                rPosts = await posts.find(postFilter)
+                    .populate('ID_user', 'first_name last_name avatar')
+                    .populate('tags', 'first_name last_name avatar')
+                    .populate({
+                        path: 'ID_post_shared',
+                        populate: [
+                            { path: 'ID_user', select: 'first_name last_name avatar' },
+                            { path: 'tags', select: 'first_name last_name avatar' }
+                        ],
+                        select: '-__v' // Lấy tất cả các thuộc tính trừ __v (hoặc bỏ select nếu muốn lấy hết)
+                    })
+                    .sort({ createdAt: -1 })
+                    .lean();
+
+                //story
+                rStories = await posts.find({
+                    _destroy: false,
+                    type: 'Story',
+                    ID_user: ID_user,
+                    status: "Công khai", // Bài viết công khai
+                    createdAt: { $gte: new Date(twentyFourHoursAgo) } // Lọc Story trong 24 giờ qua
+                })
+                    .populate('ID_user', 'first_name last_name avatar')
+                    .sort({ createdAt: 1 })
+                    .lean();
+
+
+            } else if (rRelationship.relation == 'Bạn bè') {
                 //post
                 let postFilter = {
                     _destroy: false,
@@ -231,6 +270,7 @@ async function allProfile(ID_user, me) {
                     .populate('ID_user', 'first_name last_name avatar')
                     .sort({ createdAt: 1 })
                     .lean();
+
             } else {
                 //post
                 let postFilter = {
@@ -270,6 +310,7 @@ async function allProfile(ID_user, me) {
                     .populate('ID_user', 'first_name last_name avatar')
                     .sort({ createdAt: 1 })
                     .lean();
+
             }
         }
 
