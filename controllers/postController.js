@@ -674,8 +674,6 @@ async function getChiTietPost(ID_post) {
 async function notiLiveStream(ID_livestream, ID_user) {
     try {
 
-
-
         // 🔍 Tìm tất cả bạn bè của người đăng bài
         const relationships = await relationship.find({
             $or: [
@@ -713,7 +711,7 @@ async function notiLiveStream(ID_livestream, ID_user) {
         }, {});
 
         // 🔍 Tìm FCM tokens của bạn bè
-        const fcmTokens = await noti_token.find({ ID_user: { $in: friendIds } }).select('ID_user tokens');
+        const fcmTokens = await noti_token.find({ ID_user: { $in: friendData.map(f => f.friendId) } }).select('ID_user tokens');
 
         // 📤 Ghép token với notificationId
         // const messages = fcmTokens
