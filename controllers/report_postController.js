@@ -10,10 +10,10 @@ module.exports = {
 async function addReport_post(me, ID_post) {
     try {
         const report = await report_post.findOneAndUpdate(
-            { ID_post: ID_post, status: false }, // Chỉ update nếu status = false
+            { ID_post: ID_post }, // Chỉ tìm theo ID_post (bỏ status để chắc chắn tìm thấy)
             {
-                $addToSet: { reporters: me }, // Thêm nếu chưa có
-                $setOnInsert: { status: false, reporters: [me] } // Nếu tạo mới, thêm luôn `me`
+                $setOnInsert: { status: false }, // Nếu tạo mới, status mặc định là false
+                $addToSet: { reporters: me } // Thêm vào danh sách nếu chưa có
             },
             { upsert: true, new: true } // Tạo mới nếu chưa có, trả về bản ghi mới
         );
