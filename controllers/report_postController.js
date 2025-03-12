@@ -9,30 +9,31 @@ module.exports = {
 
 async function addReport_post(me, ID_post) {
     try {
-        // const report = await report_post.findOne(
-        //     { ID_post: ID_post, status: false } // Chỉ update nếu status = false
-        // );
-        // if (!report) {
-        //     // tạo mới report_post
-        //     const newItem = {
-        //         ID_post: ID_post,
-        //         reporters: [me],
-        //         status: false,
-        //     };
-        //     await report_post.create(newItem);
-        // } else {
-        //     // có rồi thì add me
-        //     report.reporters.addToSet(me);
-        //     await report.save();
-        // }
-        const report = await report_post.findOneAndUpdate(
-            { ID_post: ID_post, status: false }, // Chỉ tìm nếu status = false
-            {
-                $setOnInsert: { ID_post: ID_post, status: false, reporters: [me] }, // Nếu tạo mới, thêm luôn `me`
-                $addToSet: { reporters: me } // Nếu đã có, thêm `me` vào `reporters`
-            },
-            { upsert: true, new: true } // Tạo mới nếu chưa có
+        const report = await report_post.findOne(
+            { ID_post: ID_post, status: false } // Chỉ update nếu status = false
         );
+        if (!report) {
+            // tạo mới report_post
+            const newItem = {
+                ID_post: ID_post,
+                reporters: [me],
+                status: false,
+            };
+            await report_post.create(newItem);
+        } else {
+            // có rồi thì add me
+            report.reporters.addToSet(me);
+            await report.save();
+        }
+
+        // const report = await report_post.findOneAndUpdate(
+        //     { ID_post: ID_post, status: false }, // Chỉ tìm nếu status = false
+        //     {
+        //         $setOnInsert: { ID_post: ID_post, status: false, reporters: [me] }, // Nếu tạo mới, thêm luôn `me`
+        //         $addToSet: { reporters: me } // Nếu đã có, thêm `me` vào `reporters`
+        //     },
+        //     { upsert: true, new: true } // Tạo mới nếu chưa có
+        // );
 
 
         return true; // Thành công
