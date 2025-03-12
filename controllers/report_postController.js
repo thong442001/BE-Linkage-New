@@ -10,13 +10,23 @@ module.exports = {
 async function addReport_post(me, ID_post) {
     try {
         const report = await report_post.findOneAndUpdate(
-            { ID_post: ID_post }, // Chỉ tìm theo ID_post (bỏ status để chắc chắn tìm thấy)
+            { ID_post: ID_post, status: false }, // Chỉ update nếu status = false
             {
-                $setOnInsert: { status: false }, // Nếu tạo mới, status mặc định là false
-                $addToSet: { reporters: me } // Thêm vào danh sách nếu chưa có
+                $addToSet: { reporters: me }, // Thêm nếu chưa có
+                $setOnInsert: { status: false, reporters: [me] } // Nếu tạo mới, thêm luôn `me`
             },
             { upsert: true, new: true } // Tạo mới nếu chưa có, trả về bản ghi mới
         );
+        await report.save();
+        // if (!report) {
+        //     // tạo mới report_post
+        //     const newItem = {
+        //         ID_post: ID_post,
+        //         reporters: [me],
+        //         status: false,
+        //     };
+        //     await report_post.create(newItem);
+        // }
 
         return true; // Thành công
     } catch (error) {
