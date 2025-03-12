@@ -236,7 +236,11 @@ async function allProfile(ID_user, me) {
                 let postFilter = {
                     _destroy: false,
                     type: { $ne: 'Story' },
-                    status: { $ne: 'Chỉ mình tôi' },
+                    //status: { $ne: 'Chỉ mình tôi' },
+                    $or: [
+                        { status: "Công khai" },
+                        { status: "Bạn bè" },
+                    ],
                     $or: [
                         { ID_user: ID_user },  // Bài viết do user đăng
                         {
