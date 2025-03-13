@@ -27,7 +27,6 @@ async function addReport_user(me, ID_user) {
             await report.save();
         }
 
-
         return true; // Thành công
     } catch (error) {
         console.error("Lỗi khi báo cáo bài viết:", error);

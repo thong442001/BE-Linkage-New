@@ -111,7 +111,7 @@ app.use('/comment', commentRoute);
 app.use('/comment_reaction', comment_reactionRoute);
 app.use('/gg', ggRoute);
 app.use('/report_post', report_postRoute);
-app.use('/report_use', report_userRoute);
+app.use('/report_user', report_userRoute);
 app.use('/notification', notificationRoute);
 
 
