@@ -1,0 +1,37 @@
+<h1>Danh sách báo cáo tài khoản</h1>
+<div class="container">
+    {{#each report_user_list}}
+    <div class="report-post">
+        <!-- Cột 1: Bài Post -->
+        <div class="post-content">
+            <h4>Tài khoản:</h4>
+            <div class="post-header">
+                <img class="avatar" src="{{ID_user.avatar}}" alt="User Avatar">
+                <div>
+                    <h4>{{ID_user.first_name}} {{ID_user.last_name}}</h4>
+                    {{!-- <p>{{formatDate ID_post.createdAt}}</p> --}}
+                </div>
+
+            </div>
+            <img class="avatar" src="{{ID_user.background}}" alt="User Avatar">
+        </div>
+
+        <!-- Cột 2: Danh sách reporters -->
+        <div class="reporters-list">
+            <h4>Những tài khoản báo cáo:</h4>
+            <ul>
+                {{#each reporters}}
+                <li class="reporter">
+                    <img class="avatar-small" src="{{this.avatar}}" alt="Reporter Avatar">
+                    <span>{{this.first_name}} {{this.last_name}}</span>
+                </li>
+                {{/each}}
+            </ul>
+        </div>
+    </div>
+
+    <div class="report-action">
+        <button class="ban">Khóa</button>
+    </div>
+    {{/each}}
+</div>

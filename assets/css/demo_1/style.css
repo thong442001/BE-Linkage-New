@@ -1,3 +1,168 @@
+.container {
+  width: 90%;
+  margin: auto;
+}
+
+.report-post {
+  display: flex;
+  justify-content: space-between;
+  background: #fff;
+  padding: 15px;
+  border-radius: 10px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  margin-bottom: 0px;
+}
+
+.post-content {
+  width: 60%;
+  border-right: 2px solid #ddd;
+  padding-right: 20px;
+}
+
+.post-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.post-header img.avatar {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+}
+
+.post-body img.post-image {
+  width: 100%;
+  max-height: 300px;
+  object-fit: cover;
+  margin-top: 10px;
+  border-radius: 8px;
+}
+
+.reporters-list {
+  width: 35%;
+  padding-left: 20px;
+}
+
+.reporters-list h3 {
+  margin-bottom: 10px;
+}
+
+.reporter {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.reporter img.avatar-small {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+}
+
+.reporter img.avatar-small {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+}
+
+.report-action button.ban {
+  width: 100%;
+  height: 50px;
+  border-radius: 10px;
+  margin-bottom: 40px;
+  background-color: red;
+  color: white;
+  border-color: #ddd;
+  font-size: 20px;
+}
+
+
+.media-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  /* Thay vì center */
+  gap: 3px;
+  /* Tạo khoảng cách giữa ảnh */
+}
+
+.media-item {
+  position: relative;
+  /* Để overlay hoạt động đúng */
+  overflow: hidden;
+}
+
+/* Hình ảnh / Video */
+.image,
+.video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 5px;
+}
+
+/* Điều chỉnh grid ảnh */
+.single-media {
+  width: 100%;
+  height: 40vh;
+}
+
+.double-media {
+  width: 49.5%;
+  height: 40vh;
+}
+
+.triple-media-first {
+  width: 100%;
+  height: 33vh;
+}
+
+.triple-media-second {
+  width: 49.5%;
+  height: 20vh;
+}
+
+.quad-media {
+  width: 49.5%;
+  height: 20vh;
+}
+
+.five-plus-media-first-row {
+  width: 49.5%;
+  height: 20vh;
+}
+
+.five-plus-media-second-row-left,
+.five-plus-media-second-row-middle,
+.five-plus-media-second-row-right {
+  width: 32.66%;
+  height: 20vh;
+}
+
+/* Overlay */
+.overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.6);
+  color: white;
+  font-size: 20px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 5px;
+  pointer-events: none;
+  /* Tránh chặn sự kiện */
+}
+
+
+
+/* template goc */
 .bg-inverse-primary {
   background: rgba(105, 111, 251, 0.2);
 }

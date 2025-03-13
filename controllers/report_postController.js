@@ -1,5 +1,4 @@
 const report_post = require("../models/report_post");
-const post = require("../models/post");
 
 module.exports = {
     addReport_post,

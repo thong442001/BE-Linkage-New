@@ -38,7 +38,12 @@ async function getAllReport_user() {
     try {
         // Lấy danh sách report_user và populate dữ liệu cần thiết
         const reports = await report_user.find({ status: false })
-            .sort({ createdAt: -1 })
+            .populate('reporters', 'first_name last_name avatar')
+            .populate({
+                path: 'ID_user',
+                select: '-__v' // Lấy tất cả các thuộc tính trừ __v
+            })
+            .sort({ "reporters.length": -1 })
             .lean();
 
         return reports; // Trả về danh sách thay vì `true`

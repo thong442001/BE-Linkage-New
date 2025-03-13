@@ -7,17 +7,17 @@ const report_postController = require("../controllers/report_postController")
 const checkToken = require("./checkToken");
 
 //http://localhost:3000/report_post/addReport_post
-router.post('/addReport_post', checkToken, async function (req, res, next) {
-  try {
-    const { me, ID_post } = req.body;
-    const result = await report_postController.addReport_post(me, ID_post);
-    if (result) {
-      return res.status(200).json({ "status": true });
-    }
-  } catch (e) {
-    return res.status(400).json({ "status": false, "message": "lỗi" });
-  }
-});
+// router.post('/addReport_post', checkToken, async function (req, res, next) {
+//   try {
+//     const { me, ID_post } = req.body;
+//     const result = await report_postController.addReport_post(me, ID_post);
+//     if (result) {
+//       return res.status(200).json({ "status": true });
+//     }
+//   } catch (e) {
+//     return res.status(400).json({ "status": false, "message": "lỗi" });
+//   }
+// });
 
 // http://localhost:3000/report_post/getAllReport_post
 router.get('/getAllReport_post', async function (req, res, next) {

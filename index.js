@@ -7,8 +7,6 @@ var cookieParser = require('cookie-parser');
 // CORS
 var cors = require('cors')
 
-
-
 //config mongoose
 const mongoose = require("mongoose");
 require("./models/user");
@@ -50,7 +48,6 @@ const setupSocket = require("./socket");
 const server = http.createServer(app);
 const io = setupSocket(server);
 
-
 // CORS
 //app.use(cors())
 app.use(cors({
@@ -64,17 +61,25 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
-
+app.use(express.static(path.join(__dirname, 'assets')));
 
 // Static files
-app.use(express.static('assets'))
-app.use('/css', express.static(__dirname + 'assets/css'))
-app.use('/js', express.static(__dirname + 'assets/js'))
-app.use('/images', express.static(__dirname + 'assets/images'))
+// app.use(express.static('assets'))
+// app.use('/css', express.static(__dirname + 'assets/css'))
+// app.use('/js', express.static(__dirname + 'assets/js'))
+// app.use('/images', express.static(__dirname + 'assets/images'))
+app.use('/css', express.static(path.join(__dirname, 'assets/css')));
+app.use('/js', express.static(path.join(__dirname, 'assets/js')));
+app.use('/images', express.static(path.join(__dirname, 'assets/images')));
+
 // Auth Css/Jss/Image
-app.use('/auth/css', express.static(__dirname + '/assets/css'))
-app.use('/auth/js', express.static(__dirname + '/assets/js'))
-app.use('/auth/images', express.static(__dirname + '/assets/images'))
+// app.use('/auth/css', express.static(__dirname + '/assets/css'))
+// app.use('/auth/js', express.static(__dirname + '/assets/js'))
+// app.use('/auth/images', express.static(__dirname + '/assets/images'))
+app.use('/auth/css', express.static(path.join(__dirname, 'assets/css')));
+app.use('/auth/js', express.static(path.join(__dirname, 'assets/js')));
+app.use('/auth/images', express.static(path.join(__dirname, 'assets/images')));
+
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'hbs');

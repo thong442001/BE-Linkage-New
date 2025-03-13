@@ -20,16 +20,16 @@ router.post('/addReport_user', checkToken, async function (req, res, next) {
 });
 
 // http://localhost:3000/report_user/getAllReport_user
-router.get('/getAllReport_user', async function (req, res, next) {
-  try {
-    const result = await report_userController.getAllReport_user();
-    if (result) {
-      res.status(200).json({ "status": true, "reports": result });
-    }
-  } catch (e) {
-    res.status(400).json({ "status": false, "message": "lỗi API" });
-  }
-});
+// router.get('/getAllReport_user', async function (req, res, next) {
+//   try {
+//     const result = await report_userController.getAllReport_user();
+//     if (result) {
+//       res.status(200).json({ "status": true, "reports": result });
+//     }
+//   } catch (e) {
+//     res.status(400).json({ "status": false, "message": "lỗi API" });
+//   }
+// });
 
 // http://localhost:3000/report_user/deleteReport_user
 router.post('/deleteReport_user', checkToken, async function (req, res, next) {
