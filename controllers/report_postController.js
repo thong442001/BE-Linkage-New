@@ -15,8 +15,8 @@ async function addReport_post(me, ID_post) {
         if (!report) {
             // tạo mới report_post
             const newItem = {
-                ID_post: ID_post,
                 reporters: [me],
+                ID_post: ID_post,
                 status: false,
             };
             await report_post.create(newItem);

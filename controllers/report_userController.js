@@ -16,8 +16,8 @@ async function addReport_user(me, ID_user) {
         if (!report) {
             // tạo mới report_post
             const newItem = {
-                ID_user: ID_user,
                 reporters: [me],
+                ID_user: ID_user,
                 status: false,
             };
             await report_user.create(newItem);
@@ -26,6 +26,7 @@ async function addReport_user(me, ID_user) {
             report.reporters.addToSet(me);
             await report.save();
         }
+
 
         return true; // Thành công
     } catch (error) {
