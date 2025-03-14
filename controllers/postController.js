@@ -117,85 +117,53 @@ async function addPost(ID_user, caption, medias, status, type, ID_post_shared, t
 // api trang cá nhân
 async function allProfile(ID_user, me) {
     try {
-        // Lấy thông tin user
         let rUser = await users.findById(ID_user);
-
-        // Tìm bạn bè của user
         let rFriends = await relationship.find({
-            $or: [
-                { ID_userA: ID_user, relation: 'Bạn bè' },
-                { ID_userB: ID_user, relation: 'Bạn bè' }
-            ]
-        })
-            .populate('ID_userA', 'first_name last_name avatar')
+            $or: [{ ID_userA: ID_user, relation: 'Bạn bè' }, { ID_userB: ID_user, relation: 'Bạn bè' }]
+        }).populate('ID_userA', 'first_name last_name avatar')
             .populate('ID_userB', 'first_name last_name avatar')
-            .sort({ createdAt: 1 })
             .lean();
 
-        // Lấy timestamp 24h trước
         const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
 
-        let rRelationship = null;
-        let postFilter = { _destroy: false, type: { $ne: 'Story' } };
-        let storyFilter = { _destroy: false, type: 'Story', createdAt: { $gte: twentyFourHoursAgo } };
+        let rRelationship = await relationship.findOne({
+            $or: [{ ID_userA: ID_user, ID_userB: me }, { ID_userA: me, ID_userB: ID_user }]
+        }).lean();
 
-        // Kiểm tra xem có phải profile của chính mình không
-        if (ID_user == me) {
-            postFilter.$or = [
-                { ID_user: me },
-                { tags: me, status: { $ne: 'Chỉ mình tôi' } }
-            ];
-            storyFilter.ID_user = me;
-        } else {
-            // Kiểm tra quan hệ giữa user và người đang xem
-            rRelationship = await relationship.findOne({
-                $or: [{ ID_userA: ID_user, ID_userB: me }, { ID_userA: me, ID_userB: ID_user }]
-            }).lean();
-
-            if (!rRelationship) {
-                // Nếu không có quan hệ, tạo mới với trạng thái "Người lạ"
-                rRelationship = await relationship.create({
-                    ID_userA: ID_user,
-                    ID_userB: me,
-                    relation: 'Người lạ'
-                });
-            }
-
-            // Thiết lập quyền xem bài viết
-            if (rRelationship.relation === 'Bạn bè') {
-                postFilter.$and = [
-                    { $or: [{ status: 'Công khai' }, { status: 'Bạn bè' }] },
-                    {
-                        $or: [
-                            { ID_user: ID_user },
-                            { tags: ID_user, status: { $ne: 'Chỉ mình tôi' } }
-                        ]
-                    }
-                ];
-                storyFilter.status = { $ne: 'Chỉ mình tôi' };
-            } else {
-                postFilter.status = 'Công khai';
-                postFilter.$or = [
-                    { ID_user: ID_user },
-                    { tags: ID_user, status: 'Công khai' }
-                ];
-                storyFilter.status = 'Công khai';
-            }
-            storyFilter.ID_user = ID_user;
+        if (!rRelationship) {
+            rRelationship = await relationship.create({
+                ID_userA: ID_user,
+                ID_userB: me,
+                relation: 'Người lạ'
+            });
         }
 
-        // Truy vấn bài viết và stories của user
+        let postFilter = { _destroy: false, type: { $nin: ['Story', 'ban'] } };
+        let storyFilter = { _destroy: false, type: 'Story', createdAt: { $gte: twentyFourHoursAgo } };
+
+        if (ID_user == me) {
+            postFilter.$or = [{ ID_user: me }, { tags: me, status: { $ne: 'Chỉ mình tôi' } }];
+            storyFilter.ID_user = me;
+        } else if (rRelationship.relation === 'Bạn bè') {
+            postFilter.$and = [
+                { $or: [{ status: 'Công khai' }, { status: 'Bạn bè' }] },
+                { $or: [{ ID_user: ID_user }, { tags: ID_user, status: { $ne: 'Chỉ mình tôi' } }] }
+            ];
+            storyFilter.status = { $ne: 'Chỉ mình tôi' };
+        } else {
+            postFilter.status = 'Công khai';
+            postFilter.$or = [{ ID_user: ID_user }, { tags: ID_user, status: 'Công khai' }];
+            storyFilter.status = 'Công khai';
+        }
+        storyFilter.ID_user = ID_user;
+
         let [rPosts, rStories] = await Promise.all([
             posts.find(postFilter)
                 .populate('ID_user', 'first_name last_name avatar')
                 .populate('tags', 'first_name last_name avatar')
                 .populate({
                     path: 'ID_post_shared',
-                    populate: [
-                        { path: 'ID_user', select: 'first_name last_name avatar' },
-                        { path: 'tags', select: 'first_name last_name avatar' }
-                    ],
-                    select: '-__v'
+                    populate: [{ path: 'ID_user', select: 'first_name last_name avatar' }, { path: 'tags', select: 'first_name last_name avatar' }]
                 })
                 .sort({ createdAt: -1 })
                 .lean(),
@@ -205,48 +173,26 @@ async function allProfile(ID_user, me) {
                 .lean()
         ]);
 
-        // Nếu có bài viết, lấy reactions & comments
         if (rPosts.length > 0) {
             const postIds = rPosts.map(post => post._id);
-
-            // Truy vấn reactions và comments
             let [allReactions, allComments] = await Promise.all([
                 post_reaction.find({ ID_post: { $in: postIds } })
                     .populate('ID_user', 'first_name last_name avatar')
                     .populate('ID_reaction', 'name icon')
-                    .sort({ createdAt: 1 })
                     .lean(),
                 comment.find({ ID_post: { $in: postIds } })
                     .populate('ID_user', 'first_name last_name avatar')
-                    .populate({
-                        path: 'ID_comment_reply',
-                        populate: { path: 'ID_user', select: 'first_name last_name avatar' }
-                    })
-                    .sort({ createdAt: 1 })
+                    .populate({ path: 'ID_comment_reply', populate: { path: 'ID_user', select: 'first_name last_name avatar' } })
                     .lean()
             ]);
 
-            // Nhóm reactions và comments theo ID_post
-            const reactionMap = new Map();
-            allReactions.forEach(reaction => {
-                if (!reactionMap.has(reaction.ID_post)) {
-                    reactionMap.set(reaction.ID_post, []);
-                }
-                reactionMap.get(reaction.ID_post).push(reaction);
-            });
+            const reactionMap = {}, commentMap = {};
+            allReactions.forEach(reaction => reactionMap[reaction.ID_post] = reactionMap[reaction.ID_post] || []).push(reaction);
+            allComments.forEach(comment => commentMap[comment.ID_post] = commentMap[comment.ID_post] || []).push(comment);
 
-            const commentMap = new Map();
-            allComments.forEach(comment => {
-                if (!commentMap.has(comment.ID_post)) {
-                    commentMap.set(comment.ID_post, []);
-                }
-                commentMap.get(comment.ID_post).push(comment);
-            });
-
-            // Gán reactions & comments vào bài viết
             rPosts.forEach(post => {
-                post.post_reactions = reactionMap.get(post._id) || [];
-                post.comments = commentMap.get(post._id) || [];
+                post.post_reactions = reactionMap[post._id] || [];
+                post.comments = commentMap[post._id] || [];
             });
         }
 
@@ -260,25 +206,14 @@ async function allProfile(ID_user, me) {
 
 async function getAllPostsInHome(me) {
     try {
-        // Tìm tất cả bạn bè
-        let rPosts, rStories;
+        // Lấy danh sách bạn bè
         const rFriends = await relationship.find({
-            $or: [
-                { ID_userA: me, relation: 'Bạn bè' },
-                { ID_userB: me, relation: 'Bạn bè' }
-            ]
-        })
-            .sort({ createdAt: -1 })
-            .lean(); // Convert to plain objects for better performance
+            $or: [{ ID_userA: me, relation: 'Bạn bè' }, { ID_userB: me, relation: 'Bạn bè' }]
+        }).lean();
 
-        // Lấy danh sách ID bạn bè
-        const friendIDs = new Set();
-        rFriends.forEach(f => {
-            friendIDs.add(f.ID_userA.toString() === me.toString() ? f.ID_userB : f.ID_userA);
-        });
-        friendIDs.add(me); // Thêm ID của mình
+        const friendIDs = new Set([me]); // Thêm ID của chính mình
+        rFriends.forEach(f => friendIDs.add(f.ID_userA.toString() === me.toString() ? f.ID_userB : f.ID_userA));
 
-        // Hàm lấy bài viết
         const getPosts = async (filter) => {
             return posts.find(filter)
                 .populate('ID_user', 'first_name last_name avatar')
@@ -289,107 +224,80 @@ async function getAllPostsInHome(me) {
                         { path: 'ID_user', select: 'first_name last_name avatar' },
                         { path: 'tags', select: 'first_name last_name avatar' }
                     ],
-                    select: '-__v' // Lấy tất cả các thuộc tính trừ __v (hoặc bỏ select nếu muốn lấy hết)
+                    select: '-__v'
                 })
                 .sort({ createdAt: -1 })
                 .lean();
         };
 
-        // Lấy tất cả bài post của mình và bạn bè
-        rPosts = await getPosts({
+        // Lấy tất cả bài post hợp lệ (không bị ban)
+        const postFilter = {
             ID_user: { $in: [...friendIDs] },
             _destroy: false,
-            type: { $ne: 'Story' },
+            type: { $nin: ['Story', 'ban'] }, // Loại bỏ bài viết có type "ban"
             $or: [{ status: "Công khai" }, { status: "Bạn bè" }]
-        });
+        };
+        let rPosts = await getPosts(postFilter);
 
-        // Lấy tất cả story của mình và bạn bè (trong 24 giờ qua)
-        const twentyFourHoursAgo = Date.now() - 24 * 60 * 60 * 1000;
-        const rawStories = await getPosts({
+        // Lấy stories của bạn bè trong 24h
+        const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+        const storyFilter = {
             ID_user: { $in: [...friendIDs] },
             _destroy: false,
             type: "Story",
-            createdAt: { $gte: new Date(twentyFourHoursAgo) },
+            createdAt: { $gte: twentyFourHoursAgo },
             $or: [{ status: "Công khai" }, { status: "Bạn bè" }]
-        });
+        };
+        let rawStories = await getPosts(storyFilter);
 
-        // Gộp các story theo từng user
-        rStories = rawStories.reduce((acc, story) => {
+        let rStories = rawStories.reduce((acc, story) => {
             const userId = story.ID_user._id.toString();
-            if (!acc[userId]) {
-                acc[userId] = {
-                    user: story.ID_user, // Thông tin user
-                    stories: []          // Danh sách story của user
-                };
-            }
+            if (!acc[userId]) acc[userId] = { user: story.ID_user, stories: [] };
             acc[userId].stories.push(story);
             return acc;
         }, {});
 
-        // Convert object thành mảng
-        //rStories = Object.values(rStories);
-
-        // Convert object thành mảng và sort stories theo createdAt tăng dần
         rStories = Object.values(rStories).map(userStories => ({
             ...userStories,
             stories: userStories.stories.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt))
         }));
 
-
-        // post_reactions comment(lấy các reaction của từng bài post)
         if (rPosts.length > 0) {
             const postIds = rPosts.map(post => post._id);
 
-            // Tìm tất cả reactions của danh sách bài post
-            const allReactions = await post_reaction.find({ ID_post: { $in: postIds } })
-                .populate('ID_user', 'first_name last_name avatar')
-                .populate('ID_reaction', 'name icon')
-                .sort({ createdAt: 1 })
-                .lean();
+            // Truy vấn reactions và comments
+            let [allReactions, allComments] = await Promise.all([
+                post_reaction.find({ ID_post: { $in: postIds } })
+                    .populate('ID_user', 'first_name last_name avatar')
+                    .populate('ID_reaction', 'name icon')
+                    .lean(),
+                comment.find({ ID_post: { $in: postIds } })
+                    .populate('ID_user', 'first_name last_name avatar')
+                    .populate({ path: 'ID_comment_reply', populate: { path: 'ID_user', select: 'first_name last_name avatar' } })
+                    .lean()
+            ]);
 
-            // Tìm tất cả comment của danh sách bài post
-            const allCommetn = await comment.find({ ID_post: { $in: postIds } })
-                .populate('ID_user', 'first_name last_name avatar')
-                .populate({
-                    path: 'ID_comment_reply',
-                    populate: { path: 'ID_user', select: 'first_name last_name avatar' },
-                })
-                .sort({ createdAt: 1 })
-                .lean();
-
-            // Nhóm reactions theo ID_post
-            const reactionMap = {};
+            const reactionMap = {}, commentMap = {};
             allReactions.forEach(reaction => {
-                if (!reactionMap[reaction.ID_post]) {
-                    reactionMap[reaction.ID_post] = [];  // Nếu chưa có mảng này, tạo mảng rỗng
-                }
-                reactionMap[reaction.ID_post].push(reaction); // Thêm reaction vào mảng của post đó
+                if (!reactionMap[reaction.ID_post]) reactionMap[reaction.ID_post] = [];
+                reactionMap[reaction.ID_post].push(reaction);
             });
 
-            // Nhóm comment theo ID_post
-            const commetnMap = {};
-            allCommetn.forEach(comment => {
-                if (!commetnMap[comment.ID_post]) {
-                    commetnMap[comment.ID_post] = [];  // Nếu chưa có mảng này, tạo mảng rỗng
-                }
-                commetnMap[comment.ID_post].push(comment); // Thêm reaction vào mảng của post đó
+            allComments.forEach(comment => {
+                if (!commentMap[comment.ID_post]) commentMap[comment.ID_post] = [];
+                commentMap[comment.ID_post].push(comment);
             });
 
-
-            // Gán vào rPosts
             rPosts.forEach(post => {
                 post.post_reactions = reactionMap[post._id] || [];
-            });
-            // Gán vào rPosts
-            rPosts.forEach(post => {
-                post.comments = commetnMap[post._id] || [];
+                post.comments = commentMap[post._id] || [];
             });
         }
 
         return { rPosts, rStories };
 
     } catch (error) {
-        console.log(error);
+        console.error(error);
         throw error;
     }
 }

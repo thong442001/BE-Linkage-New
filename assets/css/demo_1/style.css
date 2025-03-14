@@ -78,6 +78,17 @@
   font-size: 20px;
 }
 
+.report-action button.unban {
+  width: 100%;
+  height: 50px;
+  border-radius: 10px;
+  margin-bottom: 40px;
+  background-color: blue;
+  color: white;
+  border-color: #ddd;
+  font-size: 20px;
+}
+
 
 .media-container {
   display: flex;

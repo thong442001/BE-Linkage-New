@@ -1,4 +1,4 @@
-<h1>Danh sách báo cáo bài viết</h1>
+<h1>Danh sách các bài viết bị khóa</h1>
 <div class="container">
     {{#each report_post_list}}
     <div class="report-post">
@@ -57,10 +57,11 @@
     </div>
 
     <div class="report-action">
-        <button class="ban" data-report-id="{{_id}}">Khóa</button>
+        <button class="unban" data-report-id="{{_id}}">Mở khóa</button>
     </div>
     {{/each}}
 </div>
+{{!--
 <script>
     document.addEventListener("DOMContentLoaded", function () {
         document.querySelectorAll(".ban").forEach(button => {
@@ -93,4 +94,4 @@
             });
         });
     });
-</script>
+</script> --}}

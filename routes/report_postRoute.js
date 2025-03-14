@@ -39,12 +39,25 @@ router.post('/deleteReport_post', checkToken, async function (req, res, next) {
     if (result) {
       return res.status(200).json({ "status": true });
     } else {
-      return res.status(4001).json({ "status": false, "message": "Không tìm thấy _id" });
+      return res.status(401).json({ "status": false, "message": "Không tìm thấy _id" });
     }
   } catch (e) {
     res.status(400).json({ "status": false, "message": "lỗi API" });
   }
 });
 
-
+// http://localhost:3000/report_post/banPost
+router.post('/banPost', async function (req, res, next) {
+  try {
+    const { ID_report_post } = req.body;
+    const result = await report_postController.banPost(ID_report_post);
+    if (result) {
+      return res.status(200).json({ "status": true });
+    } else {
+      return res.status(401).json({ "status": false, "message": "Không tìm thấy _id" });
+    }
+  } catch (e) {
+    res.status(400).json({ "status": false, "message": "lỗi API" });
+  }
+});
 module.exports = router;

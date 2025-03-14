@@ -1,9 +1,11 @@
 const report_post = require("../models/report_post");
+const post = require("../models/post");
 
 module.exports = {
     addReport_post,
     getAllReport_post,
     deleteReport_post,
+    banPost,
 }
 
 async function addReport_post(me, ID_post) {
@@ -65,7 +67,6 @@ async function getAllReport_post() {
     }
 }
 
-
 async function deleteReport_post(_id) {
     try {
         if (!_id) {
@@ -81,6 +82,29 @@ async function deleteReport_post(_id) {
 
         console.log(`Đã xóa báo cáo với ID: ${_id}`);
         return true;
+    } catch (error) {
+        console.error("Lỗi khi xóa báo cáo:", error);
+        throw error; // Ném lỗi để xử lý phía trên
+    }
+}
+
+async function banPost(ID_report_post) {
+    try {
+        if (!ID_report_post) {
+            throw new Error("Thiếu ID của report_post cần xóa.");
+        }
+
+        const report = await report_post.findById(ID_report_post);
+        report.status = true;
+        await report.save();
+
+        const rPost = await post.findById(report.ID_post);
+        rPost.type = 'Ban';
+        await rPost.save();
+
+        return true;
+
+
     } catch (error) {
         console.error("Lỗi khi xóa báo cáo:", error);
         throw error; // Ném lỗi để xử lý phía trên

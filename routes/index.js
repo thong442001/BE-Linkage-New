@@ -99,10 +99,43 @@ router.get('/', authMiddleware, async function (req, res, next) {
   //res.render('loginAdmin', { title: 'Linkage' });
   //res.send("Express on Vercel");
 });
+router.get('/ban_posts', authMiddleware, async function (req, res, next) {
 
+  // Lấy danh sách report_post và populate dữ liệu cần thiết
+  const report_post_list = await report_post.find({ status: true })
+    .populate('reporters', 'first_name last_name avatar')
+    .populate({
+      path: 'ID_post',
+      populate: [
+        { path: 'ID_user', select: 'first_name last_name avatar' },
+        { path: 'tags', select: 'first_name last_name avatar' },
+        {
+          path: 'ID_post_shared',
+          select: '-__v',
+          populate: [
+            { path: 'ID_user', select: 'first_name last_name avatar' },
+            { path: 'tags', select: 'first_name last_name avatar' }
+          ]
+        }
+      ],
+      select: '-__v' // Lấy tất cả các thuộc tính trừ __v
+    })
+    .sort({ "reporters.length": -1 })
+    .lean();
+
+  const user = req.cookies.user;// Lấy user từ cookie
+  res.render("ban_post",
+    {
+      user: user,
+      report_post_list: report_post_list,
+      isMiniLogo: false,
+    });
+  //res.render('loginAdmin', { title: 'Linkage', layout: false });
+  //res.render('loginAdmin', { title: 'Linkage' });
+  //res.send("Express on Vercel");
+});
 router.get('/getAllReport_user', authMiddleware, async function (req, res, next) {
   const report_user_list = await report_userController.getAllReport_user();
-
   const user = req.cookies.user;// Lấy user từ cookie
   res.render("report_user", {
     user: user,
