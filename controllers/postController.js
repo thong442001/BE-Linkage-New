@@ -136,7 +136,7 @@ async function allProfile(ID_user, me) {
         const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
 
         let rRelationship = null;
-        let postFilter = { _destroy: false, type: { $nin: ['Story', 'ban'] } };
+        let postFilter = { _destroy: false, type: { $nin: ['Story', 'Ban'] } };
         let storyFilter = { _destroy: false, type: 'Story', createdAt: { $gte: twentyFourHoursAgo } };
 
         // Kiểm tra xem có phải profile của chính mình không
@@ -288,7 +288,7 @@ async function getAllPostsInHome(me) {
         const postFilter = {
             ID_user: { $in: [...friendIDs] },
             _destroy: false,
-            type: { $nin: ['Story', 'ban'] }, // Loại bỏ bài viết có type "ban"
+            type: { $nin: ['Story', 'Ban'] }, // Loại bỏ bài viết có type "ban"
             $or: [{ status: "Công khai" }, { status: "Bạn bè" }]
         };
         let rPosts = await getPosts(postFilter);
