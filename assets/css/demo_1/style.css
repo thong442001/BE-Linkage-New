@@ -3,6 +3,11 @@
   margin: auto;
 }
 
+.share {
+  margin-left: 20px;
+  margin-top: 10px;
+}
+
 .report-post {
   display: flex;
   justify-content: space-between;

@@ -7,6 +7,7 @@ module.exports = {
     deleteReport_post,
     banPost,
     unBanPost,
+    getAllBanPost,
 }
 
 async function addReport_post(me, ID_post) {
@@ -40,7 +41,7 @@ async function addReport_post(me, ID_post) {
 async function getAllReport_post() {
     try {
         // Lấy danh sách report_post và populate dữ liệu cần thiết
-        const reports = await report_post.find({ status: false })
+        const report_post_list = await report_post.find({ status: false })
             .populate('reporters', 'first_name last_name avatar')
             .populate({
                 path: 'ID_post',
@@ -58,10 +59,43 @@ async function getAllReport_post() {
                 ],
                 select: '-__v' // Lấy tất cả các thuộc tính trừ __v
             })
-            .sort({ createdAt: -1 })
+            .sort({ "reporters.length": -1 })
             .lean();
 
-        return reports; // Trả về danh sách thay vì `true`
+        return report_post_list; // Trả về danh sách thay vì `true`
+    } catch (error) {
+        console.error("Lỗi khi lấy danh sách báo cáo:", error);
+        throw error;
+    }
+}
+
+async function getAllBanPost() {
+    try {
+        // Lấy danh sách report_post và populate dữ liệu cần thiết
+        const report_post_list = await report_post.find({ status: true })
+            .populate('reporters', 'first_name last_name avatar')
+            .populate({
+                path: 'ID_post',
+                populate: [
+                    { path: 'ID_user', select: 'first_name last_name avatar' },
+                    { path: 'tags', select: 'first_name last_name avatar' },
+                    {
+                        path: 'ID_post_shared',
+                        select: '-__v',
+                        populate: [
+                            { path: 'ID_user', select: 'first_name last_name avatar' },
+                            { path: 'tags', select: 'first_name last_name avatar' }
+                        ]
+                    }
+                ],
+                select: '-__v' // Lấy tất cả các thuộc tính trừ __v
+            })
+            .sort({ "reporters.length": -1 })
+            .lean();
+        // Lọc bỏ những report mà ID_post không có hoặc không phải "Ban"
+        const filtered_report_post_list = report_post_list.filter(report => report.ID_post?.type === "Ban");
+
+        return filtered_report_post_list; // Trả về danh sách thay vì `true`
     } catch (error) {
         console.error("Lỗi khi lấy danh sách báo cáo:", error);
         throw error;
@@ -92,7 +126,7 @@ async function deleteReport_post(_id) {
 async function banPost(ID_report_post) {
     try {
         if (!ID_report_post) {
-            throw new Error("Thiếu ID của report_post cần xóa.");
+            throw new Error("Thiếu ID của report_post cần khóa.");
         }
 
         const report = await report_post.findById(ID_report_post);

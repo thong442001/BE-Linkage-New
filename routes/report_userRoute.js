@@ -31,6 +31,18 @@ router.get('/getAllReport_user', async function (req, res, next) {
   }
 });
 
+// http://localhost:3000/report_user/getAllBanUser
+router.get('/getAllBanUser', async function (req, res, next) {
+  try {
+    const result = await report_userController.getAllBanUser();
+    if (result) {
+      res.status(200).json({ "status": true, "reports": result });
+    }
+  } catch (e) {
+    res.status(400).json({ "status": false, "message": "lỗi API" });
+  }
+});
+
 // http://localhost:3000/report_user/deleteReport_user
 router.post('/deleteReport_user', checkToken, async function (req, res, next) {
   try {
@@ -46,5 +58,34 @@ router.post('/deleteReport_user', checkToken, async function (req, res, next) {
   }
 });
 
+// http://localhost:3000/report_user/banUser
+router.post('/banUser', async function (req, res, next) {
+  try {
+    const { ID_report_user } = req.body;
+    const result = await report_userController.banUser(ID_report_user);
+    if (result) {
+      return res.status(200).json({ "status": true });
+    } else {
+      return res.status(401).json({ "status": false, "message": "Không tìm thấy _id" });
+    }
+  } catch (e) {
+    res.status(400).json({ "status": false, "message": "lỗi API" });
+  }
+});
+
+// http://localhost:3000/report_user/unBanUser
+router.post('/unBanUser', async function (req, res, next) {
+  try {
+    const { ID_report_user } = req.body;
+    const result = await report_userController.unBanUser(ID_report_user);
+    if (result) {
+      return res.status(200).json({ "status": true });
+    } else {
+      return res.status(401).json({ "status": false, "message": "Không tìm thấy _id" });
+    }
+  } catch (e) {
+    res.status(400).json({ "status": false, "message": "lỗi API" });
+  }
+});
 
 module.exports = router;

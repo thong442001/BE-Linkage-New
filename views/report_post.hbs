@@ -9,11 +9,24 @@
                 <div class="post-header">
                     <img class="avatar" src="{{ID_post.ID_user.avatar}}" alt="User Avatar">
                     <div>
-                        <h4>{{ID_post.ID_user.first_name}} {{ID_post.ID_user.last_name}}</h4>
-                        {{!-- <p>{{formatDate ID_post.createdAt}}</p> --}}
+                        <span style="color: black; font-size: 20px; font-weight: bold;">{{ID_post.ID_user.first_name}}
+                            {{ID_post.ID_user.last_name}}</span>
+                        {{#if (gt ID_post.tags.length 0)}}
+                        <span style="color: gray; font-size: 16px;"> cùng với </span>
+                        <a style="color: black; font-size: 20px; font-weight: bold; ">
+                            {{ID_post.tags.[0].first_name}} {{ID_post.tags.[0].last_name}}
+                        </a>
+                        {{#if (gt ID_post.tags.length 1)}}
+                        <span style="color: gray; font-size: 16px;"> và </span>
+                        <a style="color: black; font-size: 20px; font-weight: bold;">
+                            {{sub ID_post.tags.length 1}} người khác
+                        </a>
+                        {{/if}}
+                        {{/if}}
+
+                        <p>{{ID_post.status}}</p>
                     </div>
                 </div>
-
                 <div class="post-body">
                     <p>{{ID_post.caption}}</p>
                 </div>
@@ -40,6 +53,60 @@
                     {{/lt}}
                     {{/each}}
                 </div>
+
+                {{!-- share --}}
+                {{#if ID_post.ID_post_shared}}
+                <div class="share">
+                    <div class="post-header">
+                        <img class="avatar" src="{{ID_post.ID_post_shared.ID_user.avatar}}" alt="User Avatar">
+                        <div>
+                            <span
+                                style="color: black; font-size: 20px; font-weight: bold;">{{ID_post.ID_post_shared.ID_user.first_name}}
+                                {{ID_post.ID_post_shared.ID_user.last_name}}</span>
+                            {{#if (gt ID_post.ID_post_shared.tags.length 0)}}
+                            <span style="color: gray; font-size: 16px;"> cùng với </span>
+                            <a style="color: black; font-size: 20px; font-weight: bold; ">
+                                {{ID_post.ID_post_shared.tags.[0].first_name}}
+                                {{ID_post.ID_post_shared.tags.[0].last_name}}
+                            </a>
+                            {{#if (gt ID_post.ID_post_shared.tags.length 1)}}
+                            <span style="color: gray; font-size: 16px;"> và </span>
+                            <a style="color: black; font-size: 20px; font-weight: bold;">
+                                {{sub ID_post.ID_post_shared.tags.length 1}} người khác
+                            </a>
+                            {{/if}}
+                            {{/if}}
+                            <p>{{ID_post.ID_post_shared.status}}</p>
+                        </div>
+                    </div>
+                    <div class="post-body">
+                        <p>{{ID_post.ID_post_shared.caption}}</p>
+                    </div>
+
+                    <div class="media-container">
+                        {{#each ID_post.ID_post_shared.medias}}
+                        {{#lt @index 5}}
+                        <div class="media-item {{getMediaStyle ../ID_post.ID_post_shared.medias.length @index}}">
+                            {{#if (eq (getMediaType this) "video")}}
+                            <div class="video-wrapper">
+                                <video src="{{this}}" class="video" controls></video>
+                                <div class="play-button">
+                                    <i class="fa fa-play-circle"></i>
+                                </div>
+                            </div>
+                            {{else}}
+                            <img src="{{this}}" class="image" alt="Post Image">
+                            {{/if}}
+
+                            {{#if (and (eq @index 4) (gt ../ID_post.ID_post_shared.medias.length 5))}}
+                            <div class="overlay">+{{sub ../ID_post.ID_post_shared.medias.length 5}}</div>
+                            {{/if}}
+                        </div>
+                        {{/lt}}
+                        {{/each}}
+                    </div>
+                </div>
+                {{/if}}
 
             </div>
 

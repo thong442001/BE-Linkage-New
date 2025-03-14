@@ -430,4 +430,20 @@ router.post('/setNoti_token', async function (req, res, next) {
   }
 });
 
+// //http://localhost:3000/user/checkBanUser
+router.get('/checkBanUser', checkToken, async function (req, res, next) {
+  try {
+    const { ID_user } = req.query;
+    const result = await userController.checkBanUser(ID_user);
+    if (result) {
+      res.status(200).json({ "status": true });
+    } else {
+      res.status(4001).json({ "status": false });
+    }
+
+  } catch (e) {
+    res.status(400).json({ "status": false, "message": "lỗi" });
+  }
+});
+
 module.exports = router;

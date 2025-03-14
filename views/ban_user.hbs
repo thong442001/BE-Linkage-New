@@ -1,4 +1,4 @@
-<h1>Danh sách báo cáo tài khoản</h1>
+<h1>Danh sách các tài khoản bị khóa</h1>
 <div class="container">
     {{#each report_user_list}}
     <div class="report-post-tong">
@@ -32,14 +32,14 @@
         </div>
 
         <div class="report-action">
-            <button class="ban" data-report-id="{{_id}}">Khóa</button>
+            <button class="unban" data-report-id="{{_id}}">Mở khóa</button>
         </div>
     </div>
     {{/each}}
 </div>
 <script>
     document.addEventListener("DOMContentLoaded", function () {
-        document.querySelectorAll(".ban").forEach(button => {
+        document.querySelectorAll(".unban").forEach(button => {
             button.addEventListener("click", async function () {
                 const reportUserId = this.getAttribute("data-report-id");
 

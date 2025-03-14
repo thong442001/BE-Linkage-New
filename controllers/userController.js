@@ -18,6 +18,20 @@ module.exports = {
     editPasswordOfUser,// editPassword
     setNoti_token,
     loginAdmin,// login admin
+    checkBanUser,
+}
+async function checkBanUser(ID_user) {
+    try {
+        const user = await users.findById(ID_user);
+        if (user.isActive == 0) {
+            return false;
+        } else {
+            return true;
+        }
+    } catch (error) {
+        console.log(error);
+        throw error;
+    }
 }
 
 async function getAllUsers() {

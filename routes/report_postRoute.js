@@ -31,6 +31,18 @@ router.get('/getAllReport_post', async function (req, res, next) {
   }
 });
 
+// http://localhost:3000/report_post/getAllBanPost
+router.get('/getAllBanPost', async function (req, res, next) {
+  try {
+    const result = await report_postController.getAllBanPost();
+    if (result) {
+      res.status(200).json({ "status": true, "reports": result });
+    }
+  } catch (e) {
+    res.status(400).json({ "status": false, "message": "lỗi API" });
+  }
+});
+
 // http://localhost:3000/report_post/deleteReport_post
 router.post('/deleteReport_post', checkToken, async function (req, res, next) {
   try {

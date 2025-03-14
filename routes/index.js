@@ -4,6 +4,7 @@ const authMiddleware = require("../middleware/auth");
 const report_post = require("../models/report_post");
 const hbs = require('hbs');
 const report_userController = require("../controllers/report_userController");
+const report_postController = require("../controllers/report_postController");
 
 // Định nghĩa helper ở đây
 hbs.registerHelper('getMediaType', function (url) {
@@ -65,29 +66,7 @@ hbs.registerHelper('and', function (a, b) {
 
 /* GET home page. */
 router.get('/', authMiddleware, async function (req, res, next) {
-
-  // Lấy danh sách report_post và populate dữ liệu cần thiết
-  const report_post_list = await report_post.find({ status: false })
-    .populate('reporters', 'first_name last_name avatar')
-    .populate({
-      path: 'ID_post',
-      populate: [
-        { path: 'ID_user', select: 'first_name last_name avatar' },
-        { path: 'tags', select: 'first_name last_name avatar' },
-        {
-          path: 'ID_post_shared',
-          select: '-__v',
-          populate: [
-            { path: 'ID_user', select: 'first_name last_name avatar' },
-            { path: 'tags', select: 'first_name last_name avatar' }
-          ]
-        }
-      ],
-      select: '-__v' // Lấy tất cả các thuộc tính trừ __v
-    })
-    .sort({ "reporters.length": -1 })
-    .lean();
-
+  const report_post_list = await report_postController.getAllReport_post();
   const user = req.cookies.user;// Lấy user từ cookie
   res.render("report_post",
     {
@@ -100,36 +79,12 @@ router.get('/', authMiddleware, async function (req, res, next) {
   //res.send("Express on Vercel");
 });
 router.get('/ban_posts', authMiddleware, async function (req, res, next) {
-
-  // Lấy danh sách report_post và populate dữ liệu cần thiết
-  const report_post_list = await report_post.find({ status: true })
-    .populate('reporters', 'first_name last_name avatar')
-    .populate({
-      path: 'ID_post',
-      populate: [
-        { path: 'ID_user', select: 'first_name last_name avatar' },
-        { path: 'tags', select: 'first_name last_name avatar' },
-        {
-          path: 'ID_post_shared',
-          select: '-__v',
-          populate: [
-            { path: 'ID_user', select: 'first_name last_name avatar' },
-            { path: 'tags', select: 'first_name last_name avatar' }
-          ]
-        }
-      ],
-      select: '-__v' // Lấy tất cả các thuộc tính trừ __v
-    })
-    .sort({ "reporters.length": -1 })
-    .lean();
-  // Lọc bỏ những report mà ID_post không có hoặc không phải "Ban"
-  const filtered_report_post_list = report_post_list.filter(report => report.ID_post?.type === "Ban");
-
+  const report_post_list = await report_postController.getAllBanPost();
   const user = req.cookies.user;// Lấy user từ cookie
   res.render("ban_post",
     {
       user: user,
-      report_post_list: filtered_report_post_list,
+      report_post_list: report_post_list,
       isMiniLogo: false,
     });
 });
@@ -137,6 +92,17 @@ router.get('/getAllReport_user', authMiddleware, async function (req, res, next)
   const report_user_list = await report_userController.getAllReport_user();
   const user = req.cookies.user;// Lấy user từ cookie
   res.render("report_user", {
+    user: user,
+    report_user_list: report_user_list,
+    isMiniLogo: false,
+    layout: "layout",
+  });
+});
+
+router.get('/ban_users', authMiddleware, async function (req, res, next) {
+  const report_user_list = await report_userController.getAllBanUser();
+  const user = req.cookies.user;// Lấy user từ cookie
+  res.render("ban_user", {
     user: user,
     report_user_list: report_user_list,
     isMiniLogo: false,
