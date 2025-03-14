@@ -43,10 +43,10 @@
             button.addEventListener("click", async function () {
                 const reportUserId = this.getAttribute("data-report-id");
 
-                if (!confirm("Bạn có chắc muốn khóa tài khoản này?")) return;
+                if (!confirm("Bạn có chắc muốn mở khóa tài khoản này?")) return;
 
                 try {
-                    const response = await fetch("/report_user/banUser", {
+                    const response = await fetch("/report_user/unBanUser", {
                         method: "POST",
                         headers: {
                             "Content-Type": "application/json",
@@ -57,7 +57,7 @@
                     const result = await response.json();
 
                     if (result.status) {
-                        alert("Tài khoản đã bị khóa.");
+                        alert("Tài khoản đã được mở khóa.");
                         this.closest(".report-post-tong").remove(); // Xóa bài bị khóa khỏi giao diện
                     } else {
                         alert("Lỗi: " + result.message);

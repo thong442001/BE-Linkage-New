@@ -23,7 +23,7 @@ module.exports = {
 async function checkBanUser(ID_user) {
     try {
         const user = await users.findById(ID_user);
-        if (user.isActive == 0) {
+        if (user.role == 0) {
             return false;
         } else {
             return true;

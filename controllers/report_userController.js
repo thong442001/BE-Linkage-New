@@ -110,7 +110,7 @@ async function banUser(ID_report_user) {
         await report.save();
 
         const rUser = await user.findById(report.ID_user);
-        rUser.isActive = 0; // 0 là tài khoản bị khóa
+        rUser.role = 0; // 0 là tài khoản bị khóa
         await rUser.save();
 
         return true;
@@ -131,7 +131,7 @@ async function unBanUser(ID_report_user) {
         const report = await report_user.findById(ID_report_user);
 
         const rUser = await user.findById(report.ID_user);
-        rUser.isActive = 1; // 1 là tài khoản user
+        rUser.role = 2; // 1 là tài khoản user
         await rUser.save();
 
         return true;

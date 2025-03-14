@@ -50,7 +50,6 @@ const user = new Schema({
     isActive: {
         type: Number, // kiểu dữ liệu
         default: 1,
-        // 0 bị khoá
         // 1 offline
         // 2 online
     },
