@@ -438,7 +438,7 @@ router.get('/checkBanUser', checkToken, async function (req, res, next) {
     if (result) {
       res.status(200).json({ "status": true });
     } else {
-      res.status(4001).json({ "status": false });
+      res.status(401).json({ "status": false });
     }
 
   } catch (e) {
