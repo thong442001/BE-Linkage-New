@@ -69,7 +69,7 @@ async function getAllBanUser() {
             .lean();
 
         // Lọc bỏ những report mà ID_post không có hoặc không phải "Ban"
-        const filtered_report_user_list = reports.filter(report => report.ID_user?.isActive === 0);
+        const filtered_report_user_list = reports.filter(report => report.ID_user?.role === 0);
 
         return filtered_report_user_list; // Trả về danh sách thay vì `true`
     } catch (error) {
