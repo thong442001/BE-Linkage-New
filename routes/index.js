@@ -122,17 +122,16 @@ router.get('/ban_posts', authMiddleware, async function (req, res, next) {
     })
     .sort({ "reporters.length": -1 })
     .lean();
+  // Lọc bỏ những report mà ID_post không có hoặc không phải "Ban"
+  const filtered_report_post_list = report_post_list.filter(report => report.ID_post?.type === "Ban");
 
   const user = req.cookies.user;// Lấy user từ cookie
   res.render("ban_post",
     {
       user: user,
-      report_post_list: report_post_list,
+      report_post_list: filtered_report_post_list,
       isMiniLogo: false,
     });
-  //res.render('loginAdmin', { title: 'Linkage', layout: false });
-  //res.render('loginAdmin', { title: 'Linkage' });
-  //res.send("Express on Vercel");
 });
 router.get('/getAllReport_user', authMiddleware, async function (req, res, next) {
   const report_user_list = await report_userController.getAllReport_user();

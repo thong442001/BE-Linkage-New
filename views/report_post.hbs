@@ -1,63 +1,65 @@
 <h1>Danh sách báo cáo bài viết</h1>
 <div class="container">
     {{#each report_post_list}}
-    <div class="report-post">
-        <!-- Cột 1: Bài Post -->
-        <div class="post-content">
-            <h4>Bài viết:</h4>
-            <div class="post-header">
-                <img class="avatar" src="{{ID_post.ID_user.avatar}}" alt="User Avatar">
-                <div>
-                    <h4>{{ID_post.ID_user.first_name}} {{ID_post.ID_user.last_name}}</h4>
-                    {{!-- <p>{{formatDate ID_post.createdAt}}</p> --}}
-                </div>
-            </div>
-
-            <div class="post-body">
-                <p>{{ID_post.caption}}</p>
-            </div>
-
-            <div class="media-container">
-                {{#each ID_post.medias}}
-                {{#lt @index 5}}
-                <div class="media-item {{getMediaStyle ../ID_post.medias.length @index}}">
-                    {{#if (eq (getMediaType this) "video")}}
-                    <div class="video-wrapper">
-                        <video src="{{this}}" class="video" controls></video>
-                        <div class="play-button">
-                            <i class="fa fa-play-circle"></i>
-                        </div>
+    <div class="report-post-tong">
+        <div class="report-post">
+            <!-- Cột 1: Bài Post -->
+            <div class="post-content">
+                <h4>Bài viết:</h4>
+                <div class="post-header">
+                    <img class="avatar" src="{{ID_post.ID_user.avatar}}" alt="User Avatar">
+                    <div>
+                        <h4>{{ID_post.ID_user.first_name}} {{ID_post.ID_user.last_name}}</h4>
+                        {{!-- <p>{{formatDate ID_post.createdAt}}</p> --}}
                     </div>
-                    {{else}}
-                    <img src="{{this}}" class="image" alt="Post Image">
-                    {{/if}}
-
-                    {{#if (and (eq @index 4) (gt ../ID_post.medias.length 5))}}
-                    <div class="overlay">+{{sub ../ID_post.medias.length 5}}</div>
-                    {{/if}}
                 </div>
-                {{/lt}}
-                {{/each}}
+
+                <div class="post-body">
+                    <p>{{ID_post.caption}}</p>
+                </div>
+
+                <div class="media-container">
+                    {{#each ID_post.medias}}
+                    {{#lt @index 5}}
+                    <div class="media-item {{getMediaStyle ../ID_post.medias.length @index}}">
+                        {{#if (eq (getMediaType this) "video")}}
+                        <div class="video-wrapper">
+                            <video src="{{this}}" class="video" controls></video>
+                            <div class="play-button">
+                                <i class="fa fa-play-circle"></i>
+                            </div>
+                        </div>
+                        {{else}}
+                        <img src="{{this}}" class="image" alt="Post Image">
+                        {{/if}}
+
+                        {{#if (and (eq @index 4) (gt ../ID_post.medias.length 5))}}
+                        <div class="overlay">+{{sub ../ID_post.medias.length 5}}</div>
+                        {{/if}}
+                    </div>
+                    {{/lt}}
+                    {{/each}}
+                </div>
+
             </div>
 
+            <!-- Cột 2: Danh sách reporters -->
+            <div class="reporters-list">
+                <h4>Những tài khoản báo cáo:</h4>
+                <ul>
+                    {{#each reporters}}
+                    <li class="reporter">
+                        <img class="avatar-small" src="{{this.avatar}}" alt="Reporter Avatar">
+                        <span>{{this.first_name}} {{this.last_name}}</span>
+                    </li>
+                    {{/each}}
+                </ul>
+            </div>
         </div>
 
-        <!-- Cột 2: Danh sách reporters -->
-        <div class="reporters-list">
-            <h4>Những tài khoản báo cáo:</h4>
-            <ul>
-                {{#each reporters}}
-                <li class="reporter">
-                    <img class="avatar-small" src="{{this.avatar}}" alt="Reporter Avatar">
-                    <span>{{this.first_name}} {{this.last_name}}</span>
-                </li>
-                {{/each}}
-            </ul>
+        <div class="report-action">
+            <button class="ban" data-report-id="{{_id}}">Khóa</button>
         </div>
-    </div>
-
-    <div class="report-action">
-        <button class="ban" data-report-id="{{_id}}">Khóa</button>
     </div>
     {{/each}}
 </div>
@@ -82,7 +84,7 @@
 
                     if (result.status) {
                         alert("Bài viết đã bị khóa.");
-                        this.closest(".report-post").remove(); // Xóa bài bị khóa khỏi giao diện
+                        this.closest(".report-post-tong").remove(); // Xóa bài bị khóa khỏi giao diện
                     } else {
                         alert("Lỗi: " + result.message);
                     }

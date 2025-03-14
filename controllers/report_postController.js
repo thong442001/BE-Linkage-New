@@ -6,6 +6,7 @@ module.exports = {
     getAllReport_post,
     deleteReport_post,
     banPost,
+    unBanPost,
 }
 
 async function addReport_post(me, ID_post) {
@@ -111,3 +112,28 @@ async function banPost(ID_report_post) {
     }
 }
 
+async function unBanPost(ID_report_post) {
+    try {
+        if (!ID_report_post) {
+            throw new Error("Thiếu ID của report_post cần mở khóa.");
+        }
+
+        const report = await report_post.findById(ID_report_post);
+
+        const rPost = await post.findById(report.ID_post);
+        if (rPost.ID_post_shared) {
+            rPost.type = 'Share';
+        } else if (rPost.tags?.length > 0) {
+            rPost.type = 'Tag';
+        } else {
+            rPost.type = 'Normal';
+        }
+        await rPost.save();
+
+        return true;
+
+    } catch (error) {
+        console.error("Lỗi khi xóa báo cáo:", error);
+        throw error; // Ném lỗi để xử lý phía trên
+    }
+}
