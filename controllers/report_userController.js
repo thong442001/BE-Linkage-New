@@ -1,5 +1,8 @@
 const report_user = require("../models/report_user");
 const user = require("../models/user");
+const axios = require("axios");
+const noti_token = require("../models/noti_token");
+const notification = require("../models/notification");
 
 module.exports = {
     addReport_user,
@@ -92,8 +95,18 @@ async function banUser(ID_report_user) {
         rUser.role = 0; // 0 là tài khoản bị khóa
         await rUser.save();
 
-        return true;
+        // Tạo notification
+        const notificationItem = new notification({
+            ID_user: rUser._id,
+            type: 'Tài khoản bị khóa',
+        });
 
+        await notificationItem.save();
+
+        // Gửi thông báo cho người nhận lời mời
+        await guiThongBao(rUser._id, notificationItem._id);
+
+        return true;
 
     } catch (error) {
         console.error("Lỗi khi xóa báo cáo:", error);
@@ -120,5 +133,28 @@ async function unBanUser(ID_report_user) {
     } catch (error) {
         console.error("Lỗi khi xóa báo cáo:", error);
         throw error; // Ném lỗi để xử lý phía trên
+    }
+}
+
+// 🛠 Hàm gửi thông báo kết bạn
+async function guiThongBao(ID_user, ID_noti) {
+    try {
+
+        const check_noti_token = await noti_token.findOne({ "ID_user": ID_user });
+        if (!check_noti_token || !check_noti_token.tokens) return;
+
+        await axios.post(
+            //`http://localhost:3001/gg/send-notification`,
+            `https://linkage.id.vn/gg/send-notification`,
+            {
+                fcmTokens: check_noti_token.tokens,
+                title: "Thông báo",
+                body: null,
+                ID_noties: [ID_noti],
+            },
+        );
+        return;
+    } catch (error) {
+        console.error("⚠️ Lỗi khi gửi thông báo FCM:", error.response?.data || error.message);
     }
 }

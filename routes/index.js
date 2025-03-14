@@ -120,5 +120,4 @@ router.get('/logout', function (req, res) {
   res.redirect("/user/loginAdmin"); // Chuyển hướng về trang login
 });
 
-
 module.exports = router;

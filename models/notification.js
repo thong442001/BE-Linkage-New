@@ -55,6 +55,7 @@ const notification = new Schema({
             'Đã thả biểu cảm vào bài viết của bạn',
             'Đã bình luận vào bài viết của bạn',
             'Đã trả lời bình luận của bạn',// comment
+            'Tài khoản bị khóa', // user banned
         ],
     },
     statusSeen: {
