@@ -14,6 +14,10 @@ const report_user = new Schema({
         type: Boolean, // kiểu dữ liệu
         default: false
     },
+    _destroy: {
+        type: Boolean, // kiểu dữ liệu
+        default: false
+    },
 }, {
     timestamps: true
 });

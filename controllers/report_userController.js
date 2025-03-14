@@ -4,7 +4,6 @@ const user = require("../models/user");
 module.exports = {
     addReport_user,
     getAllReport_user,
-    deleteReport_user,
     banUser,
     unBanUser,
     getAllBanUser,
@@ -14,7 +13,7 @@ async function addReport_user(me, ID_user) {
     try {
 
         const report = await report_user.findOne(
-            { ID_user: ID_user, status: false } // Chỉ update nếu status = false
+            { ID_user: ID_user, status: false, _destroy: false, } // Chỉ update nếu status = false
         );
         if (!report) {
             // tạo mới report_post
@@ -22,6 +21,7 @@ async function addReport_user(me, ID_user) {
                 reporters: [me],
                 ID_user: ID_user,
                 status: false,
+                _destroy: false,
             };
             await report_user.create(newItem);
         } else {
@@ -40,7 +40,7 @@ async function addReport_user(me, ID_user) {
 async function getAllReport_user() {
     try {
         // Lấy danh sách report_user và populate dữ liệu cần thiết
-        const reports = await report_user.find({ status: false })
+        const reports = await report_user.find({ status: false, _destroy: false })
             .populate('reporters', 'first_name last_name avatar')
             .populate({
                 path: 'ID_user',
@@ -59,7 +59,7 @@ async function getAllReport_user() {
 async function getAllBanUser() {
     try {
         // Lấy danh sách report_user và populate dữ liệu cần thiết
-        const reports = await report_user.find({ status: true })
+        const reports = await report_user.find({ status: true, _destroy: false })
             .populate('reporters', 'first_name last_name avatar')
             .populate({
                 path: 'ID_user',
@@ -75,27 +75,6 @@ async function getAllBanUser() {
     } catch (error) {
         console.error("Lỗi khi lấy danh sách báo cáo:", error);
         throw error;
-    }
-}
-
-async function deleteReport_user(_id) {
-    try {
-        if (!_id) {
-            throw new Error("Thiếu ID của report_user cần xóa.");
-        }
-
-        const deletedReport = await report_user.findByIdAndDelete(_id);
-
-        if (!deletedReport) {
-            console.warn(`Không tìm thấy báo cáo với ID: ${_id}`);
-            return false; // Không tìm thấy report
-        }
-
-        console.log(`Đã xóa báo cáo với ID: ${_id}`);
-        return true;
-    } catch (error) {
-        console.error("Lỗi khi xóa báo cáo:", error);
-        throw error; // Ném lỗi để xử lý phía trên
     }
 }
 
@@ -129,6 +108,8 @@ async function unBanUser(ID_report_user) {
         }
 
         const report = await report_user.findById(ID_report_user);
+        report._destroy = true;
+        await report.save();
 
         const rUser = await user.findById(report.ID_user);
         rUser.role = 2; // 1 là tài khoản user

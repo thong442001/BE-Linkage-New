@@ -43,21 +43,6 @@ router.get('/getAllBanUser', async function (req, res, next) {
   }
 });
 
-// http://localhost:3000/report_user/deleteReport_user
-router.post('/deleteReport_user', checkToken, async function (req, res, next) {
-  try {
-    const { _id } = req.body;
-    const result = await report_userController.deleteReport_user(_id);
-    if (result) {
-      return res.status(200).json({ "status": true });
-    } else {
-      return res.status(4001).json({ "status": false, "message": "Không tìm thấy _id" });
-    }
-  } catch (e) {
-    res.status(400).json({ "status": false, "message": "lỗi API" });
-  }
-});
-
 // http://localhost:3000/report_user/banUser
 router.post('/banUser', async function (req, res, next) {
   try {

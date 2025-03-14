@@ -4,7 +4,6 @@ const post = require("../models/post");
 module.exports = {
     addReport_post,
     getAllReport_post,
-    deleteReport_post,
     banPost,
     unBanPost,
     getAllBanPost,
@@ -13,7 +12,7 @@ module.exports = {
 async function addReport_post(me, ID_post) {
     try {
         const report = await report_post.findOne(
-            { ID_post: ID_post, status: false } // Chỉ update nếu status = false
+            { ID_post: ID_post, status: false, _destroy: false } // Chỉ update nếu status = false
         );
         if (!report) {
             // tạo mới report_post
@@ -21,6 +20,7 @@ async function addReport_post(me, ID_post) {
                 reporters: [me],
                 ID_post: ID_post,
                 status: false,
+                _destroy: false,
             };
             await report_post.create(newItem);
         } else {
@@ -41,7 +41,7 @@ async function addReport_post(me, ID_post) {
 async function getAllReport_post() {
     try {
         // Lấy danh sách report_post và populate dữ liệu cần thiết
-        const report_post_list = await report_post.find({ status: false })
+        const report_post_list = await report_post.find({ status: false, _destroy: false })
             .populate('reporters', 'first_name last_name avatar')
             .populate({
                 path: 'ID_post',
@@ -72,7 +72,7 @@ async function getAllReport_post() {
 async function getAllBanPost() {
     try {
         // Lấy danh sách report_post và populate dữ liệu cần thiết
-        const report_post_list = await report_post.find({ status: true })
+        const report_post_list = await report_post.find({ status: true, _destroy: false })
             .populate('reporters', 'first_name last_name avatar')
             .populate({
                 path: 'ID_post',
@@ -99,27 +99,6 @@ async function getAllBanPost() {
     } catch (error) {
         console.error("Lỗi khi lấy danh sách báo cáo:", error);
         throw error;
-    }
-}
-
-async function deleteReport_post(_id) {
-    try {
-        if (!_id) {
-            throw new Error("Thiếu ID của report_post cần xóa.");
-        }
-
-        const deletedReport = await report_post.findByIdAndDelete(_id);
-
-        if (!deletedReport) {
-            console.warn(`Không tìm thấy báo cáo với ID: ${_id}`);
-            return false; // Không tìm thấy report
-        }
-
-        console.log(`Đã xóa báo cáo với ID: ${_id}`);
-        return true;
-    } catch (error) {
-        console.error("Lỗi khi xóa báo cáo:", error);
-        throw error; // Ném lỗi để xử lý phía trên
     }
 }
 
@@ -153,6 +132,9 @@ async function unBanPost(ID_report_post) {
         }
 
         const report = await report_post.findById(ID_report_post);
+
+        report._destroy = true;
+        await report.save();
 
         const rPost = await post.findById(report.ID_post);
         if (rPost.ID_post_shared) {
