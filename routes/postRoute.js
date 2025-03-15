@@ -64,9 +64,11 @@ router.post('/addPost', checkToken, async function (req, res, next) {
       ID_post_shared,
       tags
     );
-    if (result) {
-      return res.status(200).json({ "status": true, "message": "add post thành công" });
-    }
+
+    return res.status(200).json({ "status": true, "message": "add post thành công" });
+    // if (result) {
+    //   return res.status(200).json({ "status": true, "message": "add post thành công" });
+    // }
     // else {
     //   return res.status(401).json({ "status": false, "message": "loi api" });
     // }
