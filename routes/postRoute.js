@@ -55,7 +55,7 @@ router.post('/addPost', checkToken, async function (req, res, next) {
       ID_post_shared,
       tags
     } = req.body;
-    const postId = await postController.addPost(
+    const result = await postController.addPost(
       ID_user,
       caption,
       medias,
@@ -64,8 +64,8 @@ router.post('/addPost', checkToken, async function (req, res, next) {
       ID_post_shared,
       tags
     );
-    if (postId) {
-      res.status(200).json({ "status": true, "message": "add post thành công", "ID_post": postId });
+    if (result) {
+      res.status(200).json({ "status": true, "message": "add post thành công" });
     } else {
       res.status(401).json({ "status": false, "message": "user không tồn tại" });
     }
