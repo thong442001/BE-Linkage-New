@@ -19,7 +19,15 @@ module.exports = {
     notiLiveStream, // noti livestream
 }
 
-async function addPost(ID_user, caption, medias, status, type, ID_post_shared, tags) {
+async function addPost(
+    ID_user, 
+    caption, 
+    medias, 
+    status, 
+    type, 
+    ID_post_shared, 
+    tags
+) {
     try {
         const newItem = {
             ID_user,

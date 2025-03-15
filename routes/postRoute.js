@@ -65,13 +65,13 @@ router.post('/addPost', checkToken, async function (req, res, next) {
       tags
     );
     if (result) {
-      res.status(200).json({ "status": true, "message": "add post thành công" });
-    } else {
-      res.status(401).json({ "status": false, "message": "loi api" });
+      return res.status(200).json({ "status": true, "message": "add post thành công" });
     }
-
+    // else {
+    //   return res.status(401).json({ "status": false, "message": "loi api" });
+    // }
   } catch (e) {
-    res.status(400).json({ "status": false, "message": "lỗi" });
+    return res.status(400).json({ "status": false, "message": "lỗi" });
   }
 });
 
@@ -82,7 +82,7 @@ router.post('/allProfile', checkToken, async function (req, res, next) {
     const { ID_user, me } = req.body;
     const result = await postController.allProfile(ID_user, me);
     if (result) {
-      res.status(200).json({
+      return res.status(200).json({
         "status": true,
         "user": result.rUser,
         "posts": result.rPosts,
@@ -103,13 +103,11 @@ router.get('/getAllPostsInHome', checkToken, async function (req, res, next) {
     const { me } = req.query;
     const result = await postController.getAllPostsInHome(me);
     if (result) {
-      res.status(200).json({
+      return res.status(200).json({
         "status": true,
         "posts": result.rPosts,
         "stories": result.rStories,
       });
-    } else {
-      res.status(200).json({ "status": false, "posts": [] });
     }
   } catch (e) {
     res.status(400).json({ "status": false, "message": "lỗi" });
@@ -198,7 +196,7 @@ router.post('/notiLiveStream', checkToken, async function (req, res, next) {
       //console.log("....2...");
       return res.status(200).json({ "status": true, message: "Thông báo thành công" });
     } else {
-      return res.status(4001).json({ "status": false, message: "User không có bạn bè" });
+      return res.status(401).json({ "status": false, message: "User không có bạn bè" });
     }
   } catch (e) {
     return res.status(400).json({ "status": false, "message": "lỗi" });
