@@ -67,7 +67,7 @@ router.post('/addPost', checkToken, async function (req, res, next) {
     if (result) {
       res.status(200).json({ "status": true, "message": "add post thành công" });
     } else {
-      res.status(401).json({ "status": false, "message": "user không tồn tại" });
+      res.status(401).json({ "status": false, "message": "loi api" });
     }
 
   } catch (e) {

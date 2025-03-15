@@ -41,6 +41,7 @@ async function addPost(ID_user, caption, medias, status, type, ID_post_shared, t
             } else if (type === 'Story') {
                 notificationType = 'Đã đăng story mới';
             } else {
+                console.log("Loại bài viết không hợp lệ");
                 return true; // Không gửi thông báo nếu không thuộc loại hợp lệ
             }
 
@@ -56,7 +57,10 @@ async function addPost(ID_user, caption, medias, status, type, ID_post_shared, t
                 r.ID_userA.toString() === ID_user.toString() ? r.ID_userB.toString() : r.ID_userA.toString()
             );
 
-            if (friendIds.length === 0) return true; // Không có bạn bè để gửi thông báo
+            if (friendIds.length === 0) {
+                console.log("friendIds.length = 0");
+                return true; // Không có bạn bè để gửi thông báo
+            }
 
             // 🔔 Tạo thông báo cho từng bạn bè
             const notifications = friendIds.map(friendId => ({
@@ -90,7 +94,10 @@ async function addPost(ID_user, caption, medias, status, type, ID_post_shared, t
                 }
             });
 
-            if (messages.length === 0) return true; // Không có token hợp lệ
+            if (messages.length === 0) {
+                console.log("messages.length = 0");
+                return true; // Không có token hợp lệ
+            }
 
             // 🚀 Gửi từng thông báo riêng lẻ
             await Promise.all(messages.map(({ token, notificationId }) =>
@@ -105,7 +112,7 @@ async function addPost(ID_user, caption, medias, status, type, ID_post_shared, t
                     })
             ));
         }
-
+        console.log("true");
         return true; // Thành công
     } catch (error) {
         console.log("Lỗi khi đăng bài:", error);
