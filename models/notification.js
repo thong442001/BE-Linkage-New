@@ -56,6 +56,7 @@ const notification = new Schema({
             'Đã bình luận vào bài viết của bạn',
             'Đã trả lời bình luận của bạn',// comment
             'Tài khoản bị khóa', // user banned
+            'Mời chơi game 3 lá', // game 3 la
         ],
     },
     statusSeen: {

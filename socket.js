@@ -182,7 +182,28 @@ function setupSocket(server) {
         });
         // game 3 la
         socket.on('moi-choi-game-3-la', async (data) => {
-            const { ID_group } = data;
+            const { ID_group, ID_user } = data;
+            // Tạo notification
+            const notificationItem = new notification({
+                ID_group: ID_group,
+                ID_user: ID_user,
+                type: 'Mời chơi game 3 lá',
+            });
+            await notificationItem.save();
+            // 🔍 Tìm FCM tokens kèm `ID_user`
+            const fcmTokens = await noti_token.find({ ID_user: ID_user }).select('ID_user tokens');
+            if (fcmTokens && fcmTokens.tokens) {
+                await axios.post(
+                    //`http://localhost:3001/gg/send-notification`,
+                    `https://linkage.id.vn/gg/send-notification`,
+                    {
+                        fcmTokens: fcmTokens.tokens,
+                        title: "Thông báo",
+                        body: null,
+                        ID_noties: [notificationItem._id],
+                    },
+                );
+            }
             io.to(ID_group).emit('lang-nghe-moi-choi-game-3-la');
         });
         socket.on('chap-nhan-choi-game-3-la', async (data) => {
