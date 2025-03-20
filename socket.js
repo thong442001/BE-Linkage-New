@@ -191,7 +191,7 @@ function setupSocket(server) {
             });
             await notificationItem.save();
             // 🔍 Tìm FCM tokens kèm `ID_user`
-            const fcmTokens = await noti_token.find({ ID_user: ID_user }).select('ID_user tokens');
+            const fcmTokens = await noti_token.findOne({ ID_user: ID_user }).select('ID_user tokens');
             if (fcmTokens && fcmTokens.tokens) {
                 await axios.post(
                     //`http://localhost:3001/gg/send-notification`,
