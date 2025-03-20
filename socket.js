@@ -182,29 +182,20 @@ function setupSocket(server) {
         });
         // game 3 la
         socket.on('moi-choi-game-3-la', async (data) => {
-            const { ID_group, ID_user } = data;
-            // Tạo notification
-            // const notificationItem = new notification({
-            //     ID_group: ID_group,
-            //     ID_user: ID_user,
-            //     type: 'Mời chơi game 3 lá',
-            // });
-            //await notificationItem.save();
-
+            const { ID_group, me } = data;
+            // 🔍 Tìm thông tin nhóm
+            const groupInfo = await group.findById(ID_group);
+            if (!groupInfo) {
+                console.log('Không tìm thấy nhóm!');
+                return;
+            }
+            // 📜 Lọc danh sách thành viên (trừ người gửi)
+            const memberIds = groupInfo.members
+                .map(m => m.toString())
+                .filter(id => id !== me.toString());
+            if (memberIds.length === 0) return; // ⛔ Không có ai để gửi thông báo
             // 🔍 Tìm FCM tokens kèm `ID_user`
-            const fcmTokens = await noti_token.find({ "ID_user": ID_user }).select('ID_user tokens');
-            // if (fcmTokens && fcmTokens.tokens) {
-            //     await axios.post(
-            //         //`http://localhost:3001/gg/send-notification`,
-            //         `https://linkage.id.vn/gg/send-notification`,
-            //         {
-            //             fcmTokens: fcmTokens.tokens,
-            //             title: "Thông báo",
-            //             body: null,
-            //             ID_noties: [notificationItem._id],
-            //         },
-            //     );
-            // }
+            const fcmTokens = await noti_token.find({ ID_user: { $in: memberIds } }).select('ID_user tokens');
             // 🛠 Tạo thông báo cho từng thành viên
             const notifications = fcmTokens.map(({ ID_user }) => ({
                 ID_group: ID_group,
@@ -220,14 +211,6 @@ function setupSocket(server) {
                 acc[noti.ID_user.toString()] = noti._id.toString();
                 return acc;
             }, {});
-
-            // 🔥 Tạo danh sách gửi thông báo từng người
-            // const messages = fcmTokens
-            //     .map(({ ID_user, token }) => ({
-            //         token,
-            //         notificationId: notificationMap[ID_user.toString()],
-            //     }))
-            //     .filter(({ token }) => token && token.trim().length > 0); // Lọc token hợp lệ
 
             const messages = [];
             fcmTokens.forEach(({ ID_user, tokens }) => {
