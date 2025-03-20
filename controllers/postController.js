@@ -20,12 +20,12 @@ module.exports = {
 }
 
 async function addPost(
-    ID_user, 
-    caption, 
-    medias, 
-    status, 
-    type, 
-    ID_post_shared, 
+    ID_user,
+    caption,
+    medias,
+    status,
+    type,
+    ID_post_shared,
     tags
 ) {
     try {

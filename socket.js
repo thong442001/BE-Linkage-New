@@ -180,6 +180,19 @@ function setupSocket(server) {
         socket.on("stop_typing", ({ ID_group, ID_user }) => {
             io.to(ID_group).emit("user_stop_typing", { ID_group, ID_user });
         });
+        // game 3 la
+        socket.on('moi-choi-game-3-la', async (data) => {
+            const { ID_group } = data;
+            io.to(ID_group).emit('lang-nghe-moi-choi-game-3-la');
+        });
+        socket.on('chap-nhan-choi-game-3-la', async (data) => {
+            const { ID_group } = data;
+            io.to(ID_group).emit('lang-nghe-chap-nhan-choi-game-3-la');
+        });
+        socket.on('tu-choi-choi-game-3-la', async (data) => {
+            const { ID_group } = data;
+            io.to(ID_group).emit('lang-nghe-tu-choi-choi-game-3-la');
+        });
 
         // Xử lý thu hồi tin nhắn
         socket.on('revoke_message', async (data) => {
