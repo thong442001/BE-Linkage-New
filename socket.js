@@ -184,27 +184,78 @@ function setupSocket(server) {
         socket.on('moi-choi-game-3-la', async (data) => {
             const { ID_group, ID_user } = data;
             // Tạo notification
-            const notificationItem = new notification({
+            // const notificationItem = new notification({
+            //     ID_group: ID_group,
+            //     ID_user: ID_user,
+            //     type: 'Mời chơi game 3 lá',
+            // });
+            //await notificationItem.save();
+
+            // 🔍 Tìm FCM tokens kèm `ID_user`
+            const fcmTokens = await noti_token.find({ "ID_user": ID_user }).select('ID_user tokens');
+            // if (fcmTokens && fcmTokens.tokens) {
+            //     await axios.post(
+            //         //`http://localhost:3001/gg/send-notification`,
+            //         `https://linkage.id.vn/gg/send-notification`,
+            //         {
+            //             fcmTokens: fcmTokens.tokens,
+            //             title: "Thông báo",
+            //             body: null,
+            //             ID_noties: [notificationItem._id],
+            //         },
+            //     );
+            // }
+            // 🛠 Tạo thông báo cho từng thành viên
+            const notifications = fcmTokens.map(({ ID_user }) => ({
                 ID_group: ID_group,
                 ID_user: ID_user,
                 type: 'Mời chơi game 3 lá',
+            }));
+
+            // 💾 Lưu thông báo vào database
+            const createdNotifications = await notification.insertMany(notifications);
+
+            // 🎯 Ghép `token` với `notificationId`
+            const notificationMap = createdNotifications.reduce((acc, noti) => {
+                acc[noti.ID_user.toString()] = noti._id.toString();
+                return acc;
+            }, {});
+
+            // 🔥 Tạo danh sách gửi thông báo từng người
+            // const messages = fcmTokens
+            //     .map(({ ID_user, token }) => ({
+            //         token,
+            //         notificationId: notificationMap[ID_user.toString()],
+            //     }))
+            //     .filter(({ token }) => token && token.trim().length > 0); // Lọc token hợp lệ
+
+            const messages = [];
+            fcmTokens.forEach(({ ID_user, tokens }) => {
+                if (tokens && tokens.length > 0) {
+                    tokens.forEach(token => {
+                        messages.push({
+                            token,
+                            notificationId: notificationMap[ID_user.toString()],
+                        });
+                    });
+                }
             });
-            await notificationItem.save();
-            // 🔍 Tìm FCM tokens kèm `ID_user`
-            const fcmTokens = await noti_token.findOne({ ID_user: ID_user }).select('ID_user tokens');
-            if (fcmTokens && fcmTokens.tokens) {
-                await axios.post(
+
+            if (messages.length === 0) return; // ⛔ Không có dữ liệu hợp lệ
+
+            // 🚀 Gửi từng thông báo riêng lẻ
+            await Promise.all(messages.map(({ token, notificationId }) =>
+                axios.post(
                     //`http://localhost:3001/gg/send-notification`,
                     `https://linkage.id.vn/gg/send-notification`,
                     {
-                        fcmTokens: fcmTokens.tokens,
+                        fcmTokens: [token], // Chỉ gửi cho 1 user
                         title: "Thông báo",
                         body: null,
-                        ID_noties: [notificationItem._id],
-                    },
-                );
-            }
-            io.emit('lang-nghe-moi-choi-game-3-la');
+                        ID_noties: [notificationId], // Notification tương ứng
+                    })
+            ));
+            //io.emit('lang-nghe-moi-choi-game-3-la');
         });
         socket.on('chap-nhan-choi-game-3-la', async (data) => {
             const { ID_group } = data;
