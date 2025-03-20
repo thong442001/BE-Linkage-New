@@ -204,7 +204,7 @@ function setupSocket(server) {
                     },
                 );
             }
-            io.to(ID_group).emit('lang-nghe-moi-choi-game-3-la');
+            // io.to(ID_group).emit('lang-nghe-moi-choi-game-3-la');
         });
         socket.on('chap-nhan-choi-game-3-la', async (data) => {
             const { ID_group } = data;
