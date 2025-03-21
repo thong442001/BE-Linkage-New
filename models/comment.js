@@ -17,7 +17,7 @@ const comment = new Schema({
     type: { // kiểu tin nhắn
         type: String, // kiểu dữ liệu
         enum: ['text', 'image', 'video'],
-        default: "text",
+        default: 'text',
     },
     ID_comment_reply: {
         type: ObjectId,

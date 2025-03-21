@@ -136,7 +136,15 @@ router.post('/send-notification', async function (req, res, next) {
     }));
 
     // Gửi thông báo cho từng user
-    const response = await Promise.all(messages.map(msg => admin.messaging().send(msg)));
+    //const response = await Promise.all(messages.map(msg => admin.messaging().send(msg)));
+    const response = await Promise.all(messages.map(async msg => {
+      try {
+        return await admin.messaging().send(msg);
+      } catch (err) {
+        console.error("❌ Lỗi khi gửi FCM đến token:", msg.token, err.message);
+        return { error: err.message, token: msg.token };
+      }
+    }));
 
     console.log(`📢 Gửi ${response.length} thông báo thành công!`);
 
