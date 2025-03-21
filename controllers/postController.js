@@ -229,39 +229,27 @@ async function allProfile(ID_user, me) {
                 post_reaction.find({ ID_post: { $in: postIds } })
                     .populate('ID_user', 'first_name last_name avatar')
                     .populate('ID_reaction', 'name icon')
-                    .sort({ createdAt: 1 })
                     .lean(),
                 comment.find({ ID_post: { $in: postIds } })
                     .populate('ID_user', 'first_name last_name avatar')
-                    .populate({
-                        path: 'ID_comment_reply',
-                        populate: { path: 'ID_user', select: 'first_name last_name avatar' }
-                    })
-                    .sort({ createdAt: 1 })
+                    .populate({ path: 'ID_comment_reply', populate: { path: 'ID_user', select: 'first_name last_name avatar' } })
                     .lean()
             ]);
 
-            // Nhóm reactions và comments theo ID_post
-            const reactionMap = new Map();
+            const reactionMap = {}, commentMap = {};
             allReactions.forEach(reaction => {
-                if (!reactionMap.has(reaction.ID_post)) {
-                    reactionMap.set(reaction.ID_post, []);
-                }
-                reactionMap.get(reaction.ID_post).push(reaction);
+                if (!reactionMap[reaction.ID_post]) reactionMap[reaction.ID_post] = [];
+                reactionMap[reaction.ID_post].push(reaction);
             });
 
-            const commentMap = new Map();
             allComments.forEach(comment => {
-                if (!commentMap.has(comment.ID_post)) {
-                    commentMap.set(comment.ID_post, []);
-                }
-                commentMap.get(comment.ID_post).push(comment);
+                if (!commentMap[comment.ID_post]) commentMap[comment.ID_post] = [];
+                commentMap[comment.ID_post].push(comment);
             });
 
-            // Gán reactions & comments vào bài viết
             rPosts.forEach(post => {
-                post.post_reactions = reactionMap.get(post._id) || [];
-                post.comments = commentMap.get(post._id) || [];
+                post.post_reactions = reactionMap[post._id] || [];
+                post.comments = commentMap[post._id] || [];
             });
         }
 
