@@ -9,7 +9,7 @@ module.exports = {
     setComment_destroyTrue,
 };
 
-async function addComment(ID_user, ID_post, content, type, ID_comment_reply = null) {
+async function addComment(ID_user, ID_post, content, type, ID_comment_reply) {
     try {
         // 📌 Tìm bài post để lấy thông tin chủ bài viết
         const postInfo = await post.findById(ID_post);
