@@ -83,7 +83,7 @@ async function addComment(ID_user, ID_post, content, type, ID_comment_reply = nu
             }
         });
 
-        if (messages.length === 0) return newComment.toObject(); // Không có token hợp lệ
+        if (messages.length === 0) return newComment; // Không có token hợp lệ
 
         // 📌 Gửi thông báo FCM song song
         await Promise.all(messages.map(({ token, notificationId }) =>
@@ -99,7 +99,7 @@ async function addComment(ID_user, ID_post, content, type, ID_comment_reply = nu
             )
         ));
 
-        return newComment.toObject();
+        return newComment;
     } catch (error) {
         console.error("Error in addComment:", error);
         throw error; // Ném lỗi để phía trên xử lý
