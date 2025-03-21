@@ -24,7 +24,7 @@ async function addComment(ID_user, ID_post, content, type, ID_comment_reply) {
             ID_post,
             content,
             type,
-            ID_comment_reply: ID_comment_reply || undefined, // Nếu null thì không lưu vào DB
+            ID_comment_reply: ID_comment_reply || null, // Nếu null thì không lưu vào DB
         };
         const newComment = await comment.create(newItem);
         await newComment.populate('ID_user', 'first_name last_name avatar');
