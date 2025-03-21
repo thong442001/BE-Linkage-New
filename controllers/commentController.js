@@ -14,7 +14,7 @@ async function addComment(ID_user, ID_post, content, type, ID_comment_reply = nu
         // 📌 Tìm bài post để lấy thông tin chủ bài viết
         const postInfo = await post.findById(ID_post);
         if (!postInfo) {
-            return { status: false, message: "Không tìm thấy bài viết" };
+            return false;
         }
         const postOwner = postInfo.ID_user.toString();
 
@@ -42,7 +42,7 @@ async function addComment(ID_user, ID_post, content, type, ID_comment_reply = nu
         if (postOwner !== ID_user) notifyUsers.add(postOwner); // Chủ bài viết
         if (repliedUser && repliedUser._id.toString() !== ID_user) notifyUsers.add(repliedUser._id.toString()); // Người được trả lời
 
-        if (notifyUsers.size === 0) return newComment.toObject(); // Không có ai để thông báo
+        if (notifyUsers.size === 0) return newComment; // Không có ai để thông báo
 
         // 📌 Tìm FCM tokens của những người cần thông báo
         const fcmTokens = await noti_token.find({ ID_user: { $in: Array.from(notifyUsers) } }).select('ID_user tokens');

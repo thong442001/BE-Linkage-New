@@ -37,7 +37,7 @@ router.post('/addComment', checkToken, async function (req, res, next) {
       });
     }
   } catch (e) {
-    return res.status(400).json({ "status": false, "message": "lỗi" });
+    res.status(400).json({ "status": false, "message": "lỗi" });
   }
 });
 
