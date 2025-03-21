@@ -91,6 +91,7 @@ router.post('/allProfile', checkToken, async function (req, res, next) {
         "relationship": result.rRelationship,
         "friends": result.rFriends,
         "stories": result.rStories,
+        "mutualFriendsCount": result.mutualFriendsCount,
       });
     }
   } catch (e) {

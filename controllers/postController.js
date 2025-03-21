@@ -132,10 +132,8 @@ async function addPost(
 // api trang cá nhân
 async function allProfile(ID_user, me) {
     try {
-        // Lấy thông tin user
         let rUser = await users.findById(ID_user);
 
-        // Tìm bạn bè của user
         let rFriends = await relationship.find({
             $or: [
                 { ID_userA: ID_user, relation: 'Bạn bè' },
@@ -147,14 +145,14 @@ async function allProfile(ID_user, me) {
             .sort({ createdAt: 1 })
             .lean();
 
-        // Lấy timestamp 24h trước
         const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
 
         let rRelationship = null;
         let postFilter = { _destroy: false, type: { $nin: ['Story', 'Ban'] } };
         let storyFilter = { _destroy: false, type: 'Story', createdAt: { $gte: twentyFourHoursAgo } };
 
-        // Kiểm tra xem có phải profile của chính mình không
+        let mutualFriendsCount = 0; // ✅ Biến đếm số bạn chung
+
         if (ID_user == me) {
             postFilter.$or = [
                 { ID_user: me },
@@ -162,13 +160,11 @@ async function allProfile(ID_user, me) {
             ];
             storyFilter.ID_user = me;
         } else {
-            // Kiểm tra quan hệ giữa user và người đang xem
             rRelationship = await relationship.findOne({
                 $or: [{ ID_userA: ID_user, ID_userB: me }, { ID_userA: me, ID_userB: ID_user }]
             }).lean();
 
             if (!rRelationship) {
-                // Nếu không có quan hệ, tạo mới với trạng thái "Người lạ"
                 rRelationship = await relationship.create({
                     ID_userA: ID_user,
                     ID_userB: me,
@@ -176,7 +172,20 @@ async function allProfile(ID_user, me) {
                 });
             }
 
-            // Thiết lập quyền xem bài viết
+            // 🔥 **Tính số bạn chung**
+            const [userFriends, meFriends] = await Promise.all([
+                relationship.find({ $or: [{ ID_userA: ID_user }, { ID_userB: ID_user }], relation: 'Bạn bè' })
+                    .lean(),
+                relationship.find({ $or: [{ ID_userA: me }, { ID_userB: me }], relation: 'Bạn bè' })
+                    .lean()
+            ]);
+
+            const userFriendIds = new Set(userFriends.map(r => (r.ID_userA.toString() === ID_user ? r.ID_userB.toString() : r.ID_userA.toString())));
+            const meFriendIds = new Set(meFriends.map(r => (r.ID_userA.toString() === me ? r.ID_userB.toString() : r.ID_userA.toString())));
+
+            mutualFriendsCount = [...userFriendIds].filter(friendId => meFriendIds.has(friendId)).length;
+            // 🔥 **Kết thúc tính số bạn chung**
+
             if (rRelationship.relation === 'Bạn bè') {
                 postFilter.$and = [
                     { $or: [{ status: 'Công khai' }, { status: 'Bạn bè' }] },
@@ -199,7 +208,6 @@ async function allProfile(ID_user, me) {
             storyFilter.ID_user = ID_user;
         }
 
-        // Truy vấn bài viết và stories của user
         let [rPosts, rStories] = await Promise.all([
             posts.find(postFilter)
                 .populate('ID_user', 'first_name last_name avatar')
@@ -220,11 +228,9 @@ async function allProfile(ID_user, me) {
                 .lean()
         ]);
 
-        // Nếu có bài viết, lấy reactions & comments
         if (rPosts.length > 0) {
             const postIds = rPosts.map(post => post._id);
 
-            // Truy vấn reactions và comments
             let [allReactions, allComments] = await Promise.all([
                 post_reaction.find({ ID_post: { $in: postIds } })
                     .populate('ID_user', 'first_name last_name avatar')
@@ -253,12 +259,13 @@ async function allProfile(ID_user, me) {
             });
         }
 
-        return { rUser, rRelationship, rPosts, rFriends, rStories };
+        return { rUser, rRelationship, rPosts, rFriends, rStories, mutualFriendsCount }; // ✅ Trả về số bạn chung
     } catch (error) {
         console.error(error);
         throw error;
     }
 }
+
 
 
 async function getAllPostsInHome(me) {
