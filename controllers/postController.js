@@ -467,15 +467,18 @@ async function changeDestroyPost(_id) {
 // delete post vĩnh viễn
 async function deletePost(_id) {
     try {
+        // Xóa tất cả dữ liệu liên quan đến post
         await Promise.all([
-            // Xóa tất cả reactions của bài post
-            post_reaction.deleteMany({ ID_post: _id }),
-
-            // Xóa tất cả comments liên quan đến bài post
-            comment.deleteMany({ ID_post: _id }),
-
-            // Xóa bài post
-            posts.findByIdAndDelete(_id),
+            post_reaction.deleteMany({ ID_post: _id }), // Xóa reaction
+            comment.deleteMany({ ID_post: _id }), // Xóa comment
+            notification.deleteMany({
+                $or: [
+                    { ID_post: _id },
+                    { ID_comment: { $in: await comment.find({ ID_post: _id }).distinct('_id') } },
+                    { ID_post_reaction: { $in: await post_reaction.find({ ID_post: _id }).distinct('_id') } }
+                ]
+            }), // Xóa notification liên quan
+            posts.findByIdAndDelete(_id), // Xóa bài post
         ]);
 
         return true;
