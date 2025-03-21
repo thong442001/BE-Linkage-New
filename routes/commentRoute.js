@@ -24,16 +24,16 @@ router.post('/addComment', checkToken, async function (req, res, next) {
       type,
       ID_comment_reply
     );
-    if (result) {
+    if (!result) {
+      res.status(401).json({
+        "status": false,
+        "message": "Lỗi khi tạo comment"
+      });
+    } else {
       res.status(200).json({
         "status": true,
         "comment": result,
         "message": "tạo comment thành công"
-      });
-    } else {
-      res.status(401).json({
-        "status": false,
-        "message": "Lỗi khi tạo comment"
       });
     }
   } catch (e) {
