@@ -299,7 +299,11 @@ async function getAllPostsInHome(me) {
             ID_user: { $in: [...friendIDs] },
             _destroy: false,
             type: { $nin: ['Story', 'Ban'] }, // Loại bỏ bài viết có type "ban"
-            $or: [{ status: "Công khai" }, { status: "Bạn bè" }]
+            $or: [
+                { ID_user: me }, // Lấy tất cả bài viết của mình (bao gồm "Chỉ mình tôi")
+                { status: "Công khai" },
+                { status: "Bạn bè" }
+            ]
         };
         let rPosts = await getPosts(postFilter);
 
