@@ -314,7 +314,11 @@ async function getAllPostsInHome(me) {
             _destroy: false,
             type: "Story",
             createdAt: { $gte: twentyFourHoursAgo },
-            $or: [{ status: "Công khai" }, { status: "Bạn bè" }]
+            $or: [
+                { ID_user: me }, // Lấy tất cả bài viết của mình (bao gồm "Chỉ mình tôi")
+                { status: "Công khai" },
+                { status: "Bạn bè" }
+            ]
         };
         let rawStories = await getPosts(storyFilter);
 
