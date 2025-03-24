@@ -25,7 +25,7 @@ async function addReport_user(me, ID_user, ID_reason) {
                     ID_reason: ID_reason,
                     reporters: [me],
                 }],
-                ID_post: ID_post,
+                ID_user: ID_user,
                 status: 'pending',
             };
             await report_user.create(newItem);
@@ -74,7 +74,6 @@ async function getAllReport_userPending() {
                 path: 'ID_user',
                 select: '-__v' // Lấy tất cả các thuộc tính trừ __v
             })
-            .sort({ "reporters.length": -1 })
             .lean();
 
         return reports; // Trả về danh sách thay vì `true`
