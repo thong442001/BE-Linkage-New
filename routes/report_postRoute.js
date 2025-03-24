@@ -19,10 +19,10 @@ router.post('/addReport_post', checkToken, async function (req, res, next) {
   }
 });
 
-// http://localhost:3000/report_post/getAllReport_post
-router.get('/getAllReport_post', async function (req, res, next) {
+// http://localhost:3000/report_post/getAllReport_postPending
+router.get('/getAllReport_postPending', async function (req, res, next) {
   try {
-    const result = await report_postController.getAllReport_post();
+    const result = await report_postController.getAllReport_postPending();
     if (result) {
       res.status(200).json({ "status": true, "reports": result });
     }

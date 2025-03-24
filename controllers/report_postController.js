@@ -3,7 +3,7 @@ const post = require("../models/post");
 
 module.exports = {
     addReport_post,
-    getAllReport_post,
+    getAllReport_postPending,
     banPost,
     unBanPost,
     getAllBanPost,
@@ -65,11 +65,18 @@ async function addReport_post(me, ID_post, ID_reason) {
     }
 }
 
-async function getAllReport_post() {
+async function getAllReport_postPending() {
     try {
         // Lấy danh sách report_post và populate dữ liệu cần thiết
-        const report_post_list = await report_post.find({ status: false, _destroy: false })
-            .populate('reporters', 'first_name last_name avatar')
+        const report_post_list = await report_post.find({ status: 'pending' })
+            .populate({
+                path: 'reports.ID_reason', // Populate ID_reason trong mảng reports
+                select: 'reason_text'
+            })
+            .populate({
+                path: 'reports.reporters', // Populate reporters trong mảng reports
+                select: 'first_name last_name avatar'
+            })
             .populate({
                 path: 'ID_post',
                 populate: [
@@ -86,7 +93,6 @@ async function getAllReport_post() {
                 ],
                 select: '-__v' // Lấy tất cả các thuộc tính trừ __v
             })
-            .sort({ "reporters.length": -1 })
             .lean();
 
         return report_post_list; // Trả về danh sách thay vì `true`

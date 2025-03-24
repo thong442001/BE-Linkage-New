@@ -112,12 +112,17 @@
 
             <!-- Cột 2: Danh sách reporters -->
             <div class="reporters-list">
-                <h4>Những tài khoản báo cáo:</h4>
+                <h4>Những nguyên nhân báo cáo:</h4>
                 <ul>
-                    {{#each reporters}}
+                    {{#each reports}}
+                    <li class="reporter">
+                        <span>{{this.ID_reason.reason_text}}</span>
+                        {{#each reporters}}
                     <li class="reporter">
                         <img class="avatar-small" src="{{this.avatar}}" alt="Reporter Avatar">
-                        <span>{{this.first_name}} {{this.last_name}}</span>
+                        {{!-- <span>{{this.first_name}} {{this.last_name}}</span> --}}
+                    </li>
+                    {{/each}}
                     </li>
                     {{/each}}
                 </ul>
