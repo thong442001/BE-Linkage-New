@@ -8,24 +8,53 @@ module.exports = {
     unBanPost,
     getAllBanPost,
 }
-
-async function addReport_post(me, ID_post) {
+// reports: [{
+//     ID_reason: {
+//         type: ObjectId,
+//         ref: 'reason',
+//         required: true, // bắt buộc phải có
+//     },
+//     reporters: [{
+//         type: ObjectId,
+//         ref: 'User',
+//         required: true, // bắt buộc phải có
+//     }]
+// }],
+async function addReport_post(me, ID_post, ID_reason) {
     try {
         const report = await report_post.findOne(
-            { ID_post: ID_post, status: false, _destroy: false } // Chỉ update nếu status = false
+            { ID_post: ID_post, status: 'pending' } // Chỉ update nếu status = 'pending'
         );
         if (!report) {
             // tạo mới report_post
             const newItem = {
-                reporters: [me],
+                reports: [{
+                    ID_reason: ID_reason,
+                    reporters: [me],
+                }],
                 ID_post: ID_post,
-                status: false,
-                _destroy: false,
+                status: 'pending',
             };
             await report_post.create(newItem);
         } else {
-            // có rồi thì add me
-            report.reporters.addToSet(me);
+            // Có rồi thì add me
+            const existingReason = report.reports.find(
+                r => r.ID_reason.toString() === ID_reason.toString()
+            );
+
+            if (existingReason) {
+                // Nếu ID_reason đã tồn tại, thêm me vào reporters (nếu chưa có)
+                if (!existingReason.reporters.includes(me)) {
+                    existingReason.reporters.push(me);
+                }
+            } else {
+                // Nếu ID_reason chưa tồn tại, thêm mới vào mảng reports
+                report.reports.push({
+                    ID_reason: ID_reason,
+                    reporters: [me]
+                });
+            }
+
             await report.save();
         }
 
@@ -35,8 +64,6 @@ async function addReport_post(me, ID_post) {
         throw error;
     }
 }
-
-
 
 async function getAllReport_post() {
     try {

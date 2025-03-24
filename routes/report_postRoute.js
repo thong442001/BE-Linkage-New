@@ -9,8 +9,8 @@ const checkToken = require("./checkToken");
 //http://localhost:3000/report_post/addReport_post
 router.post('/addReport_post', checkToken, async function (req, res, next) {
   try {
-    const { me, ID_post } = req.body;
-    const result = await report_postController.addReport_post(me, ID_post);
+    const { me, ID_post, ID_reason } = req.body;
+    const result = await report_postController.addReport_post(me, ID_post, ID_reason);
     if (result) {
       return res.status(200).json({ "status": true });
     }
