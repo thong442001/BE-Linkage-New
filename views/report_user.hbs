@@ -17,22 +17,33 @@
                 {{!-- <img class="avatar" src="{{ID_user.background}}" alt="User Avatar"> --}}
             </div>
 
-            <!-- Cột 2: Danh sách reporters -->
+            <!-- Cột 2: Danh sách báo cáo -->
             <div class="reporters-list">
-                <h4>Những tài khoản báo cáo:</h4>
-                <ul>
-                    {{#each reporters}}
-                    <li class="reporter">
-                        <img class="avatar-small" src="{{this.avatar}}" alt="Reporter Avatar">
-                        <span>{{this.first_name}} {{this.last_name}}</span>
+                <h4>Những nguyên nhân báo cáo:</h4>
+                <ul class="reason-list">
+                    {{#each reports}}
+                    <li class="reason-item">
+                        <span class="reason-text">{{this.ID_reason.reason_text}}</span>
+                        <ul class="reporter-list">
+                            {{#each this.reporters}}
+                            <li class="reporter">
+                                <div class="reporter-avatar-wrapper">
+                                    <img class="avatar-small" src="{{this.avatar}}" alt="Reporter Avatar">
+                                    <span class="reporter-name">{{this.first_name}} {{this.last_name}}</span>
+                                </div>
+                            </li>
+                            {{/each}}
+                        </ul>
                     </li>
                     {{/each}}
                 </ul>
             </div>
         </div>
 
+        <!-- Hành động -->
         <div class="report-action">
-            <button class="ban" data-report-id="{{_id}}">Khóa</button>
+            <button class="ban" data-report-id="{{_id}}">Đồng ý khóa</button>
+            <button class="unban" data-report-id="{{_id}}">Từ chối khóa</button>
         </div>
     </div>
     {{/each}}
@@ -46,7 +57,7 @@
                 if (!confirm("Bạn có chắc muốn khóa tài khoản này?")) return;
 
                 try {
-                    const response = await fetch("/report_user/banUser", {
+                    const response = await fetch("/report_user/setReportApproved", {
                         method: "POST",
                         headers: {
                             "Content-Type": "application/json",
@@ -58,6 +69,37 @@
 
                     if (result.status) {
                         alert("Tài khoản đã bị khóa.");
+                        this.closest(".report-post-tong").remove(); // Xóa bài bị khóa khỏi giao diện
+                    } else {
+                        alert("Lỗi: " + result.message);
+                    }
+                } catch (error) {
+                    console.error("Lỗi khi gửi yêu cầu:", error);
+                    alert("Có lỗi xảy ra, vui lòng thử lại.");
+                }
+            });
+        });
+    });
+    document.addEventListener("DOMContentLoaded", function () {
+        document.querySelectorAll(".unban").forEach(button => {
+            button.addEventListener("click", async function () {
+                const reportUserId = this.getAttribute("data-report-id");
+
+                if (!confirm("Bạn có chắc muốn từ chối khóa tài khoản này?")) return;
+
+                try {
+                    const response = await fetch("/report_user/setReportRejected", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify({ ID_report_user: reportUserId }),
+                    });
+
+                    const result = await response.json();
+
+                    if (result.status) {
+                        alert("Tài khoản đã bị từ chối khóa.");
                         this.closest(".report-post-tong").remove(); // Xóa bài bị khóa khỏi giao diện
                     } else {
                         alert("Lỗi: " + result.message);

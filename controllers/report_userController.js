@@ -6,30 +6,48 @@ const notification = require("../models/notification");
 
 module.exports = {
     addReport_user,
-    getAllReport_user,
-    banUser,
+    getAllReport_userPending,
+    setReportApproved,
+    setReportRejected,
     unBanUser,
     getAllBanUser,
 }
 
-async function addReport_user(me, ID_user) {
+async function addReport_user(me, ID_user, ID_reason) {
     try {
-
         const report = await report_user.findOne(
-            { ID_user: ID_user, status: false, _destroy: false, } // Chỉ update nếu status = false
+            { ID_user: ID_user, status: 'pending' } // Chỉ update nếu status = 'pending'
         );
         if (!report) {
             // tạo mới report_post
             const newItem = {
-                reporters: [me],
-                ID_user: ID_user,
-                status: false,
-                _destroy: false,
+                reports: [{
+                    ID_reason: ID_reason,
+                    reporters: [me],
+                }],
+                ID_post: ID_post,
+                status: 'pending',
             };
             await report_user.create(newItem);
         } else {
-            // có rồi thì add me
-            report.reporters.addToSet(me);
+            // Có rồi thì add me
+            const existingReason = report.reports.find(
+                r => r.ID_reason.toString() === ID_reason.toString()
+            );
+
+            if (existingReason) {
+                // Nếu ID_reason đã tồn tại, thêm me vào reporters (nếu chưa có)
+                if (!existingReason.reporters.includes(me)) {
+                    existingReason.reporters.push(me);
+                }
+            } else {
+                // Nếu ID_reason chưa tồn tại, thêm mới vào mảng reports
+                report.reports.push({
+                    ID_reason: ID_reason,
+                    reporters: [me]
+                });
+            }
+
             await report.save();
         }
 
@@ -40,11 +58,18 @@ async function addReport_user(me, ID_user) {
     }
 }
 
-async function getAllReport_user() {
+async function getAllReport_userPending() {
     try {
         // Lấy danh sách report_user và populate dữ liệu cần thiết
-        const reports = await report_user.find({ status: false, _destroy: false })
-            .populate('reporters', 'first_name last_name avatar')
+        const reports = await report_user.find({ status: 'pending' })
+            .populate({
+                path: 'reports.ID_reason', // Populate ID_reason trong mảng reports
+                select: 'reason_text'
+            })
+            .populate({
+                path: 'reports.reporters', // Populate reporters trong mảng reports
+                select: 'first_name last_name avatar'
+            })
             .populate({
                 path: 'ID_user',
                 select: '-__v' // Lấy tất cả các thuộc tính trừ __v
@@ -61,18 +86,35 @@ async function getAllReport_user() {
 
 async function getAllBanUser() {
     try {
-        // Lấy danh sách report_user và populate dữ liệu cần thiết
-        const reports = await report_user.find({ status: true, _destroy: false })
-            .populate('reporters', 'first_name last_name avatar')
-            .populate({
-                path: 'ID_user',
-                select: '-__v' // Lấy tất cả các thuộc tính trừ __v
-            })
-            .sort({ "reporters.length": -1 })
-            .lean();
+        // Aggregation để lấy bản ghi mới nhất theo updatedAt cho mỗi ID_user
+        const report_user_list = await report_user.aggregate([
+            // Lọc các report có status là 'approved'
+            { $match: { status: 'approved' } },
+            // Sắp xếp theo updatedAt giảm dần (mới nhất trước)
+            { $sort: { updatedAt: -1 } },
+            // Nhóm theo ID_user, giữ bản ghi đầu tiên (mới nhất)
+            {
+                $group: {
+                    _id: '$ID_user',
+                    report: { $first: '$$ROOT' } // Lấy toàn bộ document mới nhất
+                }
+            },
+            // Chuyển report thành document chính
+            { $replaceRoot: { newRoot: '$report' } }
+        ]);
 
-        // Lọc bỏ những report mà ID_post không có hoặc không phải "Ban"
-        const filtered_report_user_list = reports.filter(report => report.ID_user?.role === 0);
+        // Populate dữ liệu cần thiết
+        const populated_report_user_list = await report_user.populate(report_user_list, [
+            { path: 'reports.ID_reason', select: 'reason_text' },
+            { path: 'reports.reporters', select: 'first_name last_name avatar' },
+            {
+                path: 'ID_user', select: '-__v' // Lấy tất cả các thuộc tính trừ __v
+            },
+        ]);
+        // Lọc bỏ những report mà role user = 0
+        const filtered_report_user_list = populated_report_user_list.filter(
+            report => report.ID_user?.role === 0
+        );
 
         return filtered_report_user_list; // Trả về danh sách thay vì `true`
     } catch (error) {
@@ -81,14 +123,14 @@ async function getAllBanUser() {
     }
 }
 
-async function banUser(ID_report_user) {
+async function setReportApproved(ID_report_user) {
     try {
         if (!ID_report_user) {
             throw new Error("Thiếu ID của report_user cần khóa.");
         }
 
         const report = await report_user.findById(ID_report_user);
-        report.status = true;
+        report.status = 'approved';
         await report.save();
 
         const rUser = await user.findById(report.ID_user);
@@ -114,6 +156,24 @@ async function banUser(ID_report_user) {
     }
 }
 
+async function setReportRejected(ID_report_user) {
+    try {
+        if (!ID_report_user) {
+            throw new Error("Thiếu ID của report_user cần khóa.");
+        }
+
+        const report = await report_user.findById(ID_report_user);
+        report.status = 'rejected';
+        await report.save();
+
+        return true;
+
+    } catch (error) {
+        console.error("Lỗi khi xóa báo cáo:", error);
+        throw error; // Ném lỗi để xử lý phía trên
+    }
+}
+
 async function unBanUser(ID_report_user) {
     try {
         if (!ID_report_user) {
@@ -121,8 +181,6 @@ async function unBanUser(ID_report_user) {
         }
 
         const report = await report_user.findById(ID_report_user);
-        report._destroy = true;
-        await report.save();
 
         const rUser = await user.findById(report.ID_user);
         rUser.role = 2; // 1 là tài khoản user

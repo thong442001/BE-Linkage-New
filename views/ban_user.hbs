@@ -17,14 +17,23 @@
                 {{!-- <img class="avatar" src="{{ID_user.background}}" alt="User Avatar"> --}}
             </div>
 
-            <!-- Cột 2: Danh sách reporters -->
+            <!-- Cột 2: Danh sách báo cáo -->
             <div class="reporters-list">
-                <h4>Những tài khoản báo cáo:</h4>
-                <ul>
-                    {{#each reporters}}
-                    <li class="reporter">
-                        <img class="avatar-small" src="{{this.avatar}}" alt="Reporter Avatar">
-                        <span>{{this.first_name}} {{this.last_name}}</span>
+                <h4>Những nguyên nhân báo cáo:</h4>
+                <ul class="reason-list">
+                    {{#each reports}}
+                    <li class="reason-item">
+                        <span class="reason-text">{{this.ID_reason.reason_text}}</span>
+                        <ul class="reporter-list">
+                            {{#each this.reporters}}
+                            <li class="reporter">
+                                <div class="reporter-avatar-wrapper">
+                                    <img class="avatar-small" src="{{this.avatar}}" alt="Reporter Avatar">
+                                    <span class="reporter-name">{{this.first_name}} {{this.last_name}}</span>
+                                </div>
+                            </li>
+                            {{/each}}
+                        </ul>
                     </li>
                     {{/each}}
                 </ul>

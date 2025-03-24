@@ -4,7 +4,8 @@ const post = require("../models/post");
 module.exports = {
     addReport_post,
     getAllReport_postPending,
-    banPost,
+    setReportApproved,
+    setReportRejected,
     unBanPost,
     getAllBanPost,
 }
@@ -104,10 +105,28 @@ async function getAllReport_postPending() {
 
 async function getAllBanPost() {
     try {
-        // Lấy danh sách report_post và populate dữ liệu cần thiết
-        const report_post_list = await report_post.find({ status: true, _destroy: false })
-            .populate('reporters', 'first_name last_name avatar')
-            .populate({
+        // Aggregation để lấy bản ghi mới nhất theo updatedAt cho mỗi ID_post
+        const report_post_list = await report_post.aggregate([
+            // Lọc các report có status là 'approved'
+            { $match: { status: 'approved' } },
+            // Sắp xếp theo updatedAt giảm dần (mới nhất trước)
+            { $sort: { updatedAt: -1 } },
+            // Nhóm theo ID_post, giữ bản ghi đầu tiên (mới nhất)
+            {
+                $group: {
+                    _id: '$ID_post',
+                    report: { $first: '$$ROOT' } // Lấy toàn bộ document mới nhất
+                }
+            },
+            // Chuyển report thành document chính
+            { $replaceRoot: { newRoot: '$report' } }
+        ]);
+
+        // Populate dữ liệu cần thiết
+        const populated_report_post_list = await report_post.populate(report_post_list, [
+            { path: 'reports.ID_reason', select: 'reason_text' },
+            { path: 'reports.reporters', select: 'first_name last_name avatar' },
+            {
                 path: 'ID_post',
                 populate: [
                     { path: 'ID_user', select: 'first_name last_name avatar' },
@@ -121,28 +140,29 @@ async function getAllBanPost() {
                         ]
                     }
                 ],
-                select: '-__v' // Lấy tất cả các thuộc tính trừ __v
-            })
-            .sort({ "reporters.length": -1 })
-            .lean();
+                select: '-__v'
+            }
+        ]);
         // Lọc bỏ những report mà ID_post không có hoặc không phải "Ban"
-        const filtered_report_post_list = report_post_list.filter(report => report.ID_post?.type === "Ban");
+        const filtered_report_post_list = populated_report_post_list.filter(
+            report => report.ID_post?.type === "Ban"
+        );
 
-        return filtered_report_post_list; // Trả về danh sách thay vì `true`
+        return filtered_report_post_list;// Trả về danh sách thay vì `true`
     } catch (error) {
         console.error("Lỗi khi lấy danh sách báo cáo:", error);
         throw error;
     }
 }
 
-async function banPost(ID_report_post) {
+async function setReportApproved(ID_report_post) {
     try {
         if (!ID_report_post) {
             throw new Error("Thiếu ID của report_post cần khóa.");
         }
 
         const report = await report_post.findById(ID_report_post);
-        report.status = true;
+        report.status = 'approved';
         await report.save();
 
         const rPost = await post.findById(report.ID_post);
@@ -157,7 +177,24 @@ async function banPost(ID_report_post) {
         throw error; // Ném lỗi để xử lý phía trên
     }
 }
+async function setReportRejected(ID_report_post) {
+    try {
+        if (!ID_report_post) {
+            throw new Error("Thiếu ID của report_post cần khóa.");
+        }
 
+        const report = await report_post.findById(ID_report_post);
+        report.status = 'rejected';
+        await report.save();
+
+        return true;
+
+
+    } catch (error) {
+        console.error("Lỗi khi xóa báo cáo:", error);
+        throw error; // Ném lỗi để xử lý phía trên
+    }
+}
 async function unBanPost(ID_report_post) {
     try {
         if (!ID_report_post) {
@@ -165,9 +202,6 @@ async function unBanPost(ID_report_post) {
         }
 
         const report = await report_post.findById(ID_report_post);
-
-        report._destroy = true;
-        await report.save();
 
         const rPost = await post.findById(report.ID_post);
         if (rPost.ID_post_shared) {

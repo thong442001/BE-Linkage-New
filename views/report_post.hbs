@@ -129,7 +129,7 @@
                 if (!confirm("Bạn có chắc muốn khóa bài viết này?")) return;
 
                 try {
-                    const response = await fetch("/report_post/banPost", {
+                    const response = await fetch("/report_post/setReportApproved", {
                         method: "POST",
                         headers: {
                             "Content-Type": "application/json",
@@ -141,6 +141,38 @@
 
                     if (result.status) {
                         alert("Bài viết đã bị khóa.");
+                        this.closest(".report-post-tong").remove(); // Xóa bài bị khóa khỏi giao diện
+                    } else {
+                        alert("Lỗi: " + result.message);
+                    }
+                } catch (error) {
+                    console.error("Lỗi khi gửi yêu cầu:", error);
+                    alert("Có lỗi xảy ra, vui lòng thử lại.");
+                }
+            });
+        });
+    });
+
+    document.addEventListener("DOMContentLoaded", function () {
+        document.querySelectorAll(".unban").forEach(button => {
+            button.addEventListener("click", async function () {
+                const reportPostId = this.getAttribute("data-report-id");
+
+                if (!confirm("Bạn có chắc muốn từ chối khóa bài viết này?")) return;
+
+                try {
+                    const response = await fetch("/report_post/setReportRejected", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify({ ID_report_post: reportPostId }),
+                    });
+
+                    const result = await response.json();
+
+                    if (result.status) {
+                        alert("Bài viết đã từ chối khóa.");
                         this.closest(".report-post-tong").remove(); // Xóa bài bị khóa khỏi giao diện
                     } else {
                         alert("Lỗi: " + result.message);

@@ -3,34 +3,27 @@
     {{#each report_post_list}}
     <div class="report-post-tong">
         <div class="report-post">
-            <!-- Cột 1: Bài Post -->
+            <!-- Cột 1: Nội dung bài viết -->
             <div class="post-content">
                 <h4>Bài viết:</h4>
                 <div class="post-header">
                     <img class="avatar" src="{{ID_post.ID_user.avatar}}" alt="User Avatar">
-                    <div>
-                        <span style="color: black; font-size: 20px; font-weight: bold;">{{ID_post.ID_user.first_name}}
-                            {{ID_post.ID_user.last_name}}</span>
+                    <div class="post-info">
+                        <span class="user-name">{{ID_post.ID_user.first_name}} {{ID_post.ID_user.last_name}}</span>
                         {{#if (gt ID_post.tags.length 0)}}
-                        <span style="color: gray; font-size: 16px;"> cùng với </span>
-                        <a style="color: black; font-size: 20px; font-weight: bold; ">
-                            {{ID_post.tags.[0].first_name}} {{ID_post.tags.[0].last_name}}
-                        </a>
+                        <span class="tag-label">cùng với</span>
+                        <a class="tag-name">{{ID_post.tags.[0].first_name}} {{ID_post.tags.[0].last_name}}</a>
                         {{#if (gt ID_post.tags.length 1)}}
-                        <span style="color: gray; font-size: 16px;"> và </span>
-                        <a style="color: black; font-size: 20px; font-weight: bold;">
-                            {{sub ID_post.tags.length 1}} người khác
-                        </a>
+                        <span class="tag-label">và</span>
+                        <a class="tag-count">{{sub ID_post.tags.length 1}} người khác</a>
                         {{/if}}
                         {{/if}}
-
-                        <p>{{ID_post.status}}</p>
+                        <p class="post-status">{{ID_post.status}}</p>
                     </div>
                 </div>
                 <div class="post-body">
                     <p>{{ID_post.caption}}</p>
                 </div>
-
                 <div class="media-container">
                     {{#each ID_post.medias}}
                     {{#lt @index 5}}
@@ -38,14 +31,11 @@
                         {{#if (eq (getMediaType this) "video")}}
                         <div class="video-wrapper">
                             <video src="{{this}}" class="video" controls></video>
-                            <div class="play-button">
-                                <i class="fa fa-play-circle"></i>
-                            </div>
+                            <div class="play-button"><i class="fas fa-play-circle"></i></div>
                         </div>
                         {{else}}
                         <img src="{{this}}" class="image" alt="Post Image">
                         {{/if}}
-
                         {{#if (and (eq @index 4) (gt ../ID_post.medias.length 5))}}
                         <div class="overlay">+{{sub ../ID_post.medias.length 5}}</div>
                         {{/if}}
@@ -53,36 +43,29 @@
                     {{/lt}}
                     {{/each}}
                 </div>
-
-                {{!-- share --}}
+                <!-- Bài viết được chia sẻ -->
                 {{#if ID_post.ID_post_shared}}
                 <div class="share">
                     <div class="post-header">
                         <img class="avatar" src="{{ID_post.ID_post_shared.ID_user.avatar}}" alt="User Avatar">
-                        <div>
-                            <span
-                                style="color: black; font-size: 20px; font-weight: bold;">{{ID_post.ID_post_shared.ID_user.first_name}}
+                        <div class="post-info">
+                            <span class="user-name">{{ID_post.ID_post_shared.ID_user.first_name}}
                                 {{ID_post.ID_post_shared.ID_user.last_name}}</span>
                             {{#if (gt ID_post.ID_post_shared.tags.length 0)}}
-                            <span style="color: gray; font-size: 16px;"> cùng với </span>
-                            <a style="color: black; font-size: 20px; font-weight: bold; ">
-                                {{ID_post.ID_post_shared.tags.[0].first_name}}
-                                {{ID_post.ID_post_shared.tags.[0].last_name}}
-                            </a>
+                            <span class="tag-label">cùng với</span>
+                            <a class="tag-name">{{ID_post.ID_post_shared.tags.[0].first_name}}
+                                {{ID_post.ID_post_shared.tags.[0].last_name}}</a>
                             {{#if (gt ID_post.ID_post_shared.tags.length 1)}}
-                            <span style="color: gray; font-size: 16px;"> và </span>
-                            <a style="color: black; font-size: 20px; font-weight: bold;">
-                                {{sub ID_post.ID_post_shared.tags.length 1}} người khác
-                            </a>
+                            <span class="tag-label">và</span>
+                            <a class="tag-count">{{sub ID_post.ID_post_shared.tags.length 1}} người khác</a>
                             {{/if}}
                             {{/if}}
-                            <p>{{ID_post.ID_post_shared.status}}</p>
+                            <p class="post-status">{{ID_post.ID_post_shared.status}}</p>
                         </div>
                     </div>
                     <div class="post-body">
                         <p>{{ID_post.ID_post_shared.caption}}</p>
                     </div>
-
                     <div class="media-container">
                         {{#each ID_post.ID_post_shared.medias}}
                         {{#lt @index 5}}
@@ -90,14 +73,11 @@
                             {{#if (eq (getMediaType this) "video")}}
                             <div class="video-wrapper">
                                 <video src="{{this}}" class="video" controls></video>
-                                <div class="play-button">
-                                    <i class="fa fa-play-circle"></i>
-                                </div>
+                                <div class="play-button"><i class="fas fa-play-circle"></i></div>
                             </div>
                             {{else}}
                             <img src="{{this}}" class="image" alt="Post Image">
                             {{/if}}
-
                             {{#if (and (eq @index 4) (gt ../ID_post.ID_post_shared.medias.length 5))}}
                             <div class="overlay">+{{sub ../ID_post.ID_post_shared.medias.length 5}}</div>
                             {{/if}}
@@ -107,17 +87,25 @@
                     </div>
                 </div>
                 {{/if}}
-
             </div>
 
-            <!-- Cột 2: Danh sách reporters -->
+            <!-- Cột 2: Danh sách báo cáo -->
             <div class="reporters-list">
-                <h4>Những tài khoản báo cáo:</h4>
-                <ul>
-                    {{#each reporters}}
-                    <li class="reporter">
-                        <img class="avatar-small" src="{{this.avatar}}" alt="Reporter Avatar">
-                        <span>{{this.first_name}} {{this.last_name}}</span>
+                <h4>Những nguyên nhân báo cáo:</h4>
+                <ul class="reason-list">
+                    {{#each reports}}
+                    <li class="reason-item">
+                        <span class="reason-text">{{this.ID_reason.reason_text}}</span>
+                        <ul class="reporter-list">
+                            {{#each this.reporters}}
+                            <li class="reporter">
+                                <div class="reporter-avatar-wrapper">
+                                    <img class="avatar-small" src="{{this.avatar}}" alt="Reporter Avatar">
+                                    <span class="reporter-name">{{this.first_name}} {{this.last_name}}</span>
+                                </div>
+                            </li>
+                            {{/each}}
+                        </ul>
                     </li>
                     {{/each}}
                 </ul>

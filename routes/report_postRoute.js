@@ -43,11 +43,26 @@ router.get('/getAllBanPost', async function (req, res, next) {
   }
 });
 
-// http://localhost:3000/report_post/banPost
-router.post('/banPost', async function (req, res, next) {
+// http://localhost:3000/report_post/setReportApproved
+router.post('/setReportApproved', async function (req, res, next) {
   try {
     const { ID_report_post } = req.body;
-    const result = await report_postController.banPost(ID_report_post);
+    const result = await report_postController.setReportApproved(ID_report_post);
+    if (result) {
+      return res.status(200).json({ "status": true });
+    } else {
+      return res.status(401).json({ "status": false, "message": "Không tìm thấy _id" });
+    }
+  } catch (e) {
+    res.status(400).json({ "status": false, "message": "lỗi API" });
+  }
+});
+
+// http://localhost:3000/report_post/setReportRejected
+router.post('/setReportRejected', async function (req, res, next) {
+  try {
+    const { ID_report_post } = req.body;
+    const result = await report_postController.setReportRejected(ID_report_post);
     if (result) {
       return res.status(200).json({ "status": true });
     } else {

@@ -88,8 +88,8 @@ router.get('/ban_posts', authMiddleware, async function (req, res, next) {
       isMiniLogo: false,
     });
 });
-router.get('/getAllReport_user', authMiddleware, async function (req, res, next) {
-  const report_user_list = await report_userController.getAllReport_user();
+router.get('/getAllReport_userPending', authMiddleware, async function (req, res, next) {
+  const report_user_list = await report_userController.getAllReport_userPending();
   const user = req.cookies.user;// Lấy user từ cookie
   res.render("report_user", {
     user: user,
