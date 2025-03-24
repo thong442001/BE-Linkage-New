@@ -66,7 +66,7 @@ hbs.registerHelper('and', function (a, b) {
 
 /* GET home page. */
 router.get('/', authMiddleware, async function (req, res, next) {
-  const report_post_list = await report_postController.getAllReport_post();
+  const report_post_list = await report_postController.getAllReport_postPending();
   const user = req.cookies.user;// Lấy user từ cookie
   res.render("report_post",
     {

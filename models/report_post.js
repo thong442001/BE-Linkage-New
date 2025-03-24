@@ -14,7 +14,7 @@ const report_post = new Schema({
         },
         reporters: [{
             type: ObjectId,
-            ref: 'User',
+            ref: 'user',
             required: true, // bắt buộc phải có
         }]
     }],

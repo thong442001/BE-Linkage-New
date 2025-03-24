@@ -10,7 +10,7 @@ const report_user = new Schema({
         },
         reporters: [{
             type: ObjectId,
-            ref: 'User',
+            ref: 'user',
             required: true, // bắt buộc phải có
         }]
     }],
