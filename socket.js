@@ -249,6 +249,16 @@ function setupSocket(server) {
             io.to(ID_group).emit('lang-nghe-tu-choi-choi-game-3-la');
         });
 
+        // call 
+        socket.on('chap-nhan-call', async (data) => {
+            const { ID_group } = data;
+            io.to(ID_group).emit('lang-nghe-chap-nhan-call');
+        });
+        socket.on('tu-choi-call', async (data) => {
+            const { ID_group } = data;
+            io.to(ID_group).emit('lang-nghe-tu-choi-call');
+        });
+
         // Xử lý thu hồi tin nhắn
         socket.on('revoke_message', async (data) => {
             const { ID_message, ID_group } = data;
