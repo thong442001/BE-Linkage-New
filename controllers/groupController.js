@@ -86,7 +86,7 @@ async function addGroup(name, members) {
         //     .filter(({ token }) => token && token.trim().length > 0); // Lọc token hợp lệ
 
         const messages = [];
-        fcmData.forEach(({ ID_user, tokens }) => {
+        fcmTokens.forEach(({ ID_user, tokens }) => {
             if (tokens && tokens.length > 0) {
                 tokens.forEach(token => {
                     messages.push({
