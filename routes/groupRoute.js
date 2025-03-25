@@ -35,12 +35,9 @@ router.post('/addGroup', checkToken, async function (req, res, next) {
   try {
     const { name, members } = req.body;
     const group = await groupController.addGroup(name, members);
-    if (group) {
-      //console.log("....2...");
-      return res.status(200).json({ "status": true, message: "tạo nhóm thành công", group: group });
-    }
+    res.status(200).json({ "status": true, "message": "tạo nhóm thành công", "group": group });
   } catch (e) {
-    return res.status(400).json({ "status": false, "message": "lỗi" });
+    res.status(400).json({ "status": false, "message": "lỗi" });
   }
 });
 
