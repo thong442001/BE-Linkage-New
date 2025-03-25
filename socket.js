@@ -183,6 +183,59 @@ function setupSocket(server) {
         // game 3 la
         socket.on('moi-choi-game-3-la', async (data) => {
             const { ID_group, me } = data;
+            //const { ID_group, me, content, type, ID_message_reply } = data;
+            // Tìm thông tin người gửi từ database
+            const checkUser = await user.findById(me);
+            if (checkUser == null) {
+                console.log('Không tìm thấy user!');
+                return;
+            }
+            // Lưu tin nhắn vào database
+            const newMessage = new message({
+                ID_group,
+                sender: me,
+                content: 'Game 3 lá',
+                type: 'game3la',
+                ID_message_reply: null,
+                _destroy: false,
+            });
+            await newMessage.save();
+
+            // Phát lại tin nhắn cho tất cả các client
+            const newMessageSocket = {
+                _id: newMessage._id,// tạo newMessage trc mới có _id
+                ID_group,
+                sender: me,
+                content: 'Game 3 lá',
+                type: 'game3la',
+                ID_message_reply: null,
+                first_name: checkUser.first_name,
+                last_name: checkUser.last_name,
+                avatar: checkUser.avatar,// Thêm avatar
+                updatedAt: newMessage.updatedAt,
+                createdAt: newMessage.createdAt,// tạo newMessage trc mới có createdAt
+                _destroy: newMessage._destroy,
+            };
+            io.to(ID_group).emit('receive_message', newMessageSocket);
+
+            // Gửi sự kiện thông báo nhóm có tin nhắn mới
+            io.emit('new_message', {
+                ID_group: ID_group,
+                message: {
+                    ID_message: newMessage._id,
+                    sender: {
+                        ID_user: checkUser._id,
+                        first_name: checkUser.first_name,
+                        last_name: checkUser.last_name,
+                        avatar: checkUser.avatar,
+                    },
+                    content: newMessage.content,
+                    createdAt: newMessage.createdAt,
+                    _destroy: newMessage._destroy,
+                }
+            });
+            //io.to(ID_group).emit('lang-nghe-moi-choi-game-3-la', newMessageSocket);
+
             // 🔍 Tìm thông tin nhóm
             const groupInfo = await group.findById(ID_group);
             if (!groupInfo) {
@@ -238,14 +291,44 @@ function setupSocket(server) {
                         ID_noties: [notificationId], // Notification tương ứng
                     })
             ));
-            io.to(ID_group).emit('lang-nghe-moi-choi-game-3-la');
+
         });
         socket.on('chap-nhan-choi-game-3-la', async (data) => {
-            const { ID_group } = data;
+            // const { ID_group } = data;
+            // io.to(ID_group).emit('lang-nghe-chap-nhan-choi-game-3-la');
+            const { ID_message, ID_group } = data;
+            const messageEdit = await message.findById(ID_message)
+            if (messageEdit) {
+                // thu hồi
+                messageEdit._destroy = true;
+                await messageEdit.save();
+                console.log("✅ Thu hồi tin nhắn thành công");
+            } else {
+                console.log("❌ Tin nhắn không tồn tại!");
+            }
+            const paramNew = {
+                ID_message
+            }
+            io.to(ID_group).emit('message_revoked', paramNew);
             io.to(ID_group).emit('lang-nghe-chap-nhan-choi-game-3-la');
         });
         socket.on('tu-choi-choi-game-3-la', async (data) => {
-            const { ID_group } = data;
+            // const { ID_group } = data;
+            // io.to(ID_group).emit('lang-nghe-tu-choi-choi-game-3-la');
+            const { ID_message, ID_group } = data;
+            const messageEdit = await message.findById(ID_message)
+            if (messageEdit) {
+                // thu hồi
+                messageEdit._destroy = true;
+                await messageEdit.save();
+                console.log("✅ Thu hồi tin nhắn thành công");
+            } else {
+                console.log("❌ Tin nhắn không tồn tại!");
+            }
+            const paramNew = {
+                ID_message
+            }
+            io.to(ID_group).emit('message_revoked', paramNew);
             io.to(ID_group).emit('lang-nghe-tu-choi-choi-game-3-la');
         });
 

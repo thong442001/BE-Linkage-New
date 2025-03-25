@@ -16,7 +16,7 @@ const message = new Schema({
     },
     type: { // kiểu tin nhắn
         type: String, // kiểu dữ liệu
-        enum: ['text', 'image', 'video'],
+        enum: ['text', 'image', 'video', 'game3la'],
         default: "text",
     },
     ID_message_reply: {
