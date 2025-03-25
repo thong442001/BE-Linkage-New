@@ -234,7 +234,7 @@ function setupSocket(server) {
                     _destroy: newMessage._destroy,
                 }
             });
-            //io.to(ID_group).emit('lang-nghe-moi-choi-game-3-la', newMessageSocket);
+            io.to(ID_group).emit('lang-nghe-moi-choi-game-3-la', newMessageSocket);
 
             // 🔍 Tìm thông tin nhóm
             const groupInfo = await group.findById(ID_group);
