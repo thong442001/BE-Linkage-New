@@ -31,7 +31,7 @@ async function getMessagesGroup(ID_group) {
         const messages = await message.find({ ID_group: ID_group })
             .populate('sender', 'first_name last_name avatar')
             .populate("ID_message_reply", "content") // Lấy đầy đủ thông tin của tin nhắn trả lời
-            .sort({ createdAt: 1 })
+            .sort({ createdAt: -1 })
             .lean() // Lấy kết quả dưới dạng object JavaScript để thêm thuộc tính cho group
 
         // lấy tất cả biểu cảm của từng tin nhắn
