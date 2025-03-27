@@ -7,7 +7,20 @@ const group = require("./models/group");
 const noti_token = require("./models/noti_token");
 const notification = require("./models/notification");
 
-const onlineUsers = new Map(); // Lưu user online
+// Lưu user online
+const onlineUsers = new Map();
+
+// Object để lưu trạng thái sẵn sàng của các user trong từng nhóm
+const groupReadyState = new Map(); // key: ID_group, value: { userId: boolean }
+
+// Hàm xáo trộn mảng (Fisher-Yates shuffle)
+function shuffleArray(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
+}
 
 function setupSocket(server) {
     const io = new Server(server, {
@@ -330,6 +343,177 @@ function setupSocket(server) {
             }
             io.to(ID_group).emit('message_revoked', paramNew);
             io.to(ID_group).emit('lang-nghe-tu-choi-choi-game-3-la');
+        });
+
+        socket.on('bat-dau-game-3-la', async (data) => {
+            const { ID_group } = data;
+            // 🔍 Tìm thông tin nhóm
+            const groupInfo = await group.findById(ID_group);
+            if (!groupInfo) {
+                console.log('Không tìm thấy nhóm!');
+                return;
+            }
+            if (groupInfo.isPrivate) {
+                console.log('Nhóm chat này không phải là private!');
+                return;
+            }
+
+            // Danh sách các lá bài (theo mã bạn cung cấp)
+            let bo_bai = [
+                11, 12, 13, 14, 21, 22, 23, 24, 31, 32, 33, 34, 41, 42, 43, 44,
+                51, 52, 53, 54, 61, 62, 63, 64, 71, 72, 73, 74, 81, 82, 83, 84,
+                91, 92, 93, 94, 101, 102, 103, 104, 111, 112, 113, 114, 121, 122, 123, 124,
+                131, 132, 133, 134
+            ];
+
+            // Xáo trộn mảng lá bài
+            let rd = shuffleArray(bo_bai);
+            let bacaoplayer1 = 0
+            let bacaoplayer2 = 0
+            let winer = 'Hòa'
+            let kqplayer1 = ''
+            let kqplayer2 = ''
+
+            // Chia bài: 3 lá cho mỗi user
+            // const player1Cards = rd.slice(0, 3); // 3 lá đầu cho player 1
+            // const player2Cards = rd.slice(3, 6); // 3 lá tiếp theo cho player 2
+
+            // Hàm doi
+            const doi = (n, m) => {
+                d = Math.floor(n / 10);
+                if (d === 11 || d === 12 || d === 13) {
+                    d = 10;
+                    m.value += 1; // Cập nhật giá trị của m (dùng object để mô phỏng inout)
+                }
+                return d;
+            };
+
+            // Hàm diemtong
+            const diemtong = (a, b, c) => {
+                const tong = (a + b + c) % 10;
+                return tong;
+            };
+
+            // Tính điểm cho player 1
+            let m1 = { value: 0 }; // Object để mô phỏng inout
+            const d1 = doi(rd[0], m1);
+            const d2 = doi(rd[1], m1);
+            const d3 = doi(rd[2], m1);
+            bacaoplayer1 = m1.value; // Số lá đặc biệt của player 1
+            const diemtongplayer1 = diemtong(d1, d2, d3);
+
+            // Tính điểm cho player 2
+            let m2 = { value: 0 };
+            const d4 = doi(rd[3], m2);
+            const d5 = doi(rd[4], m2);
+            const d6 = doi(rd[5], m2);
+            bacaoplayer2 = m2.value; // Số lá đặc biệt của player 2
+            const diemtongplayer2 = diemtong(d4, d5, d6);
+
+
+            if (bacaoplayer1 == 3 || bacaoplayer2 == 3) {
+                if (bacaoplayer1 == 3 && bacaoplayer2 == 3) {
+                    winer = "Hòa"
+                    kqplayer1 = "⭐️Ba Cao⭐️"
+                    kqplayer2 = "⭐️Ba Cao⭐️"
+                }
+                if (bacaoplayer2 == 3) {
+                    winer = group.members[1].toString()
+                    kqplayer1 = `${diemtongplayer1} nút`
+                    kqplayer2 = "⭐️Ba Cao⭐️"
+                }
+                else {
+                    winer = group.members[0].toString()
+                    kqplayer1 = "⭐️Ba Cao⭐️"
+                    kqplayer2 = `${diemtongplayer2} nút`
+                }
+            }
+            else {
+                if (diemtongplayer2 < diemtongplayer1) {
+                    winer = group.members[0].toString()
+                    kqplayer1 = `${diemtongplayer1} nút`
+                    kqplayer2 = `${diemtongplayer2} nút`
+                }
+                if (diemtongplayer2 > diemtongplayer1) {
+                    winer = group.members[1].toString()
+                    kqplayer1 = `${diemtongplayer1} nút`
+                    kqplayer2 = `${diemtongplayer2} nút`
+                }
+                if (diemtongplayer2 == diemtongplayer1) {
+                    winer = "Hòa"
+                    kqplayer1 = `${diemtongplayer1} nút`
+                    kqplayer2 = `${diemtongplayer2} nút`
+                }
+            }
+
+            // Tạo payload để gửi cho client
+            const paramNew = {
+                img_lung: 'https://firebasestorage.googleapis.com/v0/b/hamstore-5c2f9.appspot.com/o/Linkage-game-3la%2Flung.jpg?alt=media&token=b68b92bf-c1f5-4e62-a706-e960460bdc95',
+                player1: {
+                    _id: group.members[0],
+                    diemtong: kqplayer1,
+                    cards: [
+                        `https://firebasestorage.googleapis.com/v0/b/hamstore-5c2f9.appspot.com/o/Linkage-game-3la%2F${rd[0]}.jpg?alt=media&token=b68b92bf-c1f5-4e62-a706-e960460bdc95`,
+                        `https://firebasestorage.googleapis.com/v0/b/hamstore-5c2f9.appspot.com/o/Linkage-game-3la%2F${rd[1]}.jpg?alt=media&token=b68b92bf-c1f5-4e62-a706-e960460bdc95`,
+                        `https://firebasestorage.googleapis.com/v0/b/hamstore-5c2f9.appspot.com/o/Linkage-game-3la%2F${rd[2]}.jpg?alt=media&token=b68b92bf-c1f5-4e62-a706-e960460bdc95`,
+                    ]
+                },
+                player2: {
+                    _id: group.members[1],
+                    diemtong: kqplayer2,
+                    cards: [
+                        `https://firebasestorage.googleapis.com/v0/b/hamstore-5c2f9.appspot.com/o/Linkage-game-3la%2F${rd[3]}.jpg?alt=media&token=b68b92bf-c1f5-4e62-a706-e960460bdc95`,
+                        `https://firebasestorage.googleapis.com/v0/b/hamstore-5c2f9.appspot.com/o/Linkage-game-3la%2F${rd[4]}.jpg?alt=media&token=b68b92bf-c1f5-4e62-a706-e960460bdc95`,
+                        `https://firebasestorage.googleapis.com/v0/b/hamstore-5c2f9.appspot.com/o/Linkage-game-3la%2F${rd[5]}.jpg?alt=media&token=b68b92bf-c1f5-4e62-a706-e960460bdc95`,
+                    ]
+                },
+                winer: winer
+            }
+
+            // Gửi dữ liệu game đến cả hai người chơi trong nhóm
+            io.to(ID_group).emit('lang-nghe-bat-dau-game-3la', paramNew);
+        });
+
+        // Xử lý khi user sẵn sàng
+        socket.on('ss-game-3la', async (data) => {
+            const { ID_group, ID_user } = data;
+
+            // Tìm thông tin nhóm
+            const groupInfo = await group.findById(ID_group).populate('members');
+            if (!groupInfo || !groupInfo.isPrivate || groupInfo.members.length !== 2) {
+                console.log('Nhóm không hợp lệ để bắt đầu game!');
+                return;
+            }
+
+            // Khởi tạo trạng thái sẵn sàng cho nhóm nếu chưa có
+            if (!groupReadyState.has(ID_group)) {
+                groupReadyState.set(ID_group, {});
+            }
+
+            // Cập nhật trạng thái sẵn sàng của user
+            const readyState = groupReadyState.get(ID_group);
+            readyState[ID_user] = true;
+
+            // Kiểm tra xem cả hai user đã sẵn sàng chưa
+            const user1Ready = readyState[groupInfo.members[0]._id.toString()] || false;
+            const user2Ready = readyState[groupInfo.members[1]._id.toString()] || false;
+
+            if (user1Ready && user2Ready) {
+                // Cả hai user đã sẵn sàng, bắt đầu game
+                console.log(`Cả hai user trong nhóm ${ID_group} đã sẵn sàng, bắt đầu game!`);
+
+                // Xóa trạng thái sẵn sàng để tránh lặp lại
+                groupReadyState.delete(ID_group);
+
+                // Gửi sự kiện bắt đầu game
+                const paramNew = {
+                    ID_group: ID_group
+                }
+                io.to(ID_group).emit('bat-dau-game-3-la', paramNew);
+            } else {
+                // Thông báo cho nhóm rằng một user đã sẵn sàng
+                io.to(ID_group).emit('lang-nghe-ss-game-3la', { start: false, readyUser: ID_user });
+            }
         });
 
         // call 
