@@ -524,7 +524,7 @@ function setupSocket(server) {
             console.log(`Nhận xet-game-3la từ user ${ID_user} trong nhóm ${ID_group}`);
 
             // Tìm thông tin nhóm
-            const groupInfo = await Group.findById(ID_group).populate('members');
+            const groupInfo = await group.findById(ID_group).populate('members');
             if (!groupInfo) {
                 console.log('Không tìm thấy nhóm!');
                 return;
