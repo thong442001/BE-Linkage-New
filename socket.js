@@ -21,7 +21,6 @@ function shuffleArray(array) {
     }
     return array;
 }
-
 function setupSocket(server) {
     const io = new Server(server, {
         cors: {
@@ -345,9 +344,11 @@ function setupSocket(server) {
             io.to(ID_group).emit('lang-nghe-tu-choi-choi-game-3-la');
         });
 
+        // Xử lý bắt đầu game
         socket.on('bat-dau-game-3-la', async (data) => {
             const { ID_group } = data;
-            // 🔍 Tìm thông tin nhóm
+
+            // Tìm thông tin nhóm
             const groupInfo = await group.findById(ID_group).populate('members');
             if (!groupInfo) {
                 console.log('Không tìm thấy nhóm!');
@@ -357,8 +358,12 @@ function setupSocket(server) {
                 console.log('Nhóm chat này không phải là private!');
                 return;
             }
+            if (!groupInfo.members || groupInfo.members.length !== 2) {
+                console.log('Nhóm không có đúng 2 thành viên!');
+                return;
+            }
 
-            // Danh sách các lá bài (theo mã bạn cung cấp)
+            // Danh sách các lá bài
             let bo_bai = [
                 11, 12, 13, 14, 21, 22, 23, 24, 31, 32, 33, 34, 41, 42, 43, 44,
                 51, 52, 53, 54, 61, 62, 63, 64, 71, 72, 73, 74, 81, 82, 83, 84,
@@ -368,38 +373,34 @@ function setupSocket(server) {
 
             // Xáo trộn mảng lá bài
             let rd = shuffleArray(bo_bai);
-            let bacaoplayer1 = 0
-            let bacaoplayer2 = 0
-            let winer = 'Hòa'
-            let kqplayer1 = ''
-            let kqplayer2 = ''
-
-            // Chia bài: 3 lá cho mỗi user
-            // const player1Cards = rd.slice(0, 3); // 3 lá đầu cho player 1
-            // const player2Cards = rd.slice(3, 6); // 3 lá tiếp theo cho player 2
+            let bacaoplayer1 = 0;
+            let bacaoplayer2 = 0;
+            let winer = 'Hòa';
+            let kqplayer1 = '';
+            let kqplayer2 = '';
 
             // Hàm doi
             const doi = (n, m) => {
-                const d = Math.floor(n / 10);
+                let d = Math.floor(n / 10); // Sửa: khai báo biến d
                 if (d === 11 || d === 12 || d === 13) {
                     d = 10;
-                    m.value += 1; // Cập nhật giá trị của m (dùng object để mô phỏng inout)
+                    m.value += 1;
                 }
                 return d;
             };
 
             // Hàm diemtong
             const diemtong = (a, b, c) => {
-                const tong = (a + b + c) % 10;
+                let tong = (a + b + c) % 10;
                 return tong;
             };
 
             // Tính điểm cho player 1
-            let m1 = { value: 0 }; // Object để mô phỏng inout
+            let m1 = { value: 0 };
             const d1 = doi(rd[0], m1);
             const d2 = doi(rd[1], m1);
             const d3 = doi(rd[2], m1);
-            bacaoplayer1 = m1.value; // Số lá đặc biệt của player 1
+            bacaoplayer1 = m1.value;
             const diemtongplayer1 = diemtong(d1, d2, d3);
 
             // Tính điểm cho player 2
@@ -407,42 +408,37 @@ function setupSocket(server) {
             const d4 = doi(rd[3], m2);
             const d5 = doi(rd[4], m2);
             const d6 = doi(rd[5], m2);
-            bacaoplayer2 = m2.value; // Số lá đặc biệt của player 2
+            bacaoplayer2 = m2.value;
             const diemtongplayer2 = diemtong(d4, d5, d6);
 
-
-            if (bacaoplayer1 == 3 || bacaoplayer2 == 3) {
-                if (bacaoplayer1 == 3 && bacaoplayer2 == 3) {
-                    winer = "Hòa"
-                    kqplayer1 = "⭐️Ba Cao⭐️"
-                    kqplayer2 = "⭐️Ba Cao⭐️"
+            // Xác định người thắng
+            if (bacaoplayer1 === 3 || bacaoplayer2 === 3) {
+                if (bacaoplayer1 === 3 && bacaoplayer2 === 3) {
+                    winer = "Hòa";
+                    kqplayer1 = "⭐️Ba Cao⭐️";
+                    kqplayer2 = "⭐️Ba Cao⭐️";
+                } else if (bacaoplayer2 === 3) {
+                    winer = groupInfo.members[1]._id.toString();
+                    kqplayer1 = `${diemtongplayer1} nút`;
+                    kqplayer2 = "⭐️Ba Cao⭐️";
+                } else {
+                    winer = groupInfo.members[0]._id.toString();
+                    kqplayer1 = "⭐️Ba Cao⭐️";
+                    kqplayer2 = `${diemtongplayer2} nút`;
                 }
-                if (bacaoplayer2 == 3) {
-                    winer = groupInfo.members[1]._id.toString()
-                    kqplayer1 = `${diemtongplayer1} nút`
-                    kqplayer2 = "⭐️Ba Cao⭐️"
-                }
-                else {
-                    winer = groupInfo.members[0]._id.toString()
-                    kqplayer1 = "⭐️Ba Cao⭐️"
-                    kqplayer2 = `${diemtongplayer2} nút`
-                }
-            }
-            else {
+            } else {
                 if (diemtongplayer2 < diemtongplayer1) {
-                    winer = groupInfo.members[0]._id.toString()
-                    kqplayer1 = `${diemtongplayer1} nút`
-                    kqplayer2 = `${diemtongplayer2} nút`
-                }
-                if (diemtongplayer2 > diemtongplayer1) {
-                    winer = groupInfo.members[1]._id.toString()
-                    kqplayer1 = `${diemtongplayer1} nút`
-                    kqplayer2 = `${diemtongplayer2} nút`
-                }
-                if (diemtongplayer2 == diemtongplayer1) {
-                    winer = "Hòa"
-                    kqplayer1 = `${diemtongplayer1} nút`
-                    kqplayer2 = `${diemtongplayer2} nút`
+                    winer = groupInfo.members[0]._id.toString();
+                    kqplayer1 = `${diemtongplayer1} nút`;
+                    kqplayer2 = `${diemtongplayer2} nút`;
+                } else if (diemtongplayer2 > diemtongplayer1) {
+                    winer = groupInfo.members[1]._id.toString();
+                    kqplayer1 = `${diemtongplayer1} nút`;
+                    kqplayer2 = `${diemtongplayer2} nút`;
+                } else {
+                    winer = "Hòa";
+                    kqplayer1 = `${diemtongplayer1} nút`;
+                    kqplayer2 = `${diemtongplayer2} nút`;
                 }
             }
 
@@ -468,9 +464,9 @@ function setupSocket(server) {
                     ]
                 },
                 winer: winer
-            }
-            console.log(paramNew)
-            // Gửi dữ liệu game đến cả hai người chơi trong nhóm
+            };
+
+            console.log('Dữ liệu game:', paramNew);
             io.to(ID_group).emit('lang-nghe-bat-dau-game-3la', paramNew);
         });
 
