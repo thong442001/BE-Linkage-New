@@ -516,12 +516,15 @@ function setupSocket(server) {
             }
         });
 
-        // Xử lý khi user xét
+
+        // Xử lý khi user xét bài
         socket.on('xet-game-3la', async (data) => {
             const { ID_group, ID_user } = data;
 
+            console.log(`Nhận xet-game-3la từ user ${ID_user} trong nhóm ${ID_group}`);
+
             // Tìm thông tin nhóm
-            const groupInfo = await group.findById(ID_group).populate('members');
+            const groupInfo = await Group.findById(ID_group).populate('members');
             if (!groupInfo) {
                 console.log('Không tìm thấy nhóm!');
                 return;
@@ -535,25 +538,26 @@ function setupSocket(server) {
                 return;
             }
 
-            // Khởi tạo trạng thái sẵn sàng cho nhóm nếu chưa có
+            // Khởi tạo trạng thái xét bài cho nhóm nếu chưa có
             if (!groupXetState.has(ID_group)) {
                 groupXetState.set(ID_group, {});
             }
 
-            // Cập nhật trạng thái sẵn sàng của user
+            // Cập nhật trạng thái xét bài của user
             const xetState = groupXetState.get(ID_group);
             xetState[ID_user] = true;
+            console.log(`User ${ID_user} đã xét bài. Trạng thái:`, xetState);
 
-            // Kiểm tra xem cả hai user đã sẵn sàng chưa
+            // Kiểm tra xem cả hai user đã xét bài chưa
             const user1Xet = xetState[groupInfo.members[0]._id.toString()] || false;
             const user2Xet = xetState[groupInfo.members[1]._id.toString()] || false;
+            console.log(`User 1 (${groupInfo.members[0]._id.toString()}): ${user1Xet}`);
+            console.log(`User 2 (${groupInfo.members[1]._id.toString()}): ${user2Xet}`);
 
             if (user1Xet && user2Xet) {
-                console.log(`Cả hai user trong nhóm ${ID_group} đã xét, bắt đầu game!`);
+                console.log(`Cả hai user trong nhóm ${ID_group} đã xét bài, kết thúc ván!`);
                 groupXetState.delete(ID_group);
-
-                // Gửi sự kiện bắt đầu game
-                io.to(ID_group).emit('lang-nghe-xet-game-3la', { start: true, readyUser: ID_user });
+                io.to(ID_group).emit('lang-nghe-xet-game-3la', { start: true });
             } else {
                 io.to(ID_group).emit('lang-nghe-xet-game-3la', { start: false, readyUser: ID_user });
             }
