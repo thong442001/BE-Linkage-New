@@ -353,7 +353,7 @@ function setupSocket(server) {
                 console.log('Không tìm thấy nhóm!');
                 return;
             }
-            if (groupInfo.isPrivate) {
+            if (!groupInfo.isPrivate) {
                 console.log('Nhóm chat này không phải là private!');
                 return;
             }
