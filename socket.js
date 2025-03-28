@@ -348,7 +348,7 @@ function setupSocket(server) {
         socket.on('bat-dau-game-3-la', async (data) => {
             const { ID_group } = data;
             // 🔍 Tìm thông tin nhóm
-            const groupInfo = await group.findById(ID_group);
+            const groupInfo = await group.findById(ID_group).populate('members');
             if (!groupInfo) {
                 console.log('Không tìm thấy nhóm!');
                 return;
@@ -450,7 +450,7 @@ function setupSocket(server) {
             const paramNew = {
                 img_lung: 'https://firebasestorage.googleapis.com/v0/b/hamstore-5c2f9.appspot.com/o/Linkage-game-3la%2Flung.jpg?alt=media&token=b68b92bf-c1f5-4e62-a706-e960460bdc95',
                 player1: {
-                    _id: group.members[0]._id,
+                    _id: group.members[0]._id.toString(),
                     diemtong: kqplayer1,
                     cards: [
                         `https://firebasestorage.googleapis.com/v0/b/hamstore-5c2f9.appspot.com/o/Linkage-game-3la%2F${rd[0]}.jpg?alt=media&token=b68b92bf-c1f5-4e62-a706-e960460bdc95`,
@@ -459,7 +459,7 @@ function setupSocket(server) {
                     ]
                 },
                 player2: {
-                    _id: group.members[1]._id,
+                    _id: group.members[1]._id.toString(),
                     diemtong: kqplayer2,
                     cards: [
                         `https://firebasestorage.googleapis.com/v0/b/hamstore-5c2f9.appspot.com/o/Linkage-game-3la%2F${rd[3]}.jpg?alt=media&token=b68b92bf-c1f5-4e62-a706-e960460bdc95`,
