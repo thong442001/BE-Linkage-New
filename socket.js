@@ -469,7 +469,7 @@ function setupSocket(server) {
                 },
                 winer: winer
             }
-
+            console.log(paramNew)
             // Gửi dữ liệu game đến cả hai người chơi trong nhóm
             io.to(ID_group).emit('lang-nghe-bat-dau-game-3la', paramNew);
         });
