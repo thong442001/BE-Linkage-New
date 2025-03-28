@@ -380,7 +380,7 @@ function setupSocket(server) {
 
             // Hàm doi
             const doi = (n, m) => {
-                d = Math.floor(n / 10);
+                const d = Math.floor(n / 10);
                 if (d === 11 || d === 12 || d === 13) {
                     d = 10;
                     m.value += 1; // Cập nhật giá trị của m (dùng object để mô phỏng inout)
