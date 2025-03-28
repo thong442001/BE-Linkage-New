@@ -476,8 +476,16 @@ function setupSocket(server) {
 
             // Tìm thông tin nhóm
             const groupInfo = await group.findById(ID_group).populate('members');
-            if (!groupInfo || !groupInfo.isPrivate || groupInfo.members.length !== 2) {
-                console.log('Nhóm không hợp lệ để bắt đầu game!');
+            if (!groupInfo) {
+                console.log('Không tìm thấy nhóm!');
+                return;
+            }
+            if (!groupInfo.isPrivate) {
+                console.log('Nhóm chat này không phải là private!');
+                return;
+            }
+            if (!groupInfo.members || groupInfo.members.length !== 2) {
+                console.log('Nhóm không có đúng 2 thành viên!');
                 return;
             }
 
@@ -495,19 +503,12 @@ function setupSocket(server) {
             const user2Ready = readyState[groupInfo.members[1]._id.toString()] || false;
 
             if (user1Ready && user2Ready) {
-                // Cả hai user đã sẵn sàng, bắt đầu game
                 console.log(`Cả hai user trong nhóm ${ID_group} đã sẵn sàng, bắt đầu game!`);
-
-                // Xóa trạng thái sẵn sàng để tránh lặp lại
                 groupReadyState.delete(ID_group);
 
                 // Gửi sự kiện bắt đầu game
-                const paramNew = {
-                    ID_group: ID_group
-                }
-                io.to(ID_group).emit('bat-dau-game-3-la', paramNew);
+                io.to(ID_group).emit('lang-nghe-ss-game-3la', { start: true, ID_group });
             } else {
-                // Thông báo cho nhóm rằng một user đã sẵn sàng
                 io.to(ID_group).emit('lang-nghe-ss-game-3la', { start: false, readyUser: ID_user });
             }
         });
