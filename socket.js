@@ -13,6 +13,9 @@ const onlineUsers = new Map();
 // Object để lưu trạng thái sẵn sàng của các user trong từng nhóm
 const groupReadyState = new Map(); // key: ID_group, value: { userId: boolean }
 
+// Object để lưu trạng thái xét của các user trong từng nhóm
+const groupXetState = new Map(); // key: ID_group, value: { userId: boolean }
+
 // Hàm xáo trộn mảng (Fisher-Yates shuffle)
 function shuffleArray(array) {
     for (let i = array.length - 1; i > 0; i--) {
@@ -510,6 +513,49 @@ function setupSocket(server) {
                 io.to(ID_group).emit('lang-nghe-ss-game-3la', { start: true, ID_group });
             } else {
                 io.to(ID_group).emit('lang-nghe-ss-game-3la', { start: false, readyUser: ID_user });
+            }
+        });
+
+        // Xử lý khi user xét
+        socket.on('xet-game-3la', async (data) => {
+            const { ID_group, ID_user } = data;
+
+            // Tìm thông tin nhóm
+            const groupInfo = await group.findById(ID_group).populate('members');
+            if (!groupInfo) {
+                console.log('Không tìm thấy nhóm!');
+                return;
+            }
+            if (!groupInfo.isPrivate) {
+                console.log('Nhóm chat này không phải là private!');
+                return;
+            }
+            if (!groupInfo.members || groupInfo.members.length !== 2) {
+                console.log('Nhóm không có đúng 2 thành viên!');
+                return;
+            }
+
+            // Khởi tạo trạng thái sẵn sàng cho nhóm nếu chưa có
+            if (!groupXetState.has(ID_group)) {
+                groupXetState.set(ID_group, {});
+            }
+
+            // Cập nhật trạng thái sẵn sàng của user
+            const xetState = groupXetState.get(ID_group);
+            xetState[ID_user] = true;
+
+            // Kiểm tra xem cả hai user đã sẵn sàng chưa
+            const user1Xet = xetState[groupInfo.members[0]._id.toString()] || false;
+            const user2Xet = xetState[groupInfo.members[1]._id.toString()] || false;
+
+            if (user1Xet && user2Xet) {
+                console.log(`Cả hai user trong nhóm ${ID_group} đã xét, bắt đầu game!`);
+                groupXetState.delete(ID_group);
+
+                // Gửi sự kiện bắt đầu game
+                io.to(ID_group).emit('lang-nghe-xet-game-3la', { start: true, readyUser: ID_user });
+            } else {
+                io.to(ID_group).emit('lang-nghe-xet-game-3la', { start: false, readyUser: ID_user });
             }
         });
 
