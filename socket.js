@@ -418,24 +418,24 @@ function setupSocket(server) {
                     kqplayer2 = "⭐️Ba Cao⭐️"
                 }
                 if (bacaoplayer2 == 3) {
-                    winer = group.members[1]._id.toString()
+                    winer = groupInfo.members[1]._id.toString()
                     kqplayer1 = `${diemtongplayer1} nút`
                     kqplayer2 = "⭐️Ba Cao⭐️"
                 }
                 else {
-                    winer = group.members[0]._id.toString()
+                    winer = groupInfo.members[0]._id.toString()
                     kqplayer1 = "⭐️Ba Cao⭐️"
                     kqplayer2 = `${diemtongplayer2} nút`
                 }
             }
             else {
                 if (diemtongplayer2 < diemtongplayer1) {
-                    winer = group.members[0]._id.toString()
+                    winer = groupInfo.members[0]._id.toString()
                     kqplayer1 = `${diemtongplayer1} nút`
                     kqplayer2 = `${diemtongplayer2} nút`
                 }
                 if (diemtongplayer2 > diemtongplayer1) {
-                    winer = group.members[1]._id.toString()
+                    winer = groupInfo.members[1]._id.toString()
                     kqplayer1 = `${diemtongplayer1} nút`
                     kqplayer2 = `${diemtongplayer2} nút`
                 }
@@ -450,7 +450,7 @@ function setupSocket(server) {
             const paramNew = {
                 img_lung: 'https://firebasestorage.googleapis.com/v0/b/hamstore-5c2f9.appspot.com/o/Linkage-game-3la%2Flung.jpg?alt=media&token=b68b92bf-c1f5-4e62-a706-e960460bdc95',
                 player1: {
-                    _id: group.members[0]._id.toString(),
+                    _id: groupInfo.members[0]._id.toString(),
                     diemtong: kqplayer1,
                     cards: [
                         `https://firebasestorage.googleapis.com/v0/b/hamstore-5c2f9.appspot.com/o/Linkage-game-3la%2F${rd[0]}.jpg?alt=media&token=b68b92bf-c1f5-4e62-a706-e960460bdc95`,
@@ -459,7 +459,7 @@ function setupSocket(server) {
                     ]
                 },
                 player2: {
-                    _id: group.members[1]._id.toString(),
+                    _id: groupInfo.members[1]._id.toString(),
                     diemtong: kqplayer2,
                     cards: [
                         `https://firebasestorage.googleapis.com/v0/b/hamstore-5c2f9.appspot.com/o/Linkage-game-3la%2F${rd[3]}.jpg?alt=media&token=b68b92bf-c1f5-4e62-a706-e960460bdc95`,
