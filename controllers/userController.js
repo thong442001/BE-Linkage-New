@@ -19,6 +19,7 @@ module.exports = {
     setNoti_token,
     loginAdmin,// login admin
     checkBanUser,
+    editBioOfUser,// edit bio
 }
 async function checkBanUser(ID_user) {
     try {
@@ -370,3 +371,21 @@ async function setNoti_token(ID_user, fcmToken) {
     }
 }
 
+async function editBioOfUser(ID_user, bio) {
+    try {
+        const editUser = await users.findById(ID_user);
+        // null là ko tìm thấy
+        if (editUser) {
+            editUser.bio = bio
+                ? bio
+                : editUser.bio;
+            await editUser.save();
+            return true;
+        } else {
+            return false;
+        }
+    } catch (error) {
+        console.log(error);
+        throw error;
+    }
+}

@@ -446,4 +446,31 @@ router.get('/checkBanUser', checkToken, async function (req, res, next) {
   }
 });
 
+//http://localhost:3000/user/editBioOfUser
+router.post('/editBioOfUser', async function (req, res, next) {
+  try {
+    const {
+      ID_user,
+      bio
+    } = req.body;
+    const result = await userController.editBioOfUser(
+      ID_user,
+      bio
+    );
+    if (result) {
+      return res.status(200).json({
+        "status": result,
+        message: "Đổi bio thành công"
+      });
+    } else {
+      return res.status(401).json({
+        "status": result,
+        message: "Lỗi"
+      });
+    }
+  } catch (e) {
+    res.status(400).json({ "status": false, "message": "lỗi" });
+  }
+});
+
 module.exports = router;
