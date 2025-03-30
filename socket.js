@@ -563,6 +563,12 @@ function setupSocket(server) {
             }
         });
 
+        // 1 user thoát game là đẩy cả 2 user ra khỏi phòng
+        socket.on('thoat-choi-game-3-la', async (data) => {
+            const { ID_group } = data;
+            io.to(ID_group).emit('lang-nghe-thoat-choi-game-3-la');
+        });
+
         // call 
         socket.on('chap-nhan-call', async (data) => {
             const { ID_group } = data;
