@@ -34,7 +34,7 @@ async function sendOTP_dangKi(phone) {
             checkPhone = await phone_otp.create(newItem);
         }
 
-        await axios.post(
+        const smsResponse = await axios.post(
             ` https://rest.esms.vn/MainService.svc/json/SendMultipleMessage_V4_post_json/`,
             {
                 ApiKey: "8B3E30380E8D6A209D72F7A6DA36BC",
