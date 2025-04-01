@@ -24,6 +24,7 @@ require("./models/report_post");
 require("./models/report_user");
 require("./models/notification");
 require("./models/reason");
+require("./models/storyViewer");
 
 var indexRouter = require('./routes/index');
 //mogo
@@ -42,6 +43,7 @@ var report_postRoute = require('./routes/report_postRoute');
 var report_userRoute = require('./routes/report_userRoute');
 var notificationRoute = require('./routes/notificationRoute');
 var reasonRoute = require('./routes/reasonRoute');
+var storyViewerRoute = require('./routes/storyViewerRoute');
 
 var app = express();
 
@@ -121,6 +123,7 @@ app.use('/report_post', report_postRoute);
 app.use('/report_user', report_userRoute);
 app.use('/notification', notificationRoute);
 app.use('/reason', reasonRoute);
+app.use('/storyViewer', storyViewerRoute);
 
 
 // // catch 404 and forward to error handler

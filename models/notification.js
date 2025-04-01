@@ -49,11 +49,12 @@ const notification = new Schema({
             'Bạn đã được mời vào nhóm mới',// group
             'Bạn có 1 cuộc gọi đến',
             'Bạn có 1 cuộc gọi video đến',
+            'Đang livestream',// livestream
             'Đã đăng bài mới',// post
-            'Đã đăng story mới',
-            'Đang livestream',
             'Đã thả biểu cảm vào bài viết của bạn',
             'Đã bình luận vào bài viết của bạn',
+            'Đã đăng story mới',// story
+            'Đã thả biểu cảm vào story của bạn',
             'Đã trả lời bình luận của bạn',// comment
             'Tài khoản bị khóa', // user banned
             'Mời chơi game 3 lá', // game 3 la
