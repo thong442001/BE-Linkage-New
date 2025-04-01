@@ -3,9 +3,6 @@ var router = express.Router();
 
 const phone_otpController = require("../controllers/phone_otpController")
 
-//checkToken
-const checkToken = require("./checkToken");
-
 //http://localhost:3000/phone_otp/OTP_dangKi
 router.post('/sendOTP_dangKi', async function (req, res, next) {
   try {
