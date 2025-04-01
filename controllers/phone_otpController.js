@@ -40,7 +40,7 @@ async function sendOTP_dangKi(phone) {
                 ApiKey: "B6757497B54FD9E1C70F0F5563ED75",
                 Content: `${otp} la ma xac minh dang ky Baotrixemay cua ban`,
                 Phone: phone,
-                SecretKey: "B6757497B54FD9E1C70F0F5563ED75",
+                SecretKey: "B9A4092F24BABED999B93B98F9D02E",
                 Brandname: "Baotrixemay",
                 SmsType: "2"
             },
