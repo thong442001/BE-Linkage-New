@@ -6,7 +6,6 @@ const storyViewerController = require("../controllers/storyViewerController")
 //checkToken
 const checkToken = require("./checkToken");
 
-//add 
 //http://localhost:3000/storyViewer/storyViewerOfStory
 router.post('/storyViewerOfStory', checkToken, async function (req, res, next) {
   try {
@@ -30,8 +29,6 @@ router.post('/storyViewerOfStory', checkToken, async function (req, res, next) {
   }
 });
 
-
-//delete vĩnh viễn
 //http://localhost:3000/storyViewer/addStoryViewer_reaction
 router.post('/addStoryViewer_reaction', checkToken, async function (req, res, next) {
   try {
