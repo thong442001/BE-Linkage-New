@@ -7,7 +7,7 @@ const phone_otpController = require("../controllers/phone_otpController")
 const checkToken = require("./checkToken");
 
 //http://localhost:3000/phone_otp/OTP_dangKi
-router.post('/sendOTP_dangKi', checkToken, async function (req, res, next) {
+router.post('/sendOTP_dangKi', async function (req, res, next) {
   try {
     const { phone } = req.body;
     const result = await phone_otpController.sendOTP_dangKi(phone);
@@ -34,7 +34,7 @@ router.post('/sendOTP_dangKi', checkToken, async function (req, res, next) {
 });
 
 //http://localhost:3000/phone_otp/checkOtpDangKi
-router.post('/checkOtpDangKi', checkToken, async function (req, res, next) {
+router.post('/checkOtpDangKi', async function (req, res, next) {
   try {
     const { phone, otp } = req.body;
     const result = await phone_otpController.checkOtpDangKi(phone, otp);
