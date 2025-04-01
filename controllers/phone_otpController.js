@@ -7,11 +7,11 @@ const generateOTP = () => {
 };
 
 module.exports = {
-    OTP_dangKi,
+    sendOTP_dangKi,
     checkOtpDangKi,
 }
 
-async function OTP_dangKi(phone) {
+async function sendOTP_dangKi(phone) {
     try {
         // Tạo OTP ngẫu nhiên 4 chữ số
         const otp = generateOTP();
