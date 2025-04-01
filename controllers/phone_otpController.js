@@ -35,12 +35,12 @@ async function sendOTP_dangKi(phone) {
         }
 
         const smsResponse = await axios.post(
-            ` https://rest.esms.vn/MainService.svc/json/SendMultipleMessage_V4_post_json/`,
+            `https://rest.esms.vn/MainService.svc/json/SendMultipleMessage_V4_post_json/`,
             {
-                ApiKey: "8B3E30380E8D6A209D72F7A6DA36BC",
+                ApiKey: "B6757497B54FD9E1C70F0F5563ED75",
                 Content: `${otp} la ma xac minh dang ky Baotrixemay cua ban`,
                 Phone: phone,
-                SecretKey: "B3A4C845DF8888997484AD938D8F64",
+                SecretKey: "B6757497B54FD9E1C70F0F5563ED75",
                 Brandname: "Baotrixemay",
                 SmsType: "2"
             },
