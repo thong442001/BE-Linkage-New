@@ -4,31 +4,31 @@ var router = express.Router();
 const phone_otpController = require("../controllers/phone_otpController")
 
 //http://localhost:3000/phone_otp/OTP_dangKi
-// router.post('/sendOTP_dangKi', async function (req, res, next) {
-//   try {
-//     const { phone } = req.body;
-//     const result = await phone_otpController.sendOTP_dangKi(phone);
-//     if (result.status) {
-//       return res.status(200).json({
-//         status: true,
-//         message: result.message,
-//       });
-//     } else {
-//       return res.status(500).json({
-//         status: false,
-//         message: result.message,
-//         error: result.error,
-//       });
-//     }
-//   } catch (error) {
-//     console.error("Lỗi gửi OTP:", error.message);
-//     return res.status(500).json({
-//       status: false,
-//       message: "Lỗi server",
-//       error: error.message,
-//     });
-//   }
-// });
+router.post('/sendOTP_dangKi', async function (req, res, next) {
+  try {
+    const { phone } = req.body;
+    const result = await phone_otpController.sendOTP_dangKi(phone);
+    if (result.status) {
+      return res.status(200).json({
+        status: true,
+        message: result.message,
+      });
+    } else {
+      return res.status(500).json({
+        status: false,
+        message: result.message,
+        error: result.error,
+      });
+    }
+  } catch (error) {
+    console.error("Lỗi gửi OTP:", error.message);
+    return res.status(500).json({
+      status: false,
+      message: "Lỗi server",
+      error: error.message,
+    });
+  }
+});
 
 //http://localhost:3000/phone_otp/checkOtpDangKi
 router.post('/checkOtpDangKi', async function (req, res, next) {
