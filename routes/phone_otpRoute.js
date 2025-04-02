@@ -71,7 +71,6 @@ router.post('/sendOTP_quenMatKhau', async function (req, res, next) {
       return res.status(500).json({
         status: false,
         message: result.message,
-        error: result.error,
       });
     }
   } catch (error) {

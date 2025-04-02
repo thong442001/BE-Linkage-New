@@ -167,7 +167,7 @@ async function sendOTP_quenMatKhau(phone) {
         } else {
             // Nếu chưa tồn tại
             return {
-                status: true,
+                status: false,
                 message: "Phone chưa đăng kí",
             };
         }
