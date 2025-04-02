@@ -1,5 +1,16 @@
 const phone_otp = require("../models/phone_otp");
 const axios = require("axios");
+const config = require("../config");
+//const twilio = require("twilio");
+
+// Khởi tạo client Twilio
+// const accountSid = config.TWILIO_ACCOUNT_SID;
+// const authToken = config.TWILIO_AUTH_TOKEN;
+// const twilioPhoneNumber = config.TWILIO_PHONE_NUMBER;
+// const client = new twilio(accountSid, authToken);
+
+const SMS_APIKEY = config.SMS_APIKEY;
+const SMS_SECRETKEY = config.SMS_SECRETKEY;
 
 // Hàm tạo OTP ngẫu nhiên 4 chữ số
 const generateOTP = () => {
@@ -37,10 +48,10 @@ async function sendOTP_dangKi(phone) {
         const smsResponse = await axios.post(
             `https://rest.esms.vn/MainService.svc/json/SendMultipleMessage_V4_post_json/`,
             {
-                ApiKey: "B6757497B54FD9E1C70F0F5563ED75",
+                ApiKey: SMS_APIKEY,
                 Content: `${otp} la ma xac minh dang ky Baotrixemay cua ban`,
                 Phone: phone,
-                SecretKey: "B9A4092F24BABED999B93B98F9D02E",
+                SecretKey: SMS_SECRETKEY,
                 Brandname: "Baotrixemay",
                 SmsType: "2"
             },
@@ -49,6 +60,16 @@ async function sendOTP_dangKi(phone) {
         if (smsResponse.data.CodeResult !== "100") {
             throw new Error("Gửi SMS thất bại: " + smsResponse.data.ErrorMessage);
         }
+
+        // const formattedPhone = phone.startsWith("+84") ? phone : `+84${phone.slice(1)}`;
+        // // Gửi OTP qua SMS bằng Twilio
+        // const message = await client.messages.create({
+        //     body: `[thong] Ma xac minh cua ban la ${otp}, hieu luc trong 5 phut.`,
+        //     from: twilioPhoneNumber,
+        //     to: formattedPhone, // Số điện thoại người nhận (định dạng quốc tế, ví dụ: +84987654321)
+        // });
+
+        // console.log("Gửi SMS qua Twilio thành công:", message.sid);
 
         return {
             status: true,
