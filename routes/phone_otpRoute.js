@@ -57,4 +57,31 @@ router.post('/checkOtpDangKi', async function (req, res, next) {
   }
 });
 
+//http://localhost:3000/phone_otp/sendOTP_quenMatKhau
+router.post('/sendOTP_quenMatKhau', async function (req, res, next) {
+  try {
+    const { phone } = req.body;
+    const result = await phone_otpController.sendOTP_quenMatKhau(phone);
+    if (result.status) {
+      return res.status(200).json({
+        status: true,
+        message: result.message,
+      });
+    } else {
+      return res.status(500).json({
+        status: false,
+        message: result.message,
+        error: result.error,
+      });
+    }
+  } catch (error) {
+    console.error("Lỗi gửi OTP:", error.message);
+    return res.status(500).json({
+      status: false,
+      message: "Lỗi server",
+      error: error.message,
+    });
+  }
+});
+
 module.exports = router;

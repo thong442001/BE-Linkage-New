@@ -1,4 +1,5 @@
 const phone_otp = require("../models/phone_otp");
+const user = require("../models/user");
 const axios = require("axios");
 const config = require("../config");
 //const twilio = require("twilio");
@@ -20,10 +21,12 @@ const generateOTP = () => {
 module.exports = {
     sendOTP_dangKi,
     checkOtpDangKi,
+    sendOTP_quenMatKhau,
 }
 
 async function sendOTP_dangKi(phone) {
     try {
+
         // Tạo OTP ngẫu nhiên 4 chữ số
         const otp = generateOTP();
 
@@ -129,6 +132,74 @@ async function checkOtpDangKi(phone, otp) {
         return {
             status: false,
             message: "Lỗi API",
+            error: error.message,
+        };
+    }
+}
+
+async function sendOTP_quenMatKhau(phone) {
+    try {
+        // Kiểm tra xem số điện thoại đã tồn tại đăng kí chưa
+        const checkUser = await user.findOne({ phone: phone })
+        if (checkUser) {
+            // đã đăng kí
+            // Tạo OTP ngẫu nhiên 4 chữ số
+            const otp = generateOTP();
+
+            // Kiểm tra xem số điện thoại đã tồn tại trong DB chưa
+            const checkPhone = await phone_otp.findOne({ phone: phone })
+
+            if (checkPhone) {
+                // Nếu đã tồn tại, cập nhật OTP mới và thời gian hết hạn
+                checkPhone.otp = otp;
+                checkPhone.expiresAt = new Date(Date.now() + 5 * 60 * 1000); // OTP hết hạn sau 5 phút
+                await checkPhone.save();
+            } else {
+                // Nếu chưa tồn tại, tạo mới
+                const newItem = {
+                    phone: phone,
+                    otp: otp,
+                    expiresAt: new Date(Date.now() + 5 * 60 * 1000), // OTP hết hạn sau 5 phút
+                };
+                checkPhone = await phone_otp.create(newItem);
+            }
+
+        } else {
+            // Nếu chưa tồn tại
+            return {
+                status: true,
+                message: "Phone chưa đăng kí",
+            };
+        }
+
+
+
+        const smsResponse = await axios.post(
+            `https://rest.esms.vn/MainService.svc/json/SendMultipleMessage_V4_post_json/`,
+            {
+                ApiKey: SMS_APIKEY,
+                Content: `${otp} la ma xac minh dang ky Baotrixemay cua ban`,
+                Phone: phone,
+                SecretKey: SMS_SECRETKEY,
+                Brandname: "Baotrixemay",
+                SmsType: "2"
+            },
+        );
+
+        if (smsResponse.data.CodeResult !== "100") {
+            throw new Error("Gửi SMS thất bại: " + smsResponse.data.ErrorMessage);
+        }
+
+        return {
+            status: true,
+            message: "Gửi OTP thành công",
+        };
+
+    } catch (error) {
+        console.error("Lỗi OTP_dangKi:", error.message);
+        return {
+            status: false,
+            message: "Gửi OTP thất bại",
             error: error.message,
         };
     }
