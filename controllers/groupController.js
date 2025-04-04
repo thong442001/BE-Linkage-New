@@ -123,7 +123,7 @@ async function addGroup(name, members) {
 async function getGroupID(ID_group) {
     try {
         const result = await group.findById(ID_group)
-            .populate('members', 'first_name last_name avatar');
+            .populate('members', 'first_name last_name avatar isActive');
         return result;
     } catch (error) {
         console.log(error);
