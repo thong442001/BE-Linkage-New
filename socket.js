@@ -516,7 +516,6 @@ function setupSocket(server) {
             }
         });
 
-
         // Xử lý khi user xét bài
         socket.on('xet-game-3la', async (data) => {
             const { ID_group, ID_user } = data;

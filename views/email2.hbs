@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{{title}}</title>
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      background-color: #f2f2f2;
+      margin: 0;
+      padding: 0;
+    }
+
+    .wrapper {
+      max-width: 600px;
+      margin: 40px auto;
+      background-color: #ffffff;
+      border-radius: 10px;
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+    }
+
+    .header {
+      background-color: #ffffff;
+      padding: 30px 20px 10px;
+      border-bottom: 1px solid #eee;
+      text-align: center;
+      /* Căn giữa nội dung */
+    }
+
+    .header-table {
+      margin: 0 auto;
+      /* Căn giữa bảng */
+      border-collapse: collapse;
+    }
+
+    .header-table td {
+      vertical-align: middle;
+      /* Căn giữa theo chiều dọc */
+      padding: 0 5px;
+      /* Khoảng cách giữa logo và tên */
+    }
+
+    .header img {
+      max-width: 40px;
+      /* Kích thước logo */
+      height: auto;
+      display: block;
+      /* Đảm bảo không có khoảng trống thừa */
+    }
+
+    .header p {
+      font-size: 24px;
+      /* Kích thước chữ */
+      color: #007bff;
+      /* Màu xanh của Linkage */
+      font-weight: bold;
+      margin: 0;
+    }
+
+    .content {
+      padding: 30px 20px;
+      text-align: center;
+    }
+
+    .content h1 {
+      color: #222;
+      font-size: 24px;
+      margin-bottom: 16px;
+    }
+
+    .content p {
+      color: #555;
+      font-size: 16px;
+      margin-bottom: 24px;
+      line-height: 1.5;
+    }
+
+    .otp {
+      display: inline-block;
+      background-color: #eaf4ff;
+      color: #007bff;
+      padding: 12px 24px;
+      font-size: 28px;
+      font-weight: bold;
+      letter-spacing: 4px;
+      border-radius: 8px;
+      margin-top: 10px;
+    }
+
+    .footer {
+      background-color: #f8f9fa;
+      padding: 20px;
+      text-align: center;
+      font-size: 12px;
+      color: #888;
+      border-top: 1px solid #eee;
+    }
+
+    .footer p {
+      margin: 6px 0;
+    }
+
+    @media only screen and (max-width: 600px) {
+      .wrapper {
+        margin: 20px;
+        border-radius: 6px;
+      }
+
+      .content {
+        padding: 24px 16px;
+      }
+
+      .content h1 {
+        font-size: 20px;
+      }
+
+      .otp {
+        font-size: 24px;
+        padding: 10px 20px;
+      }
+
+      .header img {
+        max-width: 35px;
+        /* Giảm kích thước logo trên màn hình nhỏ */
+      }
+
+      .header p {
+        font-size: 20px;
+        /* Giảm kích thước chữ trên màn hình nhỏ */
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrapper">
+    <!-- Header -->
+    <div class="header">
+      <table class="header-table">
+        <tr>
+          <td>
+            <img
+              src="https://firebasestorage.googleapis.com/v0/b/hamstore-5c2f9.appspot.com/o/Linkage-Logo%2FGroup%201%201.png?alt=media&token=bcd761a4-a236-437f-962b-a12b01e57497"
+              alt="Linkage Logo" />
+          </td>
+          <td>
+            <p>Linkage</p>
+          </td>
+        </tr>
+      </table>
+    </div>
+
+    <!-- Main content -->
+    <div class="content">
+      <h1>{{title}}</h1>
+      <p>{{text}}</p>
+      <div class="otp">{{otp}}</div>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+      <p>Nếu bạn không yêu cầu mã này, vui lòng bỏ qua email này.</p>
+      <p>© 2025 Linkage. All rights reserved.</p>
+    </div>
+  </div>
+</body>
+
+</html>

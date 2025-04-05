@@ -6,4 +6,6 @@ module.exports = {
     TWILIO_PHONE_NUMBER: process.env.TWILIO_PHONE_NUMBER,
     SMS_APIKEY: process.env.SMS_APIKEY,
     SMS_SECRETKEY: process.env.SMS_SECRETKEY,
+    EMAIL_USER: process.env.EMAIL_USER,
+    EMAIL_PASS: process.env.EMAIL_PASS,
 };

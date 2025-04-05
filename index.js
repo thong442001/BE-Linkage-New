@@ -26,6 +26,7 @@ require("./models/notification");
 require("./models/reason");
 require("./models/storyViewer");
 require("./models/phone_otp");
+require("./models/gmail_otp");
 
 var indexRouter = require('./routes/index');
 //mogo
@@ -46,6 +47,7 @@ var notificationRoute = require('./routes/notificationRoute');
 var reasonRoute = require('./routes/reasonRoute');
 var storyViewerRoute = require('./routes/storyViewerRoute');
 var phone_otpRoute = require('./routes/phone_otpRoute');
+var gmail_otpRoute = require('./routes/gmail_otpRoute');
 
 var app = express();
 
@@ -127,6 +129,7 @@ app.use('/notification', notificationRoute);
 app.use('/reason', reasonRoute);
 app.use('/storyViewer', storyViewerRoute);
 app.use('/phone_otp', phone_otpRoute);
+app.use('/gmail_otp', gmail_otpRoute);
 
 
 // // catch 404 and forward to error handler

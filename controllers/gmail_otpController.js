@@ -1,133 +1,165 @@
-const phone_otp = require("../models/phone_otp");
+const gmail_otp = require("../models/gmail_otp");
 const user = require("../models/user");
 const axios = require("axios");
 const config = require("../config");
+const path = require('path');
+const nodemailer = require('nodemailer');
 
-const path = require('path')
-var nodemailer = require('nodemailer');
-var hbs = require('nodemailer-express-handlebars');
-var transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-        user: 'thong442001@gmail.com',
-        pass: 'xlgmwbtldnwdkvkl'
-    }
-});
-
-const handlebarOptions = {
-    viewEngine: {
-        extName: ".hbs",
-        partialsDir: path.resolve('./views'),
-        defaultLayout: false,
-    },
-    viewPath: path.resolve('./views'),
-    extName: ".hbs",
-}
-
-transporter.use('compile', hbs(handlebarOptions));
-
-//const twilio = require("twilio");
-
-// Khởi tạo client Twilio
-// const accountSid = config.TWILIO_ACCOUNT_SID;
-// const authToken = config.TWILIO_AUTH_TOKEN;
-// const twilioPhoneNumber = config.TWILIO_PHONE_NUMBER;
-// const client = new twilio(accountSid, authToken);
-
-const SMS_APIKEY = config.SMS_APIKEY;
-const SMS_SECRETKEY = config.SMS_SECRETKEY;
+const EMAIL_USER = config.EMAIL_USER;
+const EMAIL_PASS = config.EMAIL_PASS;
 
 // Hàm tạo OTP ngẫu nhiên 4 chữ số
 const generateOTP = () => {
-    return Math.floor(1000 + Math.random() * 9000).toString(); // Tạo số ngẫu nhiên từ 1000 đến 9999
+    return Math.floor(1000 + Math.random() * 9000).toString();
 };
 
 module.exports = {
-    sendOTP_dangKi,
+    sendOTPByEmail,
     checkOtpDangKi,
-    sendOTP_quenMatKhau,
-}
+    sendOTP_quenMatKhau
+};
 
-async function sendOTP_dangKi(phone) {
+// Hàm gửi OTP qua email
+async function sendOTPByEmail(gmail) {
     try {
+        // Kiểm tra tham số gmail
+        if (!gmail) {
+            console.error("Tham số gmail là bắt buộc nhưng không được cung cấp");
+            return {
+                status: false,
+                message: "Email là bắt buộc",
+            };
+        }
+
+        // Kiểm tra định dạng email
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(gmail)) {
+            console.error(`Email không hợp lệ: ${gmail}`);
+            return {
+                status: false,
+                message: "Email không hợp lệ",
+            };
+        }
+
+        // Log thông tin đăng nhập (ẩn mật khẩu để bảo mật)
+        console.log(`Sử dụng email: ${EMAIL_USER} để gửi OTP`);
 
         // Tạo OTP ngẫu nhiên 4 chữ số
         const otp = generateOTP();
+        console.log(`Tạo OTP: ${otp} cho email: ${gmail}`);
 
-        // Kiểm tra xem số điện thoại đã tồn tại trong DB chưa
-        const checkPhone = await phone_otp.findOne({ phone: phone })
+        // Kiểm tra và lưu OTP vào database
+        let checkEmail = await gmail_otp.findOne({ gmail });
 
-        if (checkPhone) {
-            // Nếu đã tồn tại, cập nhật OTP mới và thời gian hết hạn
-            checkPhone.otp = otp;
-            checkPhone.expiresAt = new Date(Date.now() + 5 * 60 * 1000); // OTP hết hạn sau 5 phút
-            await checkPhone.save();
+        if (checkEmail) {
+            checkEmail.otp = otp;
+            checkEmail.expiresAt = new Date(Date.now() + 5 * 60 * 1000); // Hết hạn sau 5 phút
+            await checkEmail.save();
+            console.log(`Cập nhật OTP cho email: ${gmail}`);
         } else {
-            // Nếu chưa tồn tại, tạo mới
             const newItem = {
-                phone: phone,
+                gmail: gmail,
                 otp: otp,
-                expiresAt: new Date(Date.now() + 5 * 60 * 1000), // OTP hết hạn sau 5 phút
+                expiresAt: new Date(Date.now() + 5 * 60 * 1000),
             };
-            checkPhone = await phone_otp.create(newItem);
+            console.log("Dữ liệu lưu vào database:", newItem);
+            await gmail_otp.create(newItem);
+            console.log(`Tạo mới bản ghi OTP cho email: ${gmail}`);
         }
 
-        const smsResponse = await axios.post(
-            `https://rest.esms.vn/MainService.svc/json/SendMultipleMessage_V4_post_json/`,
-            {
-                ApiKey: SMS_APIKEY,
-                Content: `${otp} la ma xac minh dang ky Baotrixemay cua ban`,
-                Phone: phone,
-                SecretKey: SMS_SECRETKEY,
-                Brandname: "Baotrixemay",
-                SmsType: "2"
+        // Khởi tạo transporter
+        const transporter = nodemailer.createTransport({
+            service: 'gmail',
+            auth: {
+                user: 'thong442001@gmail.com',
+                pass: 'xlgmwbtldnwdkvkl'
             },
-        );
+        });
 
-        if (smsResponse.data.CodeResult !== "100") {
-            throw new Error("Gửi SMS thất bại: " + smsResponse.data.ErrorMessage);
-        }
+        // Import nodemailer-express-handlebars bằng dynamic import
+        const { default: hbs } = await import('nodemailer-express-handlebars');
 
-        // const formattedPhone = phone.startsWith("+84") ? phone : `+84${phone.slice(1)}`;
-        // // Gửi OTP qua SMS bằng Twilio
-        // const message = await client.messages.create({
-        //     body: `[thong] Ma xac minh cua ban la ${otp}, hieu luc trong 5 phut.`,
-        //     from: twilioPhoneNumber,
-        //     to: formattedPhone, // Số điện thoại người nhận (định dạng quốc tế, ví dụ: +84987654321)
-        // });
+        // Cấu hình Handlebars
+        const handlebarOptions = {
+            viewEngine: {
+                extName: ".hbs",
+                partialsDir: path.resolve('./views'),
+                defaultLayout: false,
+            },
+            viewPath: path.resolve('./views'),
+            extName: ".hbs",
+        };
 
-        // console.log("Gửi SMS qua Twilio thành công:", message.sid);
+        // Sử dụng Handlebars với transporter
+        transporter.use('compile', hbs(handlebarOptions));
+
+        // Cấu hình email
+        const mailOptions = {
+            from: "Linkage <thong442001@gmail.com>",
+            to: gmail,
+            subject: `${otp} là mã xác minh đăng ký`,
+            template: 'email2',
+            context: {
+                title: 'Mã OTP xác minh đăng ký Linkage',
+                text: `Mã OTP của bạn sẽ hết hạn sau 5 phút.`,
+                otp: otp, // Truyền OTP vào template
+            },
+            // attachments: [
+            //     {
+            //         // filename: 'Logo_app.png',
+            //         // path: path.resolve('./images/Logo_app.png'), // Đường dẫn đến logo
+            //         // cid: 'logo' // Content-ID để sử dụng trong template (src="cid:logo")
+            //     }
+            // ]
+        };
+
+        // Gửi email
+        await transporter.sendMail(mailOptions);
+        console.log("Gửi OTP qua email thành công");
 
         return {
             status: true,
             message: "Gửi OTP thành công",
+            otp: otp,
         };
-
     } catch (error) {
-        console.error("Lỗi OTP_dangKi:", error.message);
+        console.error("Lỗi gửi OTP qua email:", {
+            message: error.message,
+            stack: error.stack,
+        });
+
+        // Kiểm tra lỗi cụ thể liên quan đến đăng nhập Gmail
+        if (error.message.includes("Invalid login")) {
+            return {
+                status: false,
+                message: "Không thể đăng nhập vào Gmail. Vui lòng kiểm tra EMAIL_USER và EMAIL_PASS (có thể cần App Password).",
+                error: error.message,
+            };
+        }
+
         return {
             status: false,
             message: "Gửi OTP thất bại",
             error: error.message,
         };
     }
-}
+};
 
 // Hàm kiểm tra OTP
-async function checkOtpDangKi(phone, otp) {
+async function checkOtpDangKi(gmail, otp) {
     try {
         // Tìm số điện thoại trong DB
-        const checkPhone = await phone_otp.findOne({ phone: phone })
+        const checkGmail = await gmail_otp.findOne({ gmail: gmail })
 
-        if (!checkPhone) {
+        if (!checkGmail) {
             return {
                 status: false,
-                message: "Không tìm thấy số điện thoại",
+                message: "Không tìm thấy gmail",
             };
         }
 
         // Kiểm tra xem OTP có hết hạn không
-        if (checkPhone.expiresAt < new Date()) {
+        if (checkGmail.expiresAt < new Date()) {
             return {
                 status: false,
                 message: "OTP đã hết hạn",
@@ -135,7 +167,7 @@ async function checkOtpDangKi(phone, otp) {
         }
 
         // Kiểm tra OTP
-        if (checkPhone.otp !== otp) {
+        if (checkGmail.otp !== otp) {
             return {
                 status: false,
                 message: "OTP không đúng",
@@ -143,9 +175,9 @@ async function checkOtpDangKi(phone, otp) {
         }
 
         // Xác thực thành công, xóa OTP và thời gian hết hạn
-        checkPhone.otp = null;
-        checkPhone.expiresAt = null;
-        await checkPhone.save();
+        checkGmail.otp = null;
+        checkGmail.expiresAt = null;
+        await checkGmail.save();
 
         return {
             status: true,
@@ -161,31 +193,56 @@ async function checkOtpDangKi(phone, otp) {
     }
 }
 
-async function sendOTP_quenMatKhau(phone) {
+
+async function sendOTP_quenMatKhau(gmail) {
     try {
-        // Kiểm tra xem số điện thoại đã tồn tại đăng kí chưa
-        const checkUser = await user.findOne({ phone: phone })
+        // Kiểm tra tham số gmail
+        if (!gmail) {
+            console.error("Tham số gmail là bắt buộc nhưng không được cung cấp");
+            return {
+                status: false,
+                message: "Email là bắt buộc",
+            };
+        }
+
+        // Kiểm tra định dạng email
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(gmail)) {
+            console.error(`Email không hợp lệ: ${gmail}`);
+            return {
+                status: false,
+                message: "Email không hợp lệ",
+            };
+        }
+
+        // Log thông tin đăng nhập (ẩn mật khẩu để bảo mật)
+        console.log(`Sử dụng email: ${EMAIL_USER} để gửi OTP`);
+
+        // Kiểm tra xem email đã tồn tại đăng kí chưa
+        const checkUser = await user.findOne({ email: gmail })
         if (checkUser) {
-            // đã đăng kí
+
             // Tạo OTP ngẫu nhiên 4 chữ số
             const otp = generateOTP();
+            console.log(`Tạo OTP: ${otp} cho email: ${gmail}`);
 
-            // Kiểm tra xem số điện thoại đã tồn tại trong DB chưa
-            const checkPhone = await phone_otp.findOne({ phone: phone })
+            // Kiểm tra và lưu OTP vào database
+            let checkEmail = await gmail_otp.findOne({ gmail });
 
-            if (checkPhone) {
-                // Nếu đã tồn tại, cập nhật OTP mới và thời gian hết hạn
-                checkPhone.otp = otp;
-                checkPhone.expiresAt = new Date(Date.now() + 5 * 60 * 1000); // OTP hết hạn sau 5 phút
-                await checkPhone.save();
+            if (checkEmail) {
+                checkEmail.otp = otp;
+                checkEmail.expiresAt = new Date(Date.now() + 5 * 60 * 1000); // Hết hạn sau 5 phút
+                await checkEmail.save();
+                console.log(`Cập nhật OTP cho email: ${gmail}`);
             } else {
-                // Nếu chưa tồn tại, tạo mới
                 const newItem = {
-                    phone: phone,
+                    gmail: gmail,
                     otp: otp,
-                    expiresAt: new Date(Date.now() + 5 * 60 * 1000), // OTP hết hạn sau 5 phút
+                    expiresAt: new Date(Date.now() + 5 * 60 * 1000),
                 };
-                checkPhone = await phone_otp.create(newItem);
+                console.log("Dữ liệu lưu vào database:", newItem);
+                await gmail_otp.create(newItem);
+                console.log(`Tạo mới bản ghi OTP cho email: ${gmail}`);
             }
 
         } else {
@@ -196,35 +253,80 @@ async function sendOTP_quenMatKhau(phone) {
             };
         }
 
-
-
-        const smsResponse = await axios.post(
-            `https://rest.esms.vn/MainService.svc/json/SendMultipleMessage_V4_post_json/`,
-            {
-                ApiKey: SMS_APIKEY,
-                Content: `${otp} la ma xac minh dang ky Baotrixemay cua ban`,
-                Phone: phone,
-                SecretKey: SMS_SECRETKEY,
-                Brandname: "Baotrixemay",
-                SmsType: "2"
+        // Khởi tạo transporter
+        const transporter = nodemailer.createTransport({
+            service: 'gmail',
+            auth: {
+                user: 'thong442001@gmail.com',
+                pass: 'xlgmwbtldnwdkvkl'
             },
-        );
+        });
 
-        if (smsResponse.data.CodeResult !== "100") {
-            throw new Error("Gửi SMS thất bại: " + smsResponse.data.ErrorMessage);
-        }
+        // Import nodemailer-express-handlebars bằng dynamic import
+        const { default: hbs } = await import('nodemailer-express-handlebars');
+
+        // Cấu hình Handlebars
+        const handlebarOptions = {
+            viewEngine: {
+                extName: ".hbs",
+                partialsDir: path.resolve('./views'),
+                defaultLayout: false,
+            },
+            viewPath: path.resolve('./views'),
+            extName: ".hbs",
+        };
+
+        // Sử dụng Handlebars với transporter
+        transporter.use('compile', hbs(handlebarOptions));
+
+        // Cấu hình email
+        const mailOptions = {
+            from: "Linkage <thong442001@gmail.com>",
+            to: gmail,
+            subject: `${otp} là mã xác minh đăng ký`,
+            template: 'email2',
+            context: {
+                title: 'Mã OTP xác minh quên mật khẩu Linkage',
+                text: `Mã OTP của bạn sẽ hết hạn sau 5 phút.`,
+                otp: otp, // Truyền OTP vào template
+            },
+            // attachments: [
+            //     {
+            //         // filename: 'Logo_app.png',
+            //         // path: path.resolve('./images/Logo_app.png'), // Đường dẫn đến logo
+            //         // cid: 'logo' // Content-ID để sử dụng trong template (src="cid:logo")
+            //     }
+            // ]
+        };
+
+        // Gửi email
+        await transporter.sendMail(mailOptions);
+        console.log("Gửi OTP qua email thành công");
 
         return {
             status: true,
             message: "Gửi OTP thành công",
+            otp: otp,
         };
-
     } catch (error) {
-        console.error("Lỗi OTP_dangKi:", error.message);
+        console.error("Lỗi gửi OTP qua email:", {
+            message: error.message,
+            stack: error.stack,
+        });
+
+        // Kiểm tra lỗi cụ thể liên quan đến đăng nhập Gmail
+        if (error.message.includes("Invalid login")) {
+            return {
+                status: false,
+                message: "Không thể đăng nhập vào Gmail. Vui lòng kiểm tra EMAIL_USER và EMAIL_PASS (có thể cần App Password).",
+                error: error.message,
+            };
+        }
+
         return {
             status: false,
             message: "Gửi OTP thất bại",
             error: error.message,
         };
     }
-}
+};
