@@ -4,7 +4,7 @@ var router = express.Router();
 const phone_otpController = require("../controllers/phone_otpController")
 
 //http://localhost:3000/phone_otp/OTP_dangKi
-router.post('/sendOTP_dangKi', async function (req, res, next) {
+router.post('/sendOTP_dangKi_phone', async function (req, res, next) {
   try {
     const { phone } = req.body;
     const result = await phone_otpController.sendOTP_dangKi(phone);
@@ -31,7 +31,7 @@ router.post('/sendOTP_dangKi', async function (req, res, next) {
 });
 
 //http://localhost:3000/phone_otp/checkOtpDangKi
-router.post('/checkOtpDangKi', async function (req, res, next) {
+router.post('/checkOTP_phone', async function (req, res, next) {
   try {
     const { phone, otp } = req.body;
     const result = await phone_otpController.checkOtpDangKi(phone, otp);
@@ -58,7 +58,7 @@ router.post('/checkOtpDangKi', async function (req, res, next) {
 });
 
 //http://localhost:3000/phone_otp/sendOTP_quenMatKhau
-router.post('/sendOTP_quenMatKhau', async function (req, res, next) {
+router.post('/sendOTP_quenMatKhau_phone', async function (req, res, next) {
   try {
     const { phone } = req.body;
     const result = await phone_otpController.sendOTP_quenMatKhau(phone);

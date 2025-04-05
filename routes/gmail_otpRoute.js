@@ -4,7 +4,7 @@ var router = express.Router();
 const gmail_otpController = require("../controllers/gmail_otpController")
 
 //http://localhost:3000/gmail_otp/sendOTPByEmail
-router.post('/sendOTPByEmail', async function (req, res, next) {
+router.post('/sendOTP_dangKi_gmail', async function (req, res, next) {
   try {
     const { gmail } = req.body;
     const result = await gmail_otpController.sendOTPByEmail(gmail);
@@ -25,7 +25,7 @@ router.post('/sendOTPByEmail', async function (req, res, next) {
 });
 
 //http://localhost:3000/gmail_otp/checkOtpDangKi
-router.post('/checkOtpDangKi', async function (req, res, next) {
+router.post('/checkOTP_gmail', async function (req, res, next) {
   try {
     const { gmail, otp } = req.body;
     const result = await gmail_otpController.checkOtpDangKi(gmail, otp);
@@ -52,7 +52,7 @@ router.post('/checkOtpDangKi', async function (req, res, next) {
 });
 
 //http://localhost:3000/gmail_otp/sendOTP_quenMatKhau
-router.post('/sendOTP_quenMatKhau', async function (req, res, next) {
+router.post('/sendOTP_quenMatKhau_gmail', async function (req, res, next) {
   try {
     const { gmail } = req.body;
     const result = await gmail_otpController.sendOTP_quenMatKhau(gmail);
