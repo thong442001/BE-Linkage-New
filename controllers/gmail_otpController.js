@@ -1,6 +1,5 @@
 const gmail_otp = require("../models/gmail_otp");
 const user = require("../models/user");
-const axios = require("axios");
 const config = require("../config");
 const path = require('path');
 const nodemailer = require('nodemailer');
@@ -49,7 +48,7 @@ async function sendOTPByEmail(gmail) {
         console.log(`Tạo OTP: ${otp} cho email: ${gmail}`);
 
         // Kiểm tra và lưu OTP vào database
-        let checkEmail = await gmail_otp.findOne({ gmail });
+        let checkEmail = await gmail_otp.findOne({ gmail: gmail });
 
         if (checkEmail) {
             checkEmail.otp = otp;
@@ -220,37 +219,35 @@ async function sendOTP_quenMatKhau(gmail) {
 
         // Kiểm tra xem email đã tồn tại đăng kí chưa
         const checkUser = await user.findOne({ email: gmail })
-        if (checkUser) {
-
-            // Tạo OTP ngẫu nhiên 4 chữ số
-            const otp = generateOTP();
-            console.log(`Tạo OTP: ${otp} cho email: ${gmail}`);
-
-            // Kiểm tra và lưu OTP vào database
-            let checkEmail = await gmail_otp.findOne({ gmail });
-
-            if (checkEmail) {
-                checkEmail.otp = otp;
-                checkEmail.expiresAt = new Date(Date.now() + 5 * 60 * 1000); // Hết hạn sau 5 phút
-                await checkEmail.save();
-                console.log(`Cập nhật OTP cho email: ${gmail}`);
-            } else {
-                const newItem = {
-                    gmail: gmail,
-                    otp: otp,
-                    expiresAt: new Date(Date.now() + 5 * 60 * 1000),
-                };
-                console.log("Dữ liệu lưu vào database:", newItem);
-                await gmail_otp.create(newItem);
-                console.log(`Tạo mới bản ghi OTP cho email: ${gmail}`);
-            }
-
-        } else {
+        if (!checkUser) {
             // Nếu chưa tồn tại
             return {
                 status: false,
                 message: "Phone chưa đăng kí",
             };
+        }
+
+        // Tạo OTP ngẫu nhiên 4 chữ số
+        const otp = generateOTP();
+        console.log(`Tạo OTP: ${otp} cho email: ${gmail}`);
+
+        // Kiểm tra và lưu OTP vào database
+        let checkEmail = await gmail_otp.findOne({ gmail: gmail });
+
+        if (checkEmail) {
+            checkEmail.otp = otp;
+            checkEmail.expiresAt = new Date(Date.now() + 5 * 60 * 1000); // Hết hạn sau 5 phút
+            await checkEmail.save();
+            console.log(`Cập nhật OTP cho email: ${gmail}`);
+        } else {
+            const newItem = {
+                gmail: gmail,
+                otp: otp,
+                expiresAt: new Date(Date.now() + 5 * 60 * 1000),
+            };
+            console.log("Dữ liệu lưu vào database:", newItem);
+            await gmail_otp.create(newItem);
+            console.log(`Tạo mới bản ghi OTP cho email: ${gmail}`);
         }
 
         // Khởi tạo transporter
