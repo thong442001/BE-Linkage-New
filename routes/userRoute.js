@@ -463,4 +463,59 @@ router.post('/editBioOfUser', async function (req, res, next) {
   }
 });
 
+
+//http://localhost:3000/user/quenMatKhau_phone
+router.post('/quenMatKhau_phone', async function (req, res, next) {
+  try {
+    const {
+      phone,
+      passwordNew,
+    } = req.body;
+    const result = await userController.quenMatKhau_phone(
+      phone,
+      passwordNew,
+    );
+    if (result) {
+      return res.status(200).json({
+        "status": result,
+        message: "Đổi password thành công"
+      });
+    } else {
+      return res.status(401).json({
+        "status": result,
+        message: "User không tồn tại"
+      });
+    }
+  } catch (e) {
+    res.status(400).json({ "status": false, "message": "lỗi" });
+  }
+});
+
+//http://localhost:3000/user/quenMatKhau_gmail
+router.post('/quenMatKhau_gmail', async function (req, res, next) {
+  try {
+    const {
+      gmail,
+      passwordNew,
+    } = req.body;
+    const result = await userController.quenMatKhau_gmail(
+      gmail,
+      passwordNew,
+    );
+    if (result) {
+      return res.status(200).json({
+        "status": result,
+        message: "Đổi password thành công"
+      });
+    } else {
+      return res.status(401).json({
+        "status": result,
+        message: "User không tồn tại"
+      });
+    }
+  } catch (e) {
+    res.status(400).json({ "status": false, "message": "lỗi" });
+  }
+});
+
 module.exports = router;

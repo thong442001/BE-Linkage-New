@@ -20,6 +20,8 @@ module.exports = {
     loginAdmin,// login admin
     checkBanUser,
     editBioOfUser,// edit bio
+    quenMatKhau_phone,// quên mật khẩu
+    quenMatKhau_gmail,
 }
 async function checkBanUser(ID_user) {
     try {
@@ -379,6 +381,43 @@ async function editBioOfUser(ID_user, bio) {
             editUser.bio = bio
                 ? bio
                 : editUser.bio;
+            await editUser.save();
+            return true;
+        } else {
+            return false;
+        }
+    } catch (error) {
+        console.log(error);
+        throw error;
+    }
+}
+
+
+async function quenMatKhau_phone(phone, passwordNew) {
+    try {
+        const editUser = await users.findOne({ phone: phone });
+        // null là ko tìm thấy
+        if (editUser) {
+            var hashPass = bcrypt.hashSync(passwordNew, 10);
+            editUser.password = hashPass
+            await editUser.save();
+            return true;
+        } else {
+            return false;
+        }
+    } catch (error) {
+        console.log(error);
+        throw error;
+    }
+}
+
+async function quenMatKhau_gmail(gmail, passwordNew) {
+    try {
+        const editUser = await users.findOne({ email: gmail });
+        // null là ko tìm thấy
+        if (editUser) {
+            var hashPass = bcrypt.hashSync(passwordNew, 10);
+            editUser.password = hashPass
             await editUser.save();
             return true;
         } else {
