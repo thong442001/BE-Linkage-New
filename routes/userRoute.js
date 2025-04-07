@@ -518,4 +518,37 @@ router.post('/quenMatKhau_gmail', async function (req, res, next) {
   }
 });
 
+//http://localhost:3000/user/loginWeb
+router.post('/loginWeb', async function (req, res, next) {
+  try {
+    const {
+      email,
+      phone,
+      password,
+    } = req.body;
+    const result = await userController.loginWeb(
+      email,
+      phone,
+      password,
+    );
+    if (result.status == 200) {
+      res.status(200).json({ "status": true, "token": result.token, "refreshToken": result.refreshToken, "user": result.user });
+    } else if (result.status == 401) {
+      //sai tài khoản 
+      res.status(401).json({ "status": false, "message": result.message });
+    } else if (result.status == 402) {
+      //sai mật khẩu 
+      res.status(402).json({ "status": false, "message": result.message });
+    } else if (result.status == 403) {
+      //Tài khoản admin không thể vào app
+      res.status(403).json({ "status": false, "message": result.message });
+    } else if (result.status == 404) {
+      //Tài khoản này đã bị khóa
+      res.status(404).json({ "status": false, "message": result.message });
+    }
+  } catch (e) {
+    res.status(400).json({ "status": false, "message": "lỗi" });
+  }
+});
+
 module.exports = router;
