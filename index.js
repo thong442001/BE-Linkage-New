@@ -60,8 +60,8 @@ const io = setupSocket(server);
 //app.use(cors())
 app.use(cors({
     origin: '*', // Hoặc chỉ định nguồn cụ thể: ['http://localhost:19006', 'https://your-client-url']
-    methods: ['GET', 'POST'],
-    allowedHeaders: ['Content-Type'],
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
 }));
 //app.use(logger('dev'));
 app.use(express.json());
