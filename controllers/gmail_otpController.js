@@ -254,8 +254,8 @@ async function sendOTP_quenMatKhau(gmail) {
         const transporter = nodemailer.createTransport({
             service: 'gmail',
             auth: {
-                user: 'thong442001@gmail.com',
-                pass: 'xlgmwbtldnwdkvkl'
+                user: EMAIL_USER,
+                pass: EMAIL_PASS
             },
         });
 

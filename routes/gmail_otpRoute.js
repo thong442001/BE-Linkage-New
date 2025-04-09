@@ -3,7 +3,7 @@ var router = express.Router();
 
 const gmail_otpController = require("../controllers/gmail_otpController")
 
-//http://localhost:3000/gmail_otp/sendOTPByEmail
+//http://localhost:3000/gmail_otp/sendOTP_dangKi_gmail
 router.post('/sendOTP_dangKi_gmail', async function (req, res, next) {
   try {
     const { gmail } = req.body;

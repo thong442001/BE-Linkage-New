@@ -2,6 +2,7 @@ const axios = require("axios");
 const relationship = require("../models/relationship");
 const noti_token = require("../models/noti_token");
 const notification = require("../models/notification");
+const user = require("../models/user");
 
 module.exports = {
     getRelationshipAvsB,
@@ -11,6 +12,8 @@ module.exports = {
     huyBanBe,
     getAllLoiMoiKetBan,
     getAllFriendOfID_user,
+    getFriendSuggestions,// gợi ý bạn bè
+    getMutualFriendCount
 }
 
 async function getRelationshipAvsB(ID_user, me) {
@@ -235,6 +238,144 @@ async function getAllFriendOfID_user(me) {
 
     } catch (error) {
         console.log(error);
+        throw error;
+    }
+}
+
+async function getMutualFriendCount(me, otherUserId) {
+    try {
+        // Lấy danh sách bạn bè của me
+        const myFriends = await relationship.find({
+            $or: [
+                { ID_userA: me, relation: 'Bạn bè' },
+                { ID_userB: me, relation: 'Bạn bè' },
+            ],
+        }).lean();
+
+        const myFriendIds = myFriends.map((rel) =>
+            rel.ID_userA.toString() === me ? rel.ID_userB.toString() : rel.ID_userA.toString()
+        );
+
+        // Lấy danh sách bạn bè của otherUserId
+        const otherFriends = await relationship.find({
+            $or: [
+                { ID_userA: otherUserId, relation: 'Bạn bè' },
+                { ID_userB: otherUserId, relation: 'Bạn bè' },
+            ],
+        }).lean();
+
+        const otherFriendIds = otherFriends.map((rel) =>
+            rel.ID_userA.toString() === otherUserId ? rel.ID_userB.toString() : rel.ID_userA.toString()
+        );
+
+        // Tính số bạn bè chung
+        const mutualFriends = myFriendIds.filter((friendId) => otherFriendIds.includes(friendId));
+        return mutualFriends.length;
+    } catch (error) {
+        console.error("❌ Lỗi khi tính số bạn bè chung:", error);
+        throw error;
+    }
+}
+
+async function getFriendSuggestions(me) {
+    try {
+        console.log('🚀 Bắt đầu getFriendSuggestions cho user:', me);
+
+        // Bước 1: Lấy danh sách bạn bè của me
+        const myFriends = await relationship.find({
+            $or: [
+                { ID_userA: me, relation: 'Bạn bè' },
+                { ID_userB: me, relation: 'Bạn bè' },
+            ],
+        }).lean();
+        console.log('👥 Số bạn bè của me:', myFriends.length);
+
+        const myFriendIds = myFriends.map((rel) =>
+            rel.ID_userA.toString() === me ? rel.ID_userB.toString() : rel.ID_userA.toString()
+        );
+        console.log('🆔 ID bạn bè của me:', myFriendIds);
+
+        // Bước 2: Lấy bạn bè của bạn bè
+        const friendOfFriends = await relationship.find({
+            $or: [
+                { ID_userA: { $in: myFriendIds }, relation: 'Bạn bè' },
+                { ID_userB: { $in: myFriendIds }, relation: 'Bạn bè' },
+            ],
+        }).lean();
+        console.log('👥 Số bạn bè của bạn bè:', friendOfFriends.length);
+
+        // Bước 3: Tạo danh sách gợi ý
+        const suggestionsMap = new Map();
+        for (const rel of friendOfFriends) {
+            const otherUserId =
+                rel.ID_userA.toString() === me
+                    ? rel.ID_userB.toString()
+                    : rel.ID_userB.toString() === me
+                        ? rel.ID_userA.toString()
+                        : rel.ID_userA.toString() === myFriendIds.find((id) => id === rel.ID_userA.toString())
+                            ? rel.ID_userB.toString()
+                            : rel.ID_userA.toString();
+            console.log('🔍 Kiểm tra otherUserId:', otherUserId);
+
+            // Bỏ qua nếu là me hoặc đã là bạn bè
+            if (!otherUserId || myFriendIds.includes(otherUserId) || otherUserId === me) {
+                console.log('⏭ Bỏ qua otherUserId:', otherUserId);
+                continue;
+            }
+
+            // Kiểm tra mối quan hệ hiện tại
+            const existingRelation = await relationship.findOne({
+                $or: [
+                    { ID_userA: me, ID_userB: otherUserId },
+                    { ID_userA: otherUserId, ID_userB: me },
+                ],
+            }).lean();
+            console.log('🔗 Mối quan hệ hiện tại:', existingRelation);
+
+            // Chỉ gợi ý nếu chưa có lời mời kết bạn hoặc không phải bạn bè
+            if (existingRelation && existingRelation.relation !== 'Người lạ') {
+                console.log('⏭ Bỏ qua vì không phải Người lạ:', existingRelation.relation);
+                continue;
+            }
+
+            // Tính số bạn bè chung
+            const mutualFriendCount = await getMutualFriendCount(me, otherUserId);
+            console.log('👥 Số bạn bè chung với', otherUserId, ':', mutualFriendCount);
+
+            if (mutualFriendCount > 0) {
+                suggestionsMap.set(otherUserId, {
+                    userId: otherUserId,
+                    mutualFriendCount,
+                    relationshipId: existingRelation ? existingRelation._id : null,
+                });
+            }
+        }
+
+        // Bước 4: Sắp xếp danh sách gợi ý
+        const suggestions = Array.from(suggestionsMap.values()).sort(
+            (a, b) => b.mutualFriendCount - a.mutualFriendCount
+        );
+        console.log('📋 Số gợi ý trước khi populate:', suggestions.length);
+
+        // Bước 5: Populate thông tin người dùng
+        const populatedSuggestions = await Promise.all(
+            suggestions.map(async (suggestion) => {
+                const userData = await user
+                    .findById(suggestion.userId)
+                    .select('first_name last_name avatar')
+                    .lean();
+                console.log('👤 Populate user:', suggestion.userId, userData);
+                return {
+                    ...suggestion,
+                    user: userData,
+                };
+            })
+        );
+
+        console.log('✅ Kết quả cuối cùng:', populatedSuggestions);
+        return populatedSuggestions;
+    } catch (error) {
+        console.error("❌ Lỗi khi lấy gợi ý kết bạn:", error);
         throw error;
     }
 }

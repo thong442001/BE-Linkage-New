@@ -139,4 +139,22 @@ router.get('/getAllFriendOfID_user', checkToken, async function (req, res, next)
   }
 });
 
+// http://localhost:3001/relationship/getGoiYBanBe
+router.get('/getGoiYBanBe', checkToken, async function (req, res, next) {
+  try {
+    const { me } = req.query;
+    const relationships = await relationshipController.getFriendSuggestions(me);
+    res.json({
+      status: true,
+      data: relationships,
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: false,
+      message: 'Lỗi khi lấy gợi ý kết bạn',
+      error: error.message,
+    });
+  }
+});
+
 module.exports = router;
