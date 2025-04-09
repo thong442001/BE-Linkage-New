@@ -12,6 +12,8 @@ const config = require("../config");
 
 const SMS_APIKEY = config.SMS_APIKEY;
 const SMS_SECRETKEY = config.SMS_SECRETKEY;
+// console.log('SMS_APIKEY:', SMS_APIKEY);
+// console.log('SMS_SECRETKEY:', SMS_SECRETKEY);
 
 // Hàm tạo OTP ngẫu nhiên 4 chữ số
 const generateOTP = () => {

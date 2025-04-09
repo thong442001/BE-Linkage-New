@@ -3,7 +3,7 @@ var router = express.Router();
 
 const phone_otpController = require("../controllers/phone_otpController")
 
-//http://localhost:3000/phone_otp/OTP_dangKi
+//http://localhost:3000/phone_otp/sendOTP_dangKi_phone
 router.post('/sendOTP_dangKi_phone', async function (req, res, next) {
   try {
     const { phone } = req.body;
@@ -14,7 +14,7 @@ router.post('/sendOTP_dangKi_phone', async function (req, res, next) {
         message: result.message,
       });
     } else {
-      return res.status(500).json({
+      return res.status(501).json({
         status: false,
         message: result.message,
         error: result.error,

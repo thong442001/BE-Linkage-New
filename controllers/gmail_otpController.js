@@ -70,10 +70,10 @@ async function sendOTPByEmail(gmail) {
         const transporter = nodemailer.createTransport({
             service: 'gmail',
             auth: {
-                user: 'thong442001@gmail.com',
-                pass: 'xlgmwbtldnwdkvkl'
+                user: EMAIL_USER,
+                pass: EMAIL_PASS
             },
-        });
+        });//xlgmwbtldnwdkvkl
 
         // Import nodemailer-express-handlebars bằng dynamic import
         const { default: hbs } = await import('nodemailer-express-handlebars');
