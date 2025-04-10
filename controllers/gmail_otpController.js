@@ -93,7 +93,7 @@ async function sendOTPByEmail(gmail) {
         transporter.use('compile', hbs(handlebarOptions));
 
         // Tạo URL deep link
-        const deepLinkUrl = `https://linkage.id.vn`;
+        const deepLinkUrl = `https://linkage.id.vn/deeplink?url=linkage`;
 
         // Cấu hình email
         const mailOptions = {
