@@ -3,6 +3,7 @@ const express = require("express");
 const http = require('http');
 var path = require('path');
 var cookieParser = require('cookie-parser');
+const deeplink = require('node-deeplink'); // Thêm node-deeplink
 //var logger = require('morgan');
 // CORS
 var cors = require('cors')
@@ -104,6 +105,17 @@ app.use(
     swaggerUi.serve,
     swaggerUi.setup(swaggerDocument, { customCssUrl: CSS_URL })
 );
+
+// Cấu hình Deep Link
+const deepLinkConfig = {
+    fallback: 'https://linkage.id.vn', // URL dự phòng cho các nền tảng không hỗ trợ (ví dụ: máy tính để bàn)
+    android_package_name: 'com.linkage.app', // Tên gói ứng dụng Android của bạn
+    ios_store_link: 'https://apps.apple.com/vn/app/facebook/id284882215?l=vi', // Liên kết App Store của ứng dụng iOS
+    title: 'Linkage', // Tiêu đề tùy chọn cho trang HTML trung gian
+};
+
+// Tạo endpoint deep link sử dụng node-deeplink
+app.get('/deeplink', deeplink(deepLinkConfig));
 
 //connect database
 mongoose.connect('mongodb+srv://thong442001:F3WK9R2BOb3cV86h@totnghiep.8wwlj.mongodb.net/Linkage')//link connect vs mongobd

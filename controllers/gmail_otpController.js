@@ -92,6 +92,9 @@ async function sendOTPByEmail(gmail) {
         // Sử dụng Handlebars với transporter
         transporter.use('compile', hbs(handlebarOptions));
 
+        // Tạo URL deep link
+        const deepLinkUrl = `https://linkage.id.vn`;
+
         // Cấu hình email
         const mailOptions = {
             from: "Linkage <thong442001@gmail.com>",
@@ -102,6 +105,7 @@ async function sendOTPByEmail(gmail) {
                 title: 'Mã OTP xác minh đăng ký Linkage',
                 text: `Mã OTP của bạn sẽ hết hạn sau 5 phút.`,
                 otp: otp, // Truyền OTP vào template
+                deepLink: deepLinkUrl, // Truyền deep link vào template
             },
             // attachments: [
             //     {

@@ -88,7 +88,6 @@ async function guiLoiMoiKetBan(ID_relationship, me) {
     }
 }
 
-
 // 🛠 Hàm gửi thông báo kết bạn
 async function guiThongBao(ID_user, ID_noti) {
     try {
