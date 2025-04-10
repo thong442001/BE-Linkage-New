@@ -7,6 +7,7 @@ const comment_reaction = require("../models/comment_reaction");
 const noti_token = require("../models/noti_token");
 const notification = require("../models/notification");
 const axios = require("axios");
+const relationshipController = require("../controllers/relationshipController");
 
 module.exports = {
     addPost,
@@ -493,7 +494,7 @@ async function deletePost(_id) {
 
 
 // chi tiết bài post
-async function getChiTietPost(ID_post) {
+async function getChiTietPost(ID_post, ID_user) {
     try {
         // Lấy bài post trước
         const post = await posts.findById(ID_post)
@@ -510,6 +511,21 @@ async function getChiTietPost(ID_post) {
             .lean();
 
         if (!post) return null; // Nếu không có bài post, trả về null
+
+        // Kiểm tra quyền xem bài post
+        const isOwner = post.ID_user._id.toString() === ID_user.toString();
+        const postStatus = post.status || 'Công khai'; // Mặc định công khai nếu không có status
+
+        if (postStatus === 'Chỉ mình tôi' && !isOwner) {
+            return null; // Chỉ chủ bài post xem được
+        }
+
+        if (postStatus === 'Bạn bè' && !isOwner) {
+            const relationship = await relationshipController.getRelationshipAvsB(post.ID_user._id.toString(), ID_user);
+            if (relationship.relation !== 'Bạn bè') {
+                return null; // Không phải bạn bè, không xem được
+            }
+        }
 
         // Lấy comments trước để có ID_comment
         const postComments = await comment.find({ ID_post: ID_post })

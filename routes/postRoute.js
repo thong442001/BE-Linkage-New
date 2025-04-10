@@ -180,10 +180,12 @@ router.post('/deletePost', checkToken, async function (req, res, next) {
 //http://localhost:3000/post/getChiTietPost
 router.get('/getChiTietPost', checkToken, async function (req, res, next) {
   try {
-    const { ID_post } = req.query;
-    const post = await postController.getChiTietPost(ID_post);
+    const { ID_post, ID_user } = req.query;
+    const post = await postController.getChiTietPost(ID_post, ID_user);
     if (post) {
       res.status(200).json({ "status": true, "post": post });
+    } else {
+      res.status(201).json({ "status": true, "post": null });
     }
   } catch (e) {
     res.status(400).json({ "status": false, "message": "lỗi" });

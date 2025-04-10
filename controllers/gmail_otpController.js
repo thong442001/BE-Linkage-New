@@ -93,7 +93,8 @@ async function sendOTPByEmail(gmail) {
         transporter.use('compile', hbs(handlebarOptions));
 
         // Tạo URL deep link
-        const deepLinkUrl = `https://linkage.id.vn/deeplink?url=linkage`;
+        //const deepLinkUrl = `https://yourdomain.com/deeplink?url=linkage://reset-password?otp=${otp}&email=${encodeURIComponent(gmail)}`;
+        //const deepLinkUrl = `https://linkage.id.vn/deeplink?url=linkage`;
 
         // Cấu hình email
         const mailOptions = {
