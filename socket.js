@@ -6,6 +6,9 @@ const message_reaction = require("./models/message_reaction");
 const group = require("./models/group");
 const noti_token = require("./models/noti_token");
 const notification = require("./models/notification");
+//token
+const JWT = require('jsonwebtoken');
+const config = require("../config");
 
 // Lưu user online
 const onlineUsers = new Map();
@@ -53,18 +56,25 @@ function setupSocket(server) {
         socket.on('login_QR', async (data) => {
             const { qrToken, ID_user } = data;
             if (!ID_user || !qrToken) return;
+
             const login_user = await user.findById(ID_user);
             if (login_user) {
                 login_user.QR = qrToken;
                 await login_user.save();
+                //token
+                const token = JWT.sign({ id: login_user._id, data: "data ne" }, config.SECRETKEY, { expiresIn: '1d' });
+                const refreshToken = JWT.sign({ id: login_user._id }, config.SECRETKEY, { expiresIn: '1y' })
+                const paramNew = {
+                    user: login_user,
+                    token: token,
+                    refreshToken: refreshToken,
+                }
+                io.to(qrToken).emit('lang_nghe_login_QR', paramNew);
+
             } else {
                 console.error("❌ ID_user ko tồn tại!");
                 return;
             }
-            const paramNew = {
-                user: login_user
-            }
-            io.to(qrToken).emit('lang_nghe_login_QR', paramNew);
         });
 
         // Khi user login, lưu vào danh sách online
