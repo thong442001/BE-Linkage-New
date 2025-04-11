@@ -41,6 +41,32 @@ function setupSocket(server) {
 
         console.log(`✅ User connected: ${socket.id}`);
 
+        socket.on("join_login_QR", (qrToken) => {
+            if (!qrToken) {
+                console.error("❌ qrToken ID is missing!");
+                return;
+            }
+            socket.join(qrToken);
+            console.log(`👥 User ${socket.id} join_login_QR: ${qrToken}`);
+        });
+
+        socket.on('login_QR', async (data) => {
+            const { qrToken, ID_user } = data;
+            if (!ID_user || !qrToken) return;
+            const login_user = await user.findById(ID_user);
+            if (login_user) {
+                login_user.QR = qrToken;
+                await login_user.save();
+            } else {
+                console.error("❌ ID_user ko tồn tại!");
+                return;
+            }
+            const paramNew = {
+                user: login_user
+            }
+            io.to(qrToken).emit('lang_nghe_login_QR', paramNew);
+        });
+
         // Khi user login, lưu vào danh sách online
         socket.on("user_online", async (ID_user) => {
             if (!ID_user) return;

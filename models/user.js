@@ -43,7 +43,7 @@ const user = new Schema({
         type: String, // kiểu dữ liệu
         default: null,
     },
-    QR: {
+    QR: {// QR login web
         type: String, // kiểu dữ liệu
         default: null,
     },
