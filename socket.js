@@ -8,7 +8,7 @@ const noti_token = require("./models/noti_token");
 const notification = require("./models/notification");
 //token
 const JWT = require('jsonwebtoken');
-const config = require("../config");
+const config = require("./config");
 
 // Lưu user online
 const onlineUsers = new Map();
