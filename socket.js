@@ -149,6 +149,7 @@ function setupSocket(server) {
                         avatar: checkUser.avatar,
                     },
                     content: newMessage.content,
+                    type: newMessage.type || type,
                     createdAt: newMessage.createdAt,
                     _destroy: newMessage._destroy,
                 }
