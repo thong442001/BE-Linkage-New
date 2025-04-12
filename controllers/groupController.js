@@ -183,6 +183,7 @@ async function getAllGroupOfUser(ID_user) {
                         avatar: messageNew[0].sender.avatar,
                     },
                     content: messageNew[0].content,
+                    type: messageNew[0].type,
                     createdAt: messageNew[0].createdAt,
                     _destroy: messageNew[0]._destroy,
                 };
