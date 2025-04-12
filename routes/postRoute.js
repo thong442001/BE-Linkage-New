@@ -65,7 +65,7 @@ router.post('/addPost', checkToken, async function (req, res, next) {
       tags
     );
 
-    return res.status(200).json({ "status": true, "message": "add post thành công" });
+    return res.status(200).json({ "status": true, "message": "add post thành công", "post": result.post });
     // if (result) {
     //   return res.status(200).json({ "status": true, "message": "add post thành công" });
     // }

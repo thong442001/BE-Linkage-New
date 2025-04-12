@@ -51,7 +51,10 @@ async function addPost(
                 notificationType = 'Đã đăng story mới';
             } else {
                 console.log("Loại bài viết không hợp lệ");
-                return true; // Không gửi thông báo nếu không thuộc loại hợp lệ
+                return {
+                    status: true,
+                    post: newPost,
+                }
             }
 
             // 🔍 Tìm tất cả bạn bè của người đăng bài
@@ -68,7 +71,11 @@ async function addPost(
 
             if (friendIds.length === 0) {
                 console.log("friendIds.length = 0");
-                return true; // Không có bạn bè để gửi thông báo
+                // Không có bạn bè để gửi thông báo
+                return {
+                    status: true,
+                    post: newPost,
+                }
             }
 
             // 🔔 Tạo thông báo cho từng bạn bè
@@ -105,7 +112,11 @@ async function addPost(
 
             if (messages.length === 0) {
                 console.log("messages.length = 0");
-                return true; // Không có token hợp lệ
+                // Không có token hợp lệ
+                return {
+                    status: true,
+                    post: newPost,
+                }
             }
 
             // 🚀 Gửi từng thông báo riêng lẻ
@@ -122,10 +133,17 @@ async function addPost(
             ));
         }
         console.log("true");
-        return true; // Thành công
+        // Thành công
+        return {
+            status: true,
+            post: newPost,
+        }
     } catch (error) {
         console.log("Lỗi khi đăng bài:", error);
-        return false;
+        return {
+            status: false,
+            post: null,
+        }
     }
 }
 
