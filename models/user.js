@@ -33,7 +33,7 @@ const user = new Schema({
     },
     avatar: {
         type: String, // kiểu dữ liệu
-        default: "https://i.pinimg.com/564x/14/30/f2/1430f2a57ce798b01b075c3e88df5dc9.jpg",// avatar mặc định 
+        default: "https://i.pinimg.com/736x/75/11/c5/7511c5289164c5644782b76e9d122f20.jpg",// avatar mặc định 
     },
     background: {
         type: String, // kiểu dữ liệu
