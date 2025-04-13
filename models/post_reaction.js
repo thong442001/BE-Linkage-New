@@ -5,14 +5,17 @@ const post_reaction = new Schema({
     ID_post: {
         type: ObjectId,
         ref: 'post',
+        required: true, // bắt buộc phải có
     },
     ID_user: {
         type: ObjectId,
         ref: 'user',
+        required: true, // bắt buộc phải có
     },
     ID_reaction: {
         type: ObjectId,
         ref: 'reaction',
+        required: true, // bắt buộc phải có
     },
 }, {
     timestamps: true

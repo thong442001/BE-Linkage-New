@@ -5,6 +5,7 @@ const post = new Schema({
     ID_user: {
         type: ObjectId,
         ref: 'user',
+        required: true, // bắt buộc phải có
     },
     caption: {
         type: String, // kiểu dữ liệu

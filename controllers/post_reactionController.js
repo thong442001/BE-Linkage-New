@@ -16,6 +16,12 @@ async function addPost_Reaction(ID_post, ID_user, ID_reaction) {
         if (!postInfo) {
             return { status: false, message: "Không tìm thấy bài viết" };
         }
+        if (!ID_user) {
+            return { status: false, message: "Không tìm thấy ID_user" };
+        }
+        if (!ID_reaction) {
+            return { status: false, message: "Không tìm thấy ID_reaction" };
+        }
 
         // 📌 Chủ bài viết
         const postOwner = postInfo.ID_user.toString();
