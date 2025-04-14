@@ -5,6 +5,8 @@ const noti_token = new Schema({
     ID_user: {
         type: ObjectId,
         ref: 'user',
+        required: true, // bắt buộc phải có
+        unique: true, // không được trùng
     },
     tokens: {
         type: [String], // Mảng các token FCM

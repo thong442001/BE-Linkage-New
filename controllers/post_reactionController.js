@@ -27,80 +27,82 @@ async function addPost_Reaction(ID_post, ID_user, ID_reaction) {
         const postOwner = postInfo.ID_user.toString();
 
         // Kiểm tra xem user đã react vào post chưa
-        const checkPost_Reaction = await post_reaction.findOneAndUpdate(
-            { ID_post, ID_user },
-            { ID_reaction },  // Nếu tồn tại, chỉ cập nhật ID_reaction
-            { new: true }  // Trả về dữ liệu mới sau khi update
-        );
+        const existingReaction = await post_reaction.findOne({ ID_post, ID_user });
 
-        if (checkPost_Reaction) {
-            return {
-                status: true,
-                message: "Đổi reaction thành công",
-                post_reaction: {
-                    _id: checkPost_Reaction._id,
-                    ID_post: checkPost_Reaction.ID_post,
-                    ID_user: checkPost_Reaction.ID_user,
-                    ID_reaction: checkPost_Reaction.ID_reaction
-                }
-            };
+        let savedReaction;
+        let message;
+
+        if (existingReaction) {
+            // Nếu đã có reaction, cập nhật ID_reaction
+            const oldReactionId = existingReaction._id;
+
+            // Xóa notification cũ liên quan đến reaction này (nếu có)
+            await notification.deleteOne({ ID_post_reaction: oldReactionId });
+
+            // Cập nhật reaction
+            const updatedReaction = await post_reaction.findOneAndUpdate(
+                { ID_post, ID_user },
+                { ID_reaction },
+                { new: true }
+            );
+
+            savedReaction = updatedReaction;
+            message = "Đổi reaction thành công";
+        } else {
+            // Nếu chưa có reaction trước đó, tạo mới
+            const newPost_Reaction = new post_reaction({ ID_post, ID_user, ID_reaction });
+            savedReaction = await newPost_Reaction.save();
+            message = "Tạo post_reaction mới thành công";
         }
-
-        // Nếu chưa có reaction trước đó, tạo mới
-        const newPost_Reaction = new post_reaction({ ID_post, ID_user, ID_reaction });
-        const savedReaction = await newPost_Reaction.save();
 
         // 🔔 Tạo thông báo nếu người thả reaction KHÔNG PHẢI là chủ bài viết
         if (ID_user !== postOwner) {
             const newNotification = new notification({
                 ID_post_reaction: savedReaction._id,
-                ID_user: postOwner, // Gửi thông báo cho chủ bài viết
+                ID_user: postOwner,
                 type: "Đã thả biểu cảm vào bài viết của bạn",
             });
 
             const savedNotification = await newNotification.save();
 
             // 📤 Gửi thông báo FCM
-            const fcmToken = await noti_token.findOne({ ID_user: postOwner }).select('ID_user tokens');
-
-            if (fcmToken && fcmToken.tokens) {
-                await axios.post(
-                    //`http://localhost:3001/gg/send-notification`,
-                    `https://linkage.id.vn/gg/send-notification`,
-                    {
-                        fcmTokens: fcmToken.tokens,
-                        title: "Thông báo",
-                        body: null,
-                        ID_noties: [savedNotification._id.toString()],
-                    }
-                );
+            try {
+                const fcmToken = await noti_token.findOne({ ID_user: postOwner }).select('ID_user tokens');
+                if (fcmToken && fcmToken.tokens && fcmToken.tokens.length > 0) {
+                    await axios.post(
+                        `https://linkage.id.vn/gg/send-notification`,
+                        {
+                            fcmTokens: fcmToken.tokens,
+                            title: "Thông báo",
+                            body: null,
+                            ID_noties: [savedNotification._id.toString()],
+                        },
+                        {
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                        }
+                    );
+                    console.log(`FCM sent for notification ${savedNotification._id}`);
+                } else {
+                    console.log(`No valid FCM tokens found for user ${postOwner}`);
+                }
+            } catch (fcmError) {
+                console.error(`Lỗi gửi FCM notification for user ${postOwner}:`, fcmError.response?.data || fcmError.message);
+                // Tiếp tục trả về kết quả thành công ngay cả khi FCM thất bại
             }
         }
 
-        if (checkPost_Reaction) {
-            return {
-                status: true,
-                message: "Đổi reaction thành công",
-                post_reaction: {
-                    _id: checkPost_Reaction._id,
-                    ID_post: checkPost_Reaction.ID_post,
-                    ID_user: checkPost_Reaction.ID_user,
-                    ID_reaction: checkPost_Reaction.ID_reaction
-                }
-            };
-        } else {
-            return {
-                status: true,
-                message: "Tạo post_reaction mới thành công",
-                post_reaction: {
-                    _id: savedReaction._id,
-                    ID_post: savedReaction.ID_post,
-                    ID_user: savedReaction.ID_user,
-                    ID_reaction: savedReaction.ID_reaction
-                }
-            };
-        }
-
+        return {
+            status: true,
+            message,
+            post_reaction: {
+                _id: savedReaction._id,
+                ID_post: savedReaction.ID_post,
+                ID_user: savedReaction.ID_user,
+                ID_reaction: savedReaction.ID_reaction,
+            },
+        };
     } catch (error) {
         console.error("Lỗi addPost_Reaction:", error);
         return { status: false, message: "Lỗi API", error: error.message };
