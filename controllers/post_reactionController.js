@@ -48,7 +48,7 @@ async function addPost_Reaction(ID_post, ID_user, ID_reaction) {
                 const newNotification = new notification({
                     ID_post_reaction: updatedReaction._id,
                     ID_user: postOwner,
-                    type: "Đã thay đổi biểu cảm vào bài viết của bạn",
+                    type: "Đã thả biểu cảm vào bài viết của bạn",
                 });
 
                 const savedNotification = await newNotification.save();
