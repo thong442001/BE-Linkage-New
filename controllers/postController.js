@@ -286,7 +286,6 @@ async function allProfile(ID_user, me) {
 }
 
 
-
 async function getAllPostsInHome(me) {
     try {
         // Lấy danh sách bạn bè
