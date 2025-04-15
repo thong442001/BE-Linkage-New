@@ -248,6 +248,14 @@ async function allProfile(ID_user, me) {
                 .lean()
         ]);
 
+        // Lọc bỏ các bài post share mà ID_post_shared không thỏa mãn (bị xóa hoặc không tồn tại)
+        rPosts = rPosts.filter(post => {
+            // Nếu bài post không phải là bài share (ID_post_shared không tồn tại), giữ lại
+            if (!post.ID_post_shared) return true;
+            // Nếu bài post là bài share, chỉ giữ lại nếu ID_post_shared tồn tại (không bị xóa)
+            return post.ID_post_shared !== null;
+        });
+
         if (rPosts.length > 0) {
             const postIds = rPosts.map(post => post._id);
 
@@ -326,6 +334,14 @@ async function getAllPostsInHome(me) {
             ]
         };
         let rPosts = await getPosts(postFilter);
+
+        // Lọc bỏ các bài post có ID_post_shared không thỏa mãn (bị xóa hoặc không tồn tại)
+        rPosts = rPosts.filter(post => {
+            // Nếu bài post không phải là bài share (ID_post_shared không tồn tại), giữ lại
+            if (!post.ID_post_shared) return true;
+            // Nếu bài post là bài share, chỉ giữ lại nếu ID_post_shared tồn tại (không bị xóa)
+            return post.ID_post_shared !== null;
+        });
 
         // Lấy stories của bạn bè trong 24h
         const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
