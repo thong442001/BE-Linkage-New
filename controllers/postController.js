@@ -258,11 +258,11 @@ async function allProfile(ID_user, me) {
                     }
                 },
                 // Bỏ trường sharedPost sau khi lọc
-                {
-                    $project: {
-                        sharedPost: 0 // Không cần giữ trường này trong kết quả
-                    }
-                },
+                // {
+                //     $project: {
+                //         sharedPost: 0 // Không cần giữ trường này trong kết quả
+                //     }
+                // },
                 // Sort theo createdAt
                 {
                     $sort: { createdAt: -1 }
@@ -295,12 +295,10 @@ async function allProfile(ID_user, me) {
                 .lean()
         ]);
 
-        // Lọc bỏ các bài post share mà ID_post_shared không thỏa mãn (bị xóa hoặc không tồn tại)
+        // Lọc bỏ các bài post share mà ID_post_shared không hợp lệ (bị xóa hoặc không tồn tại)
         rPosts = rPosts.filter(post => {
-            // Nếu bài post không phải là bài share (ID_post_shared không tồn tại), giữ lại
-            if (!post.ID_post_shared) return true;
-            // Nếu bài post là bài share, chỉ giữ lại nếu ID_post_shared tồn tại (không bị xóa)
-            return post.ID_post_shared !== null;
+            if (!post.ID_post_shared) return true; // Giữ lại nếu không phải bài share
+            return post.ID_post_shared !== null; // Chỉ giữ lại nếu ID_post_shared tồn tại
         });
 
         if (rPosts.length > 0) {
@@ -394,11 +392,11 @@ async function getAllPostsInHome(me) {
                     }
                 },
                 // Bỏ trường sharedPost sau khi lọc
-                {
-                    $project: {
-                        sharedPost: 0 // Không cần giữ trường này trong kết quả
-                    }
-                },
+                // {
+                //     $project: {
+                //         sharedPost: 0 // Không cần giữ trường này trong kết quả
+                //     }
+                // },
                 // Sort theo createdAt
                 {
                     $sort: { createdAt: -1 }
