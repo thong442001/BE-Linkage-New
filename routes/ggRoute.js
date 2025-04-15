@@ -193,7 +193,8 @@ router.post('/loginGG', async function (req, res, next) {
         email: email,  // Nếu email trống, set là null
         phone: null,  // Nếu phone trống, set là null
         password: hashedPassword,
-        avatar: picture || null, // avt
+        //avatar: picture || null, // avt
+        avatar: 'https://i.pinimg.com/736x/75/11/c5/7511c5289164c5644782b76e9d122f20.jpg',
         role: 2,// user
       };
 
