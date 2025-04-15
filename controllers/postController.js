@@ -233,6 +233,7 @@ async function allProfile(ID_user, me) {
                 .populate('tags', 'first_name last_name avatar')
                 .populate({
                     path: 'ID_post_shared',
+                    match: { _destroy: false }, // Chỉ lấy bài post gốc có _destroy: false
                     populate: [
                         { path: 'ID_user', select: 'first_name last_name avatar' },
                         { path: 'tags', select: 'first_name last_name avatar' }
@@ -302,6 +303,7 @@ async function getAllPostsInHome(me) {
                 .populate('tags', 'first_name last_name avatar')
                 .populate({
                     path: 'ID_post_shared',
+                    match: { _destroy: false }, // Chỉ lấy bài post gốc có _destroy: false
                     populate: [
                         { path: 'ID_user', select: 'first_name last_name avatar' },
                         { path: 'tags', select: 'first_name last_name avatar' }
@@ -403,6 +405,7 @@ async function getPostsUserIdDestroyTrue(me) {
             .populate('tags', 'first_name last_name avatar')
             .populate({
                 path: 'ID_post_shared',
+                match: { _destroy: false }, // Chỉ lấy bài post gốc có _destroy: false
                 populate: [
                     { path: 'ID_user', select: 'first_name last_name avatar' },
                     { path: 'tags', select: 'first_name last_name avatar' }
@@ -488,18 +491,41 @@ async function changeDestroyPost(_id) {
 // delete post vĩnh viễn
 async function deletePost(_id) {
     try {
-        // Xóa tất cả dữ liệu liên quan đến post
+        // Tìm tất cả bài post share có ID_post_shared trỏ đến bài post gốc
+        const sharedPosts = await posts.find({ ID_post_shared: _id }).lean();
+        const sharedPostIds = sharedPosts.map(post => post._id);
+
+        // Xóa tất cả dữ liệu liên quan đến các bài post share
+        const deleteSharedPostsPromises = sharedPostIds.map(async (sharedPostId) => {
+            await Promise.all([
+                post_reaction.deleteMany({ ID_post: sharedPostId }), // Xóa reactions của bài share
+                comment.deleteMany({ ID_post: sharedPostId }), // Xóa comments của bài share
+                notification.deleteMany({
+                    $or: [
+                        { ID_post: sharedPostId },
+                        { ID_comment: { $in: await comment.find({ ID_post: sharedPostId }).distinct('_id') } },
+                        { ID_post_reaction: { $in: await post_reaction.find({ ID_post: sharedPostId }).distinct('_id') } }
+                    ]
+                }), // Xóa notifications liên quan đến bài share
+                posts.findByIdAndDelete(sharedPostId), // Xóa bài post share
+            ]);
+        });
+
+        // Chờ xóa tất cả bài post share
+        await Promise.all(deleteSharedPostsPromises);
+
+        // Xóa bài post gốc và các dữ liệu liên quan
         await Promise.all([
-            post_reaction.deleteMany({ ID_post: _id }), // Xóa reaction
-            comment.deleteMany({ ID_post: _id }), // Xóa comment
+            post_reaction.deleteMany({ ID_post: _id }), // Xóa reactions của bài gốc
+            comment.deleteMany({ ID_post: _id }), // Xóa comments của bài gốc
             notification.deleteMany({
                 $or: [
                     { ID_post: _id },
                     { ID_comment: { $in: await comment.find({ ID_post: _id }).distinct('_id') } },
                     { ID_post_reaction: { $in: await post_reaction.find({ ID_post: _id }).distinct('_id') } }
                 ]
-            }), // Xóa notification liên quan
-            posts.findByIdAndDelete(_id), // Xóa bài post
+            }), // Xóa notifications liên quan đến bài gốc
+            posts.findByIdAndDelete(_id), // Xóa bài post gốc
         ]);
 
         return true;
@@ -519,6 +545,7 @@ async function getChiTietPost(ID_post, ID_user) {
             .populate('tags', 'first_name last_name avatar')
             .populate({
                 path: 'ID_post_shared',
+                match: { _destroy: false }, // Chỉ lấy bài post gốc có _destroy: false
                 populate: [
                     { path: 'ID_user', select: 'first_name last_name avatar' },
                     { path: 'tags', select: 'first_name last_name avatar' }
