@@ -253,7 +253,7 @@ async function allProfile(ID_user, me) {
             // Nếu bài post không phải là bài share (ID_post_shared không tồn tại), giữ lại
             if (!post.ID_post_shared) return true;
             // Nếu bài post là bài share, chỉ giữ lại nếu ID_post_shared tồn tại (không bị xóa)
-            return post.ID_post_shared !== null;
+            return post.ID_post_shared._destroy !== null;
         });
 
         if (rPosts.length > 0) {
@@ -340,7 +340,7 @@ async function getAllPostsInHome(me) {
             // Nếu bài post không phải là bài share (ID_post_shared không tồn tại), giữ lại
             if (!post.ID_post_shared) return true;
             // Nếu bài post là bài share, chỉ giữ lại nếu ID_post_shared tồn tại (không bị xóa)
-            return post.ID_post_shared !== null;
+            return post.ID_post_shared._destroy !== null;
         });
 
         // Lấy stories của bạn bè trong 24h
