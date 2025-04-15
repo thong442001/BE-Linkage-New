@@ -233,7 +233,7 @@ async function allProfile(ID_user, me) {
                 .populate('tags', 'first_name last_name avatar')
                 .populate({
                     path: 'ID_post_shared',
-                    match: { _destroy: false }, // Chỉ lấy bài post gốc có _destroy: false
+                    match: { _destroy: { $ne: true } }, // Chỉ lấy bài post gốc có _destroy: false
                     populate: [
                         { path: 'ID_user', select: 'first_name last_name avatar' },
                         { path: 'tags', select: 'first_name last_name avatar' }
@@ -253,7 +253,7 @@ async function allProfile(ID_user, me) {
             // Nếu bài post không phải là bài share (ID_post_shared không tồn tại), giữ lại
             if (!post.ID_post_shared) return true;
             // Nếu bài post là bài share, chỉ giữ lại nếu ID_post_shared tồn tại (không bị xóa)
-            return post.ID_post_shared._destroy !== null;
+            return post.ID_post_shared !== null;
         });
 
         if (rPosts.length > 0) {
@@ -311,7 +311,7 @@ async function getAllPostsInHome(me) {
                 .populate('tags', 'first_name last_name avatar')
                 .populate({
                     path: 'ID_post_shared',
-                    match: { _destroy: false }, // Chỉ lấy bài post gốc có _destroy: false
+                    match: { _destroy: { $ne: true } }, // Chỉ lấy bài post gốc có _destroy: false
                     populate: [
                         { path: 'ID_user', select: 'first_name last_name avatar' },
                         { path: 'tags', select: 'first_name last_name avatar' }
@@ -340,7 +340,7 @@ async function getAllPostsInHome(me) {
             // Nếu bài post không phải là bài share (ID_post_shared không tồn tại), giữ lại
             if (!post.ID_post_shared) return true;
             // Nếu bài post là bài share, chỉ giữ lại nếu ID_post_shared tồn tại (không bị xóa)
-            return post.ID_post_shared._destroy !== null;
+            return post.ID_post_shared !== null;
         });
 
         // Lấy stories của bạn bè trong 24h
