@@ -227,79 +227,25 @@ async function allProfile(ID_user, me) {
             storyFilter.ID_user = ID_user;
         }
 
-        // Sử dụng aggregate để lọc bài post và kiểm tra ID_post_shared
-        const getPosts = async () => {
-            const pipeline = [
-                // Lọc bài post chính theo postFilter
-                { $match: postFilter },
-                // Lookup để lấy thông tin bài post gốc (ID_post_shared)
-                {
-                    $lookup: {
-                        from: 'posts', // Tên collection của posts
-                        localField: 'ID_post_shared',
-                        foreignField: '_id',
-                        as: 'sharedPost'
-                    }
-                },
-                // Unwind sharedPost (nếu có) để xử lý dễ hơn
-                {
-                    $unwind: {
-                        path: '$sharedPost',
-                        preserveNullAndEmptyArrays: true // Giữ các bài post không có ID_post_shared
-                    }
-                },
-                // Lọc: Nếu có sharedPost, kiểm tra _destroy của nó
-                {
-                    $match: {
-                        $or: [
-                            { sharedPost: { $exists: false } }, // Bài post không phải share
-                            { 'sharedPost._destroy': { $ne: true } } // Bài share với bài gốc chưa bị xóa
-                        ]
-                    }
-                },
-                // Bỏ trường sharedPost sau khi lọc
-                // {
-                //     $project: {
-                //         sharedPost: 0 // Không cần giữ trường này trong kết quả
-                //     }
-                // },
-                // Sort theo createdAt
-                {
-                    $sort: { createdAt: -1 }
-                }
-            ];
-
-            let rawPosts = await posts.aggregate(pipeline).exec();
-
-            // Populate thông tin cần thiết
-            return await posts.populate(rawPosts, [
-                { path: 'ID_user', select: 'first_name last_name avatar' },
-                { path: 'tags', select: 'first_name last_name avatar' },
-                {
+        let [rPosts, rStories] = await Promise.all([
+            posts.find(postFilter)
+                .populate('ID_user', 'first_name last_name avatar')
+                .populate('tags', 'first_name last_name avatar')
+                .populate({
                     path: 'ID_post_shared',
-                    match: { _destroy: { $ne: true } },
                     populate: [
                         { path: 'ID_user', select: 'first_name last_name avatar' },
                         { path: 'tags', select: 'first_name last_name avatar' }
                     ],
                     select: '-__v'
-                }
-            ]);
-        };
-
-        let [rPosts, rStories] = await Promise.all([
-            getPosts(),
+                })
+                .sort({ createdAt: -1 })
+                .lean(),
             posts.find(storyFilter)
                 .populate('ID_user', 'first_name last_name avatar')
                 .sort({ createdAt: 1 })
                 .lean()
         ]);
-
-        // Lọc bỏ các bài post share mà ID_post_shared không hợp lệ (bị xóa hoặc không tồn tại)
-        rPosts = rPosts.filter(post => {
-            if (!post.ID_post_shared) return true; // Giữ lại nếu không phải bài share
-            return post.ID_post_shared !== null; // Chỉ giữ lại nếu ID_post_shared tồn tại
-        });
 
         if (rPosts.length > 0) {
             const postIds = rPosts.map(post => post._id);
@@ -350,87 +296,34 @@ async function getAllPostsInHome(me) {
         const friendIDs = new Set([me]); // Thêm ID của chính mình
         rFriends.forEach(f => friendIDs.add(f.ID_userA.toString() === me.toString() ? f.ID_userB : f.ID_userA));
 
-        const getPosts = async () => {
-            // Sử dụng aggregate để lọc bài post và kiểm tra ID_post_shared
-            const pipeline = [
-                // Lọc bài post chính
-                {
-                    $match: {
-                        ID_user: { $in: [...friendIDs] },
-                        _destroy: { $ne: true },
-                        type: { $nin: ['Story', 'Ban'] },
-                        $or: [
-                            { ID_user: me },
-                            { status: "Công khai" },
-                            { status: "Bạn bè" }
-                        ]
-                    }
-                },
-                // Lookup để lấy thông tin bài post gốc (ID_post_shared)
-                {
-                    $lookup: {
-                        from: 'posts', // Tên collection của posts
-                        localField: 'ID_post_shared',
-                        foreignField: '_id',
-                        as: 'sharedPost'
-                    }
-                },
-                // Unwind sharedPost (nếu có) để xử lý dễ hơn
-                {
-                    $unwind: {
-                        path: '$sharedPost',
-                        preserveNullAndEmptyArrays: true // Giữ các bài post không có ID_post_shared
-                    }
-                },
-                // Lọc: Nếu có sharedPost, kiểm tra _destroy của nó
-                {
-                    $match: {
-                        $or: [
-                            { sharedPost: { $exists: false } }, // Bài post không phải share
-                            { 'sharedPost._destroy': { $ne: true } } // Bài share với bài gốc chưa bị xóa
-                        ]
-                    }
-                },
-                // Bỏ trường sharedPost sau khi lọc
-                // {
-                //     $project: {
-                //         sharedPost: 0 // Không cần giữ trường này trong kết quả
-                //     }
-                // },
-                // Sort theo createdAt
-                {
-                    $sort: { createdAt: -1 }
-                }
-            ];
-
-            let rawPosts = await posts.aggregate(pipeline).exec();
-
-            // Populate thông tin cần thiết
-            return await posts.populate(rawPosts, [
-                { path: 'ID_user', select: 'first_name last_name avatar' },
-                { path: 'tags', select: 'first_name last_name avatar' },
-                {
+        const getPosts = async (filter) => {
+            return posts.find(filter)
+                .populate('ID_user', 'first_name last_name avatar')
+                .populate('tags', 'first_name last_name avatar')
+                .populate({
                     path: 'ID_post_shared',
-                    match: { _destroy: { $ne: true } },
                     populate: [
                         { path: 'ID_user', select: 'first_name last_name avatar' },
                         { path: 'tags', select: 'first_name last_name avatar' }
                     ],
                     select: '-__v'
-                }
-            ]);
+                })
+                .sort({ createdAt: -1 })
+                .lean();
         };
 
-        // Lấy tất cả bài post hợp lệ
-        let rPosts = await getPosts();
-
-        // Lọc bỏ các bài post có ID_post_shared không thỏa mãn (bị xóa hoặc không tồn tại)
-        rPosts = rPosts.filter(post => {
-            // Nếu bài post không phải là bài share (ID_post_shared không tồn tại), giữ lại
-            if (!post.ID_post_shared) return true;
-            // Nếu bài post là bài share, chỉ giữ lại nếu ID_post_shared tồn tại (không bị xóa)
-            return post.ID_post_shared !== null;
-        });
+        // Lấy tất cả bài post hợp lệ (không bị ban)
+        const postFilter = {
+            ID_user: { $in: [...friendIDs] },
+            _destroy: false,
+            type: { $nin: ['Story', 'Ban'] }, // Loại bỏ bài viết có type "ban"
+            $or: [
+                { ID_user: me }, // Lấy tất cả bài viết của mình (bao gồm "Chỉ mình tôi")
+                { status: "Công khai" },
+                { status: "Bạn bè" }
+            ]
+        };
+        let rPosts = await getPosts(postFilter);
 
         // Lấy stories của bạn bè trong 24h
         const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
@@ -510,7 +403,6 @@ async function getPostsUserIdDestroyTrue(me) {
             .populate('tags', 'first_name last_name avatar')
             .populate({
                 path: 'ID_post_shared',
-                match: { _destroy: false }, // Chỉ lấy bài post gốc có _destroy: false
                 populate: [
                     { path: 'ID_user', select: 'first_name last_name avatar' },
                     { path: 'tags', select: 'first_name last_name avatar' }
@@ -596,41 +488,18 @@ async function changeDestroyPost(_id) {
 // delete post vĩnh viễn
 async function deletePost(_id) {
     try {
-        // Tìm tất cả bài post share có ID_post_shared trỏ đến bài post gốc
-        const sharedPosts = await posts.find({ ID_post_shared: _id }).lean();
-        const sharedPostIds = sharedPosts.map(post => post._id);
-
-        // Xóa tất cả dữ liệu liên quan đến các bài post share
-        const deleteSharedPostsPromises = sharedPostIds.map(async (sharedPostId) => {
-            await Promise.all([
-                post_reaction.deleteMany({ ID_post: sharedPostId }), // Xóa reactions của bài share
-                comment.deleteMany({ ID_post: sharedPostId }), // Xóa comments của bài share
-                notification.deleteMany({
-                    $or: [
-                        { ID_post: sharedPostId },
-                        { ID_comment: { $in: await comment.find({ ID_post: sharedPostId }).distinct('_id') } },
-                        { ID_post_reaction: { $in: await post_reaction.find({ ID_post: sharedPostId }).distinct('_id') } }
-                    ]
-                }), // Xóa notifications liên quan đến bài share
-                posts.findByIdAndDelete(sharedPostId), // Xóa bài post share
-            ]);
-        });
-
-        // Chờ xóa tất cả bài post share
-        await Promise.all(deleteSharedPostsPromises);
-
-        // Xóa bài post gốc và các dữ liệu liên quan
+        // Xóa tất cả dữ liệu liên quan đến post
         await Promise.all([
-            post_reaction.deleteMany({ ID_post: _id }), // Xóa reactions của bài gốc
-            comment.deleteMany({ ID_post: _id }), // Xóa comments của bài gốc
+            post_reaction.deleteMany({ ID_post: _id }), // Xóa reaction
+            comment.deleteMany({ ID_post: _id }), // Xóa comment
             notification.deleteMany({
                 $or: [
                     { ID_post: _id },
                     { ID_comment: { $in: await comment.find({ ID_post: _id }).distinct('_id') } },
                     { ID_post_reaction: { $in: await post_reaction.find({ ID_post: _id }).distinct('_id') } }
                 ]
-            }), // Xóa notifications liên quan đến bài gốc
-            posts.findByIdAndDelete(_id), // Xóa bài post gốc
+            }), // Xóa notification liên quan
+            posts.findByIdAndDelete(_id), // Xóa bài post
         ]);
 
         return true;
