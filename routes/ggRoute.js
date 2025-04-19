@@ -43,10 +43,124 @@ async function getAccessToken() {
 
 // 🚀 API gửi thông báo
 //http://localhost:3001/gg/send-notification
+// router.post('/send-notification', async function (req, res, next) {
+//   try {
+//     // ⬅️ Nhận danh sách `fcmTokens` (mảng)
+//     // ⬅️ Nhận danh sách `ID_noties` (mảng)
+//     const { fcmTokens, title, body, ID_noties } = req.body;
+
+//     if (!Array.isArray(fcmTokens) || fcmTokens.length === 0) {
+//       return res.status(400).json({ success: false, error: "Danh sách fcmTokens không hợp lệ!" });
+//     }
+
+//     // Tạo danh sách thông báo tương ứng với từng user
+//     const notifications = await Promise.all(
+//       ID_noties.map(id =>
+//         notification.findById(id)
+//           .populate({
+//             path: 'ID_post',
+//             populate: [
+//               { path: 'ID_user', select: 'first_name last_name avatar' },
+//               { path: 'tags', select: 'first_name last_name avatar' },
+//               {
+//                 path: 'ID_post_shared',
+//                 select: '-__v',
+//                 populate: [
+//                   { path: 'ID_user', select: 'first_name last_name avatar' },
+//                   { path: 'tags', select: 'first_name last_name avatar' }
+//                 ]
+//               }
+//             ],
+//             select: '-__v' // Lấy tất cả các thuộc tính trừ __v
+//           })
+//           .populate({
+//             path: 'ID_relationship',
+//             populate: [
+//               { path: 'ID_userA', select: 'first_name last_name avatar' },
+//               { path: 'ID_userB', select: 'first_name last_name avatar' },
+//             ],
+//             select: '-__v' // Lấy tất cả các thuộc tính trừ __v)
+//           })
+//           .populate({
+//             path: 'ID_group',
+//             populate: [
+//               { path: 'members', select: 'first_name last_name avatar' },
+//             ],
+//             select: '-__v' // Lấy tất cả các thuộc tính trừ __v)
+//           })
+//           .populate({
+//             path: 'ID_message',
+//             populate: [
+//               { path: 'ID_group', select: '-_v' },
+//               { path: 'sender', select: 'first_name last_name avatar' },
+//             ],
+//             select: '-__v' // Lấy tất cả các thuộc tính trừ __v)
+//           })
+//           .populate({
+//             path: 'ID_comment',
+//             populate: [
+//               { path: 'ID_user', select: 'first_name last_name avatar' },
+//               { path: 'ID_post', select: '-_v' },
+//             ],
+//             select: '-__v' // Lấy tất cả các thuộc tính trừ __v)
+//           })
+//           .populate({
+//             path: 'ID_post_reaction',
+//             populate: [
+//               { path: 'ID_post', select: '-_v' },
+//               { path: 'ID_user', select: 'first_name last_name avatar' },
+//               { path: 'ID_reaction', select: '-_v' },
+//             ],
+//             select: '-__v' // Lấy tất cả các thuộc tính trừ __v)
+//           })
+//           .lean()
+//       )
+//     );
+
+//     // Kiểm tra nếu có thông báo nào không tồn tại
+//     if (notifications.some(noti => !noti)) {
+//       return res.status(404).json({ success: false, error: "Một hoặc nhiều thông báo không tồn tại!" });
+//     }
+
+//     // Tạo danh sách tin nhắn gửi đi
+//     const messages = fcmTokens.map((token, index) => ({
+//       token,
+//       notification: {
+//         title,
+//         body,
+//       },
+//       data: {
+//         notification: JSON.stringify(notifications[index]), // ✅ Mỗi user nhận thông báo tương ứng
+//         click_action: "FLUTTER_NOTIFICATION_CLICK",
+//       },
+//     }));
+
+//     // Gửi thông báo cho từng user
+//     //const response = await Promise.all(messages.map(msg => admin.messaging().send(msg)));
+//     const response = await Promise.all(messages.map(async msg => {
+//       try {
+//         return await admin.messaging().send(msg);
+//       } catch (err) {
+//         console.error("❌ Lỗi khi gửi FCM đến token:", msg.token, err.message);
+//         return { error: err.message, token: msg.token };
+//       }
+//     }));
+
+//     console.log(`📢 Gửi ${response.length} thông báo thành công!`);
+
+//     res.json({
+//       success: true,
+//       message: `Thông báo đã gửi đến ${response.length} thiết bị!`,
+//       response,
+//     });
+
+//   } catch (error) {
+//     console.error("❌ Lỗi khi gửi thông báo FCM:", error.response?.data || error.message);
+//     res.status(500).json({ success: false, error: error.response?.data || error.message });
+//   }
+// });
 router.post('/send-notification', async function (req, res, next) {
   try {
-    // ⬅️ Nhận danh sách `fcmTokens` (mảng)
-    // ⬅️ Nhận danh sách `ID_noties` (mảng)
     const { fcmTokens, title, body, ID_noties } = req.body;
 
     if (!Array.isArray(fcmTokens) || fcmTokens.length === 0) {
@@ -67,11 +181,11 @@ router.post('/send-notification', async function (req, res, next) {
                 select: '-__v',
                 populate: [
                   { path: 'ID_user', select: 'first_name last_name avatar' },
-                  { path: 'tags', select: 'first_name last_name avatar' }
-                ]
-              }
+                  { path: 'tags', select: 'first_name last_name avatar' },
+                ],
+              },
             ],
-            select: '-__v' // Lấy tất cả các thuộc tính trừ __v
+            select: '-__v',
           })
           .populate({
             path: 'ID_relationship',
@@ -79,39 +193,37 @@ router.post('/send-notification', async function (req, res, next) {
               { path: 'ID_userA', select: 'first_name last_name avatar' },
               { path: 'ID_userB', select: 'first_name last_name avatar' },
             ],
-            select: '-__v' // Lấy tất cả các thuộc tính trừ __v)
+            select: '-__v',
           })
           .populate({
             path: 'ID_group',
-            populate: [
-              { path: 'members', select: 'first_name last_name avatar' },
-            ],
-            select: '-__v' // Lấy tất cả các thuộc tính trừ __v)
+            populate: [{ path: 'members', select: 'first_name last_name avatar' }],
+            select: '-__v',
           })
           .populate({
             path: 'ID_message',
             populate: [
-              { path: 'ID_group', select: '-_v' },
+              { path: 'ID_group', select: '-__v' },
               { path: 'sender', select: 'first_name last_name avatar' },
             ],
-            select: '-__v' // Lấy tất cả các thuộc tính trừ __v)
+            select: '-__v',
           })
           .populate({
             path: 'ID_comment',
             populate: [
               { path: 'ID_user', select: 'first_name last_name avatar' },
-              { path: 'ID_post', select: '-_v' },
+              { path: 'ID_post', select: '-__v' },
             ],
-            select: '-__v' // Lấy tất cả các thuộc tính trừ __v)
+            select: '-__v',
           })
           .populate({
             path: 'ID_post_reaction',
             populate: [
-              { path: 'ID_post', select: '-_v' },
+              { path: 'ID_post', select: '-__v' },
               { path: 'ID_user', select: 'first_name last_name avatar' },
-              { path: 'ID_reaction', select: '-_v' },
+              { path: 'ID_reaction', select: '-__v' },
             ],
-            select: '-__v' // Lấy tất cả các thuộc tính trừ __v)
+            select: '-__v',
           })
           .lean()
       )
@@ -119,38 +231,59 @@ router.post('/send-notification', async function (req, res, next) {
 
     // Kiểm tra nếu có thông báo nào không tồn tại
     if (notifications.some(noti => !noti)) {
+      console.log("Một hoặc nhiều thông báo không tồn tại:", notifications);
       return res.status(404).json({ success: false, error: "Một hoặc nhiều thông báo không tồn tại!" });
     }
 
     // Tạo danh sách tin nhắn gửi đi
-    const messages = fcmTokens.map((token, index) => ({
-      token,
-      notification: {
-        title,
-        body,
-      },
-      data: {
-        notification: JSON.stringify(notifications[index]), // ✅ Mỗi user nhận thông báo tương ứng
-        click_action: "FLUTTER_NOTIFICATION_CLICK",
-      },
-    }));
+    const messages = fcmTokens.map((token, index) => {
+      if (!notifications[index]) {
+        console.log(`Không tìm thấy thông báo cho token ${token} tại index ${index}`);
+        return null;
+      }
+      return {
+        token,
+        notification: {
+          title,
+          body,
+        },
+        data: {
+          notification_id: notifications[index]._id.toString(),
+          click_action: "FLUTTER_NOTIFICATION_CLICK",
+        },
+      };
+    }).filter(msg => msg !== null);
 
-    // Gửi thông báo cho từng user
-    //const response = await Promise.all(messages.map(msg => admin.messaging().send(msg)));
+    if (messages.length === 0) {
+      console.log("Không có tin nhắn hợp lệ để gửi");
+      return res.status(400).json({ success: false, error: "Không có tin nhắn hợp lệ để gửi!" });
+    }
+
+    // Gửi thông báo cho từng user và xử lý token không hợp lệ
     const response = await Promise.all(messages.map(async msg => {
       try {
         return await admin.messaging().send(msg);
       } catch (err) {
         console.error("❌ Lỗi khi gửi FCM đến token:", msg.token, err.message);
+        // Xóa token không hợp lệ
+        if (err.message.includes("Requested entity was not found")) {
+          await noti_token.updateOne(
+            { tokens: msg.token },
+            { $pull: { tokens: msg.token } }
+          );
+          console.log(`🗑️ Đã xóa token không hợp lệ: ${msg.token}`);
+        }
         return { error: err.message, token: msg.token };
       }
     }));
 
-    console.log(`📢 Gửi ${response.length} thông báo thành công!`);
+    // Lọc các thông báo gửi thành công
+    const successfulMessages = response.filter(res => !res.error);
+    console.log(`📢 Gửi ${successfulMessages.length} thông báo thành công!`);
 
     res.json({
-      success: true,
-      message: `Thông báo đã gửi đến ${response.length} thiết bị!`,
+      success: successfulMessages.length > 0,
+      message: `Thông báo đã gửi thành công đến ${successfulMessages.length} thiết bị!`,
       response,
     });
 

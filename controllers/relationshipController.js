@@ -110,8 +110,11 @@ async function guiLoiMoiKetBan(ID_relationship, me) {
 //         console.error("⚠️ Lỗi khi gửi thông báo FCM:", error.response?.data || error.message);
 //     }
 // }
-async function guiThongBao(ID_user, ID_noti, retries = 1) {
+async function guiThongBao(ID_user, ID_noti) {
     try {
+        console.log("Bắt đầu gửi thông báo cho user:", ID_user.toString(), "với ID_noti:", ID_noti.toString());
+
+        // Tìm token FCM của người dùng
         const check_noti_token = await noti_token.findOne({ ID_user });
         console.log("Kết quả tìm token:", check_noti_token);
 
@@ -120,26 +123,37 @@ async function guiThongBao(ID_user, ID_noti, retries = 1) {
             return;
         }
 
+        // Chuẩn bị payload gửi thông báo
         const payload = {
             fcmTokens: check_noti_token.tokens,
             title: "Thông báo",
             body: null,
             ID_noties: [ID_noti],
         };
+        console.log("Payload gửi thông báo:", payload);
 
-        for (let i = 0; i < retries; i++) {
-            try {
-                const response = await axios.post(
-                    `https://linkage.id.vn/gg/send-notification`,
-                    payload
+        // Gửi thông báo qua API
+        const response = await axios.post(
+            `https://linkage.id.vn/gg/send-notification`,
+            payload
+        );
+        console.log("Kết quả gửi thông báo:", response.data);
+
+        // Xử lý token không hợp lệ
+        if (response.data.success && response.data.response) {
+            const invalidTokens = response.data.response
+                .filter(res => res.error && res.error.includes("Requested entity was not found"))
+                .map(res => res.token);
+
+            if (invalidTokens.length > 0) {
+                await noti_token.updateOne(
+                    { ID_user },
+                    { $pull: { tokens: { $in: invalidTokens } } }
                 );
-                console.log("Kết quả gửi thông báo:", response.data);
-                return;
-            } catch (err) {
-                if (i === retries - 1) throw err;
-                console.log(`Thử lại lần ${i + 1}/${retries}...`);
+                console.log(`🗑️ Đã xóa ${invalidTokens.length} token không hợp lệ cho user: ${ID_user}`);
             }
         }
+
     } catch (error) {
         console.error("⚠️ Lỗi khi gửi thông báo FCM:", error.response?.data || error.message);
         throw error;
