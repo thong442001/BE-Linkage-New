@@ -101,6 +101,29 @@ function setupSocket(server) {
             console.log(`👥 User ${socket.id} joined group: ${ID_group}`);
         });
 
+        socket.on('edit_avt_name-group', async (data) => {
+            const { ID_group, avatar, name } = data;
+
+            const editGroup = await group.findById(ID_group);
+
+            if (!editGroup) return;
+
+            if (editGroup) {
+                editGroup.avatar = avatar
+                    ? avatar
+                    : editGroup.avatar;
+                editGroup.name = name
+                    ? name
+                    : editGroup.name;
+                await editGroup.save();
+            }
+
+            // trong group
+            io.to(ID_group).emit('lang_nghe_chat_edit_avt_name_group', editGroup);
+            // ngoài home chat
+            io.emit('lang_nghe_home_chat_edit_avt_name_group', editGroup);
+        })
+
         socket.on('send_message', async (data) => {
             const { ID_group, sender, content, type, ID_message_reply } = data;
             // Tìm thông tin người gửi từ database
