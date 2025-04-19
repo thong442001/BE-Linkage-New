@@ -102,7 +102,7 @@ async function guiThongBao(ID_user, ID_noti) {
                 fcmTokens: check_noti_token.tokens,
                 title: "Thông báo",
                 body: null,
-                ID_noties: [ID_noti],
+                ID_noties: [ID_noti.toString()],
             },
         );
         return;
