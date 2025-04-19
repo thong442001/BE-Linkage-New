@@ -108,15 +108,13 @@ function setupSocket(server) {
 
             if (!editGroup) return;
 
-            if (editGroup) {
-                editGroup.avatar = avatar
-                    ? avatar
-                    : editGroup.avatar;
-                editGroup.name = name
-                    ? name
-                    : editGroup.name;
-                await editGroup.save();
-            }
+            editGroup.avatar = avatar
+                ? avatar
+                : editGroup.avatar;
+            editGroup.name = name
+                ? name
+                : editGroup.name;
+            await editGroup.save();
 
             // trong group
             io.to(ID_group).emit('lang_nghe_chat_edit_avt_name_group', editGroup);
