@@ -89,25 +89,60 @@ async function guiLoiMoiKetBan(ID_relationship, me) {
 }
 
 // 🛠 Hàm gửi thông báo kết bạn
-async function guiThongBao(ID_user, ID_noti) {
+// async function guiThongBao(ID_user, ID_noti) {
+//     try {
+
+//         const check_noti_token = await noti_token.findOne({ "ID_user": ID_user });
+//         if (!check_noti_token || !check_noti_token.tokens) return;
+
+//         await axios.post(
+//             //`http://localhost:3001/gg/send-notification`,
+//             `https://linkage.id.vn/gg/send-notification`,
+//             {
+//                 fcmTokens: check_noti_token.tokens,
+//                 title: "Thông báo",
+//                 body: null,
+//                 ID_noties: [ID_noti],
+//             },
+//         );
+//         return;
+//     } catch (error) {
+//         console.error("⚠️ Lỗi khi gửi thông báo FCM:", error.response?.data || error.message);
+//     }
+// }
+async function guiThongBao(ID_user, ID_noti, retries = 1) {
     try {
+        const check_noti_token = await noti_token.findOne({ ID_user });
+        console.log("Kết quả tìm token:", check_noti_token);
 
-        const check_noti_token = await noti_token.findOne({ "ID_user": ID_user });
-        if (!check_noti_token || !check_noti_token.tokens) return;
+        if (!check_noti_token || !check_noti_token.tokens || check_noti_token.tokens.length === 0) {
+            console.log("Không tìm thấy token FCM hợp lệ cho user:", ID_user.toString());
+            return;
+        }
 
-        await axios.post(
-            //`http://localhost:3001/gg/send-notification`,
-            `https://linkage.id.vn/gg/send-notification`,
-            {
-                fcmTokens: check_noti_token.tokens,
-                title: "Thông báo",
-                body: null,
-                ID_noties: [ID_noti.toString()],
-            },
-        );
-        return;
+        const payload = {
+            fcmTokens: check_noti_token.tokens,
+            title: "Thông báo",
+            body: null,
+            ID_noties: [ID_noti],
+        };
+
+        for (let i = 0; i < retries; i++) {
+            try {
+                const response = await axios.post(
+                    `https://linkage.id.vn/gg/send-notification`,
+                    payload
+                );
+                console.log("Kết quả gửi thông báo:", response.data);
+                return;
+            } catch (err) {
+                if (i === retries - 1) throw err;
+                console.log(`Thử lại lần ${i + 1}/${retries}...`);
+            }
+        }
     } catch (error) {
         console.error("⚠️ Lỗi khi gửi thông báo FCM:", error.response?.data || error.message);
+        throw error;
     }
 }
 
