@@ -50,7 +50,7 @@ async function getAllUsers() {
 
 async function getUser(ID_user) {
     try {
-        const result = await users.findById(ID_user);
+        const result = await users.findById(ID_user, "avatar first_name last_name");
         return result;
     } catch (error) {
         console.log(error);
