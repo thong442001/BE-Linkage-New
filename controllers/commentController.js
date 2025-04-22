@@ -7,6 +7,8 @@ const axios = require("axios");
 module.exports = {
     addComment,
     setComment_destroyTrue,
+    editComment,
+    deleteComment
 };
 
 async function addComment(ID_user, ID_post, content, type, ID_comment_reply) {
@@ -126,6 +128,42 @@ async function setComment_destroyTrue(ID_comment) {
         return newComment;
     } catch (error) {
         console.error("Error in setComment_destroyTrue:", error);
+        throw error;
+    }
+}
+
+async function editComment(ID_comment, newContent) {
+    try {
+        const commentEdit = await comment.findById(ID_comment);
+        // null là ko tìm thấy
+        if (commentEdit) {
+            commentEdit.content = newContent
+                ? newContent
+                : commentEdit.content;
+            await commentEdit.save();
+            return true;
+        } else {
+            return false;
+        }
+    } catch (error) {
+        console.log(error);
+        throw error;
+    }
+}
+
+async function deleteComment(ID_comment) {
+    try {
+        const commentEdit = await comment.findById(ID_comment);
+        // null là ko tìm thấy
+        if (commentEdit) {
+            commentEdit._destroy = true
+            await commentEdit.save();
+            return true;
+        } else {
+            return false;
+        }
+    } catch (error) {
+        console.log(error);
         throw error;
     }
 }

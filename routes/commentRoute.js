@@ -64,4 +64,46 @@ router.post('/setComment_destroyTrue', checkToken, async function (req, res, nex
   }
 });
 
+//http://localhost:3000/comment/editComment
+router.post('/editComment', checkToken, async function (req, res, next) {
+  try {
+    const { ID_comment, newContent } = req.body;
+    const result = await commentController.editComment(ID_comment, newContent);
+    if (result) {
+      res.status(200).json({
+        "status": true,
+        "message": "Chỉnh sửa comment thành công"
+      });
+    } else {
+      res.status(401).json({
+        "status": false,
+        "message": "Chỉnh sửa comment thất bại"
+      });
+    }
+  } catch (e) {
+    return res.status(400).json({ "status": false, "message": "lỗi" });
+  }
+});
+
+//http://localhost:3000/comment/deleteComment
+router.post('/deleteComment', checkToken, async function (req, res, next) {
+  try {
+    const { ID_comment } = req.body;
+    const result = await commentController.deleteComment(ID_comment);
+    if (result) {
+      res.status(200).json({
+        "status": true,
+        "message": "Xóa comment thành công"
+      });
+    } else {
+      res.status(401).json({
+        "status": false,
+        "message": "Xóa comment thất bại"
+      });
+    }
+  } catch (e) {
+    return res.status(400).json({ "status": false, "message": "lỗi" });
+  }
+});
+
 module.exports = router;
