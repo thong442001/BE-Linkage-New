@@ -255,7 +255,7 @@ async function allProfile(ID_user, me) {
                     .populate('ID_user', 'first_name last_name avatar')
                     .populate('ID_reaction', 'name icon')
                     .lean(),
-                comment.find({ ID_post: { $in: postIds } })
+                comment.find({ ID_post: { $in: postIds }, _destroy: false })
                     .populate('ID_user', 'first_name last_name avatar')
                     .populate({ path: 'ID_comment_reply', populate: { path: 'ID_user', select: 'first_name last_name avatar' } })
                     .lean()
@@ -361,7 +361,7 @@ async function getAllPostsInHome(me) {
                     .populate('ID_user', 'first_name last_name avatar')
                     .populate('ID_reaction', 'name icon')
                     .lean(),
-                comment.find({ ID_post: { $in: postIds } })
+                comment.find({ ID_post: { $in: postIds }, _destroy: false })
                     .populate('ID_user', 'first_name last_name avatar')
                     .populate({ path: 'ID_comment_reply', populate: { path: 'ID_user', select: 'first_name last_name avatar' } })
                     .lean()
