@@ -257,7 +257,11 @@ async function allProfile(ID_user, me) {
                     .lean(),
                 comment.find({ ID_post: { $in: postIds }, _destroy: false })
                     .populate('ID_user', 'first_name last_name avatar')
-                    .populate({ path: 'ID_comment_reply', populate: { path: 'ID_user', select: 'first_name last_name avatar' } })
+                    .populate({
+                        path: 'ID_comment_reply',
+                        match: { _destroy: false }, // Chỉ populate các comment cha có _destroy: false
+                        populate: { path: 'ID_user', select: 'first_name last_name avatar' }
+                    })
                     .lean()
             ]);
 
@@ -363,7 +367,11 @@ async function getAllPostsInHome(me) {
                     .lean(),
                 comment.find({ ID_post: { $in: postIds }, _destroy: false })
                     .populate('ID_user', 'first_name last_name avatar')
-                    .populate({ path: 'ID_comment_reply', populate: { path: 'ID_user', select: 'first_name last_name avatar' } })
+                    .populate({
+                        path: 'ID_comment_reply',
+                        match: { _destroy: false }, // Chỉ populate các comment cha có _destroy: false
+                        populate: { path: 'ID_user', select: 'first_name last_name avatar' }
+                    })
                     .lean()
             ]);
 
@@ -546,10 +554,11 @@ async function getChiTietPost(ID_post, ID_user) {
         }
 
         // Lấy comments trước để có ID_comment
-        const postComments = await comment.find({ ID_post: ID_post })
+        const postComments = await comment.find({ ID_post: ID_post, _destroy: false })
             .populate('ID_user', 'first_name last_name avatar')
             .populate({
                 path: 'ID_comment_reply',
+                match: { _destroy: false }, // Chỉ populate các comment cha có _destroy: false
                 populate: { path: 'ID_user', select: 'first_name last_name avatar' },
                 select: 'content createdAt'
             })
