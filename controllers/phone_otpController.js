@@ -102,7 +102,7 @@ async function sendOTP_quenMatKhau(phone) {
             };
         }
 
-        const messageContent = `{{otp}} la ma xac minh de dat lai mat khau Baotrixemay cua ban`;
+        const messageContent = `{{otp}} la ma xac minh dang ky Baotrixemay cua ban`;
         return await sendOTP(phone, messageContent);
     } catch (error) {
         console.error("Lỗi sendOTP_quenMatKhau:", error.message);
