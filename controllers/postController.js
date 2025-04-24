@@ -527,7 +527,7 @@ async function getChiTietPost(ID_post, ID_user) {
             .populate('tags', 'first_name last_name avatar')
             .populate({
                 path: 'ID_post_shared',
-                match: { _destroy: false }, // Chỉ lấy bài post gốc có _destroy: false
+                //match: { _destroy: false }, // Chỉ lấy bài post gốc có _destroy: false
                 populate: [
                     { path: 'ID_user', select: 'first_name last_name avatar' },
                     { path: 'tags', select: 'first_name last_name avatar' }
