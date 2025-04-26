@@ -8,6 +8,8 @@ const noti_token = require("../models/noti_token");
 const notification = require("../models/notification");
 const axios = require("axios");
 const relationshipController = require("../controllers/relationshipController");
+const { Mutex } = require('async-mutex');
+const mutex = new Mutex();
 
 module.exports = {
     addPost,
@@ -153,12 +155,13 @@ async function allProfile(ID_user, me) {
     try {
         let rUser = await users.findById(ID_user);
 
-        let rFriends = await relationship.find({
-            $or: [
-                { ID_userA: ID_user, relation: 'Bạn bè' },
-                { ID_userB: ID_user, relation: 'Bạn bè' }
-            ]
-        })
+        let rFriends = await relationship
+            .find({
+                $or: [
+                    { ID_userA: ID_user, relation: 'Bạn bè' },
+                    { ID_userB: ID_user, relation: 'Bạn bè' },
+                ],
+            })
             .populate('ID_userA', 'first_name last_name avatar')
             .populate('ID_userB', 'first_name last_name avatar')
             .sort({ createdAt: 1 })
@@ -170,40 +173,68 @@ async function allProfile(ID_user, me) {
         let postFilter = { _destroy: false, type: { $nin: ['Story', 'Ban'] } };
         let storyFilter = { _destroy: false, type: 'Story', createdAt: { $gte: twentyFourHoursAgo } };
 
-        let mutualFriendsCount = 0; // ✅ Biến đếm số bạn chung
+        let mutualFriendsCount = 0;
 
         if (ID_user == me) {
             postFilter.$or = [
                 { ID_user: me },
-                { tags: me, status: { $ne: 'Chỉ mình tôi' } }
+                { tags: me, status: { $ne: 'Chỉ mình tôi' } },
             ];
             storyFilter.ID_user = me;
         } else {
-            rRelationship = await relationship.findOne({
-                $or: [{ ID_userA: ID_user, ID_userB: me }, { ID_userA: me, ID_userB: ID_user }]
-            }).lean();
+            // Sử dụng mutex để khóa thao tác kiểm tra và tạo relationship
+            const release = await mutex.acquire();
+            try {
+                rRelationship = await relationship
+                    .findOne({
+                        $or: [
+                            { ID_userA: ID_user, ID_userB: me },
+                            { ID_userA: me, ID_userB: ID_user },
+                        ],
+                    })
+                    .lean();
 
-            if (!rRelationship) {
-                rRelationship = await relationship.create({
-                    ID_userA: ID_user,
-                    ID_userB: me,
-                    relation: 'Người lạ'
-                });
+                if (!rRelationship) {
+                    rRelationship = await relationship.create({
+                        ID_userA: ID_user,
+                        ID_userB: me,
+                        relation: 'Người lạ',
+                    });
+                }
+            } finally {
+                release();
             }
 
-            // 🔥 **Tính số bạn chung**
+            // Tính số bạn chung
             const [userFriends, meFriends] = await Promise.all([
-                relationship.find({ $or: [{ ID_userA: ID_user }, { ID_userB: ID_user }], relation: 'Bạn bè' })
-                    .lean(),
-                relationship.find({ $or: [{ ID_userA: me }, { ID_userB: me }], relation: 'Bạn bè' })
-                    .lean()
+                relationship.find({
+                    $or: [{ ID_userA: ID_user }, { ID_userB: ID_user }],
+                    relation: 'Bạn bè',
+                }).lean(),
+                relationship.find({
+                    $or: [{ ID_userA: me }, { ID_userB: me }],
+                    relation: 'Bạn bè',
+                }).lean(),
             ]);
 
-            const userFriendIds = new Set(userFriends.map(r => (r.ID_userA.toString() === ID_user ? r.ID_userB.toString() : r.ID_userA.toString())));
-            const meFriendIds = new Set(meFriends.map(r => (r.ID_userA.toString() === me ? r.ID_userB.toString() : r.ID_userA.toString())));
+            const userFriendIds = new Set(
+                userFriends.map((r) =>
+                    r.ID_userA.toString() === ID_user
+                        ? r.ID_userB.toString()
+                        : r.ID_userA.toString()
+                )
+            );
+            const meFriendIds = new Set(
+                meFriends.map((r) =>
+                    r.ID_userA.toString() === me
+                        ? r.ID_userB.toString()
+                        : r.ID_userA.toString()
+                )
+            );
 
-            mutualFriendsCount = [...userFriendIds].filter(friendId => meFriendIds.has(friendId)).length;
-            // 🔥 **Kết thúc tính số bạn chung**
+            mutualFriendsCount = [...userFriendIds].filter((friendId) =>
+                meFriendIds.has(friendId)
+            ).length;
 
             if (rRelationship.relation === 'Bạn bè') {
                 postFilter.$and = [
@@ -211,16 +242,16 @@ async function allProfile(ID_user, me) {
                     {
                         $or: [
                             { ID_user: ID_user },
-                            { tags: ID_user, status: { $ne: 'Chỉ mình tôi' } }
-                        ]
-                    }
+                            { tags: ID_user, status: { $ne: 'Chỉ mình tôi' } },
+                        ],
+                    },
                 ];
                 storyFilter.status = { $ne: 'Chỉ mình tôi' };
             } else {
                 postFilter.status = 'Công khai';
                 postFilter.$or = [
                     { ID_user: ID_user },
-                    { tags: ID_user, status: 'Công khai' }
+                    { tags: ID_user, status: 'Công khai' },
                 ];
                 storyFilter.status = 'Công khai';
             }
@@ -228,61 +259,67 @@ async function allProfile(ID_user, me) {
         }
 
         let [rPosts, rStories] = await Promise.all([
-            posts.find(postFilter)
+            posts
+                .find(postFilter)
                 .populate('ID_user', 'first_name last_name avatar')
                 .populate('tags', 'first_name last_name avatar')
                 .populate({
                     path: 'ID_post_shared',
+                    match: { _destroy: false },
                     populate: [
                         { path: 'ID_user', select: 'first_name last_name avatar' },
-                        { path: 'tags', select: 'first_name last_name avatar' }
+                        { path: 'tags', select: 'first_name last_name avatar' },
                     ],
-                    select: '-__v'
+                    select: '-__v',
                 })
                 .sort({ createdAt: -1 })
                 .lean(),
-            posts.find(storyFilter)
+            posts
+                .find(storyFilter)
                 .populate('ID_user', 'first_name last_name avatar')
                 .sort({ createdAt: 1 })
-                .lean()
+                .lean(),
         ]);
 
         if (rPosts.length > 0) {
-            const postIds = rPosts.map(post => post._id);
+            const postIds = rPosts.map((post) => post._id);
 
             let [allReactions, allComments] = await Promise.all([
-                post_reaction.find({ ID_post: { $in: postIds } })
+                post_reaction
+                    .find({ ID_post: { $in: postIds } })
                     .populate('ID_user', 'first_name last_name avatar')
                     .populate('ID_reaction', 'name icon')
                     .lean(),
-                comment.find({ ID_post: { $in: postIds }, _destroy: false })
+                comment
+                    .find({ ID_post: { $in: postIds }, _destroy: false })
                     .populate('ID_user', 'first_name last_name avatar')
                     .populate({
                         path: 'ID_comment_reply',
-                        match: { _destroy: false }, // Chỉ populate các comment cha có _destroy: false
-                        populate: { path: 'ID_user', select: 'first_name last_name avatar' }
+                        match: { _destroy: false },
+                        populate: { path: 'ID_user', select: 'first_name last_name avatar' },
                     })
-                    .lean()
+                    .lean(),
             ]);
 
-            const reactionMap = {}, commentMap = {};
-            allReactions.forEach(reaction => {
+            const reactionMap = {},
+                commentMap = {};
+            allReactions.forEach((reaction) => {
                 if (!reactionMap[reaction.ID_post]) reactionMap[reaction.ID_post] = [];
                 reactionMap[reaction.ID_post].push(reaction);
             });
 
-            allComments.forEach(comment => {
+            allComments.forEach((comment) => {
                 if (!commentMap[comment.ID_post]) commentMap[comment.ID_post] = [];
                 commentMap[comment.ID_post].push(comment);
             });
 
-            rPosts.forEach(post => {
+            rPosts.forEach((post) => {
                 post.post_reactions = reactionMap[post._id] || [];
                 post.comments = commentMap[post._id] || [];
             });
         }
 
-        return { rUser, rRelationship, rPosts, rFriends, rStories, mutualFriendsCount }; // ✅ Trả về số bạn chung
+        return { rUser, rRelationship, rPosts, rFriends, rStories, mutualFriendsCount };
     } catch (error) {
         console.error(error);
         throw error;

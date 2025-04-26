@@ -5,10 +5,12 @@ const relationship = new Schema({
     ID_userA: {
         type: ObjectId,
         ref: 'user',
+        required: true, // Thêm required để đảm bảo trường không bị thiếu
     },
     ID_userB: {
         type: ObjectId,
         ref: 'user',
+        required: true, // Thêm required để đảm bảo trường không bị thiếu
     },
     relation: { // kiểu tin nhắn
         type: String, // kiểu dữ liệu
@@ -20,6 +22,8 @@ const relationship = new Schema({
             'A gửi lời kết bạn B',
             'B gửi lời kết bạn A',
         ],
+        required: true, // Thêm required để đảm bảo trường không bị thiếu
+        default: 'Người lạ', // Giá trị mặc định khi tạo mới
     },
 }, {
     timestamps: true

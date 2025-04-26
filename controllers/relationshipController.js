@@ -13,7 +13,8 @@ module.exports = {
     getAllLoiMoiKetBan,
     getAllFriendOfID_user,
     getFriendSuggestions,// gợi ý bạn bè
-    getMutualFriendCount
+    getMutualFriendCount,
+    cleanDuplicateRelationships
 }
 
 async function getRelationshipAvsB(ID_user, me) {
@@ -425,5 +426,33 @@ async function getFriendSuggestions(me) {
     } catch (error) {
         console.error("❌ Lỗi khi lấy gợi ý kết bạn:", error);
         throw error;
+    }
+}
+
+async function cleanDuplicateRelationships() {
+    try {
+        const allRelationships = await relationship.find().lean();
+        const seen = new Set();
+        const duplicates = [];
+
+        for (const rel of allRelationships) {
+            const key1 = `${rel.ID_userA}-${rel.ID_userB}`;
+            const key2 = `${rel.ID_userB}-${rel.ID_userA}`;
+            if (seen.has(key1) || seen.has(key2)) {
+                duplicates.push(rel._id);
+            } else {
+                seen.add(key1);
+                seen.add(key2);
+            }
+        }
+
+        if (duplicates.length > 0) {
+            await relationship.deleteMany({ _id: { $in: duplicates } });
+            console.log(`Đã xóa ${duplicates.length} bản ghi trùng lặp`);
+        } else {
+            console.log('Không có bản ghi trùng lặp');
+        }
+    } catch (error) {
+        console.error('Lỗi khi xóa bản ghi trùng lặp:', error);
     }
 }

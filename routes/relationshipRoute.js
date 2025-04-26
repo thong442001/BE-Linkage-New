@@ -156,5 +156,18 @@ router.get('/getGoiYBanBe', checkToken, async function (req, res, next) {
     });
   }
 });
-
+// http://localhost:3001/relationship/cleanDuplicateRelationships
+router.get('/cleanDuplicateRelationships', async function (req, res, next) {
+  try {
+    const relationships = await relationshipController.cleanDuplicateRelationships();
+    res.status(200).json({
+      status: true,
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: false,
+      error: error.message,
+    });
+  }
+});
 module.exports = router;
