@@ -194,24 +194,74 @@ async function unBanUser(ID_report_user) {
 }
 
 // 🛠 Hàm gửi thông báo kết bạn
+// async function guiThongBao(ID_user, ID_noti) {
+//     try {
+
+//         const check_noti_token = await noti_token.findOne({ "ID_user": ID_user });
+//         if (!check_noti_token || !check_noti_token.tokens) return;
+
+//         await axios.post(
+//             //`http://localhost:3001/gg/send-notification`,
+//             `https://linkage.id.vn/gg/send-notification`,
+//             {
+//                 fcmTokens: check_noti_token.tokens,
+//                 title: "Thông báo",
+//                 body: null,
+//                 ID_noties: [ID_noti],
+//             },
+//         );
+//         return;
+//     } catch (error) {
+//         console.error("⚠️ Lỗi khi gửi thông báo FCM:", error.response?.data || error.message);
+//     }
+// }
+
 async function guiThongBao(ID_user, ID_noti) {
     try {
+        console.log("Bắt đầu gửi thông báo cho user:", ID_user.toString(), "với ID_noti:", ID_noti.toString());
 
-        const check_noti_token = await noti_token.findOne({ "ID_user": ID_user });
-        if (!check_noti_token || !check_noti_token.tokens) return;
+        // Tìm token FCM của người dùng
+        const check_noti_token = await noti_token.findOne({ ID_user });
+        console.log("Kết quả tìm token:", check_noti_token);
 
-        await axios.post(
-            //`http://localhost:3001/gg/send-notification`,
+        if (!check_noti_token || !check_noti_token.tokens || check_noti_token.tokens.length === 0) {
+            console.log("Không tìm thấy token FCM hợp lệ cho user:", ID_user.toString());
+            return;
+        }
+
+        // Chuẩn bị payload gửi thông báo
+        const payload = {
+            fcmTokens: check_noti_token.tokens,
+            title: "Thông báo",
+            body: null,
+            ID_noties: [ID_noti],
+        };
+        console.log("Payload gửi thông báo:", payload);
+
+        // Gửi thông báo qua API
+        const response = await axios.post(
             `https://linkage.id.vn/gg/send-notification`,
-            {
-                fcmTokens: check_noti_token.tokens,
-                title: "Thông báo",
-                body: null,
-                ID_noties: [ID_noti],
-            },
+            payload
         );
-        return;
+        console.log("Kết quả gửi thông báo:", response.data);
+
+        // Xử lý token không hợp lệ
+        if (response.data.success && response.data.response) {
+            const invalidTokens = response.data.response
+                .filter(res => res.error && res.error.includes("Requested entity was not found"))
+                .map(res => res.token);
+
+            if (invalidTokens.length > 0) {
+                await noti_token.updateOne(
+                    { ID_user },
+                    { $pull: { tokens: { $in: invalidTokens } } }
+                );
+                console.log(`🗑️ Đã xóa ${invalidTokens.length} token không hợp lệ cho user: ${ID_user}`);
+            }
+        }
+
     } catch (error) {
         console.error("⚠️ Lỗi khi gửi thông báo FCM:", error.response?.data || error.message);
+        throw error;
     }
 }
