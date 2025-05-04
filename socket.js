@@ -759,7 +759,7 @@ function setupSocket(server) {
             if (userSocket) {
                 // Rời khỏi phòng
                 io.to(userSocket).socketsLeave(ID_group);
-                io.emit("kicked_from_group", { ID_group });
+                io.emit("kicked_from_group", { ID_group, ID_user });
             }
         });
 
